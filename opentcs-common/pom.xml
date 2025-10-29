@@ -7,5 +7,20 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
     <artifactId>opentcs-common</artifactId>
+    <packaging>pom</packaging>
     <name>opentcs-common</name>
+    <modules>
+        <module>opentcs-common-bom</module>
+        <module>opentcs-common-core</module>
+        <module>opentcs-common-doc</module>
+        <module>opentcs-common-encrypt</module>
+        <module>opentcs-common-idempotent</module>
+        <module>opentcs-common-redis</module>
+        <module>opentcs-common-json</module>
+        <module>opentcs-common-log</module>
+        <module>opentcs-common-mybatis</module>
+        <module>opentcs-common-satoken</module>
+        <module>opentcs-common-web</module>
+        <module>opentcs-common-websocket</module>
+    </modules>
 </project>

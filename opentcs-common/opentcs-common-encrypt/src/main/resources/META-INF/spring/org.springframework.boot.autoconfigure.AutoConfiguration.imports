@@ -1,0 +1,3 @@
+org.opentcs.common.encrypt.config.EncryptorAutoConfiguration
+org.opentcs.common.encrypt.config.ApiDecryptAutoConfiguration
+

@@ -1,0 +1,2 @@
+org.opentcs.common.redis.config.RedisConfig
+org.opentcs.common.redis.config.CacheConfig

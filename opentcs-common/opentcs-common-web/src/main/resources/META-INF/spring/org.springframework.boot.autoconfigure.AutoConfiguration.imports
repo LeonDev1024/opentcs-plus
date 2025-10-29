@@ -1,0 +1,5 @@
+org.opentcs.common.web.config.CaptchaConfig
+org.opentcs.common.web.config.FilterConfig
+org.opentcs.common.web.config.I18nConfig
+org.opentcs.common.web.config.ResourcesConfig
+org.opentcs.common.web.config.UndertowConfig
