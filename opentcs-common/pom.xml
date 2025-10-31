@@ -22,5 +22,8 @@
         <module>opentcs-common-satoken</module>
         <module>opentcs-common-web</module>
         <module>opentcs-common-websocket</module>
+        <module>opentcs-common-social</module>
+        <module>opentcs-common-ratelimiter</module>
+        <module>opentcs-common-mail</module>
     </modules>
 </project>

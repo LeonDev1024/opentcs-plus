@@ -13,6 +13,15 @@
         <module>opentcs-common</module>
         <module>opentcs-modules</module>
         <module>opentcs-extends</module>
+        <module>opentcs-common/opentcs-job</module>
+        <module>opentcs-common/opentcs-common-translation</module>
+        <module>opentcs-common/opentcs-common-oss</module>
+        <module>opentcs-common/opentcs-common-excel</module>
+        <module>opentcs-common/opentcs-common-sms</module>
+        <module>opentcs-common/opentcs-common-tenant</module>
+        <module>opentcs-common/opentcs-common-security</module>
+        <module>opentcs-common/opentcs-common-sensitive</module>
+        <module>opentcs-common/opentcs-common-sse</module>
     </modules>
 
     <properties>
@@ -290,18 +299,6 @@
                 <version>${mapstruct-plus.version}</version>
             </dependency>
 
-            <!-- Warm-Flow国产工作流引擎, 在线文档：http://warm-flow.cn/ -->
-            <dependency>
-                <groupId>org.dromara.warm</groupId>
-                <artifactId>warm-flow-mybatis-plus-sb3-starter</artifactId>
-                <version>${warm-flow.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.dromara.warm</groupId>
-                <artifactId>warm-flow-plugin-ui-sb-web</artifactId>
-                <version>${warm-flow.version}</version>
-            </dependency>
-
             <!-- JustAuth 的依赖配置-->
             <dependency>
                 <groupId>me.zhyd.oauth</groupId>
@@ -323,33 +320,14 @@
             </dependency>
 
             <dependency>
-                <groupId>org.dromara</groupId>
-                <artifactId>ruoyi-system</artifactId>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-system</artifactId>
                 <version>${revision}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.dromara</groupId>
-                <artifactId>ruoyi-job</artifactId>
-                <version>${revision}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.dromara</groupId>
-                <artifactId>ruoyi-generator</artifactId>
-                <version>${revision}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.dromara</groupId>
-                <artifactId>ruoyi-demo</artifactId>
-                <version>${revision}</version>
-            </dependency>
-
-            <!--  工作流模块  -->
-            <dependency>
-                <groupId>org.dromara</groupId>
-                <artifactId>ruoyi-workflow</artifactId>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-job</artifactId>
                 <version>${revision}</version>
             </dependency>
 

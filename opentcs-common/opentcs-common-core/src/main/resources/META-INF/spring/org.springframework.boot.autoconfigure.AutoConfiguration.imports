@@ -1,0 +1,4 @@
+org.opentcs.common.core.config.ApplicationConfig
+org.opentcs.common.core.config.ThreadPoolConfig
+org.opentcs.common.core.config.ValidatorConfig
+org.opentcs.common.core.utils.SpringUtils

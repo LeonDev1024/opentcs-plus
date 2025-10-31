@@ -1,0 +1,6 @@
+org.opentcs.common.translation.config.TranslationConfig
+org.opentcs.common.translation.core.impl.DeptNameTranslationImpl
+org.opentcs.common.translation.core.impl.DictTypeTranslationImpl
+org.opentcs.common.translation.core.impl.OssUrlTranslationImpl
+org.opentcs.common.translation.core.impl.UserNameTranslationImpl
+org.opentcs.common.translation.core.impl.NicknameTranslationImpl

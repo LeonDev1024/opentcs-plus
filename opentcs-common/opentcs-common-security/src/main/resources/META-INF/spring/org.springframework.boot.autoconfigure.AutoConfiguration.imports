@@ -1,0 +1,2 @@
+org.opentcs.common.security.handler.AllUrlHandler
+org.opentcs.common.security.config.SecurityConfig
