@@ -41,7 +41,7 @@
             <!-- 调度模块 -->
             <dependency>
                 <groupId>org.opentcs</groupId>
-                <artifactId>opentcs-common-job</artifactId>
+                <artifactId>opentcs-job</artifactId>
                 <version>${revision}</version>
             </dependency>
 

@@ -34,6 +34,6 @@
         <module>opentcs-common-security</module>
         <module>opentcs-common-sensitive</module>
         <module>opentcs-common-sse</module>
-        <module>opentcs-job</module>
+        <module>opentcs-common-job</module>
     </modules>
 </project>

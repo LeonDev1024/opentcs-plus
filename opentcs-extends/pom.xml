@@ -7,5 +7,11 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
     <artifactId>opentcs-extends</artifactId>
+    <packaging>pom</packaging>
     <name>opentcs-extends</name>
+
+    <modules>
+        <module>opentcs-monitor-admin</module>
+        <module>opentcs-snailjob</module>
+    </modules>
 </project>
