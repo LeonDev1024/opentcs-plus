@@ -9,19 +9,11 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
+        <!-- 核心模块 -->
         <module>opentcs-admin</module>
         <module>opentcs-common</module>
         <module>opentcs-modules</module>
         <module>opentcs-extends</module>
-        <module>opentcs-common/opentcs-job</module>
-        <module>opentcs-common/opentcs-common-translation</module>
-        <module>opentcs-common/opentcs-common-oss</module>
-        <module>opentcs-common/opentcs-common-excel</module>
-        <module>opentcs-common/opentcs-common-sms</module>
-        <module>opentcs-common/opentcs-common-tenant</module>
-        <module>opentcs-common/opentcs-common-security</module>
-        <module>opentcs-common/opentcs-common-sensitive</module>
-        <module>opentcs-common/opentcs-common-sse</module>
     </modules>
 
     <properties>

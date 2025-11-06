@@ -25,5 +25,15 @@
         <module>opentcs-common-social</module>
         <module>opentcs-common-ratelimiter</module>
         <module>opentcs-common-mail</module>
+        <!-- 缺失的模块 -->
+        <module>opentcs-common-translation</module>
+        <module>opentcs-common-oss</module>
+        <module>opentcs-common-excel</module>
+        <module>opentcs-common-sms</module>
+        <module>opentcs-common-tenant</module>
+        <module>opentcs-common-security</module>
+        <module>opentcs-common-sensitive</module>
+        <module>opentcs-common-sse</module>
+        <module>opentcs-job</module>
     </modules>
 </project>
