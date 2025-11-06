@@ -6,6 +6,6 @@
         <artifactId>opentcs-modules</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
-    <artifactId>opentcs-scheduler</artifactId>
-    <name>opentcs-scheduler</name>
+    <artifactId>opentcs-module-map</artifactId>
+    <name>opentcs-module-rcs</name>
 </project>

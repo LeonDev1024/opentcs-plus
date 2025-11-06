@@ -6,6 +6,6 @@
         <artifactId>opentcs-modules</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
-    <artifactId>opentcs-order</artifactId>
-    <name>opentcs-order</name>
+    <artifactId>opentcs-module-job</artifactId>
+    <name>opentcs-module-job</name>
 </project>

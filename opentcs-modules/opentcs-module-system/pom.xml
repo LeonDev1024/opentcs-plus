@@ -6,7 +6,7 @@
         <artifactId>opentcs-modules</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
-    <artifactId>opentcs-system</artifactId>
+    <artifactId>opentcs-module-system</artifactId>
     <name>opentcs-system</name>
 
     <description>

@@ -13,10 +13,6 @@
         <module>opentcs-admin</module>
         <module>opentcs-common</module>
         <module>opentcs-modules</module>
-        <module>opentcs-extends</module>
-        <module>opentcs-extends/opentcs-monitor-admin</module>
-        <module>opentcs-extends/opentcs-snailjob</module>
-        <module>opentcs-common/opentcs-common-job</module>
     </modules>
 
     <properties>
@@ -316,7 +312,7 @@
 
             <dependency>
                 <groupId>org.opentcs</groupId>
-                <artifactId>opentcs-system</artifactId>
+                <artifactId>opentcs-module-system</artifactId>
                 <version>${revision}</version>
             </dependency>
 

@@ -54,7 +54,7 @@
 
         <dependency>
             <groupId>org.opentcs</groupId>
-            <artifactId>opentcs-system</artifactId>
+            <artifactId>opentcs-module-system</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
