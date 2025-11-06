@@ -7,5 +7,33 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
     <artifactId>opentcs-common</artifactId>
+    <packaging>pom</packaging>
     <name>opentcs-common</name>
+    <modules>
+        <module>opentcs-common-bom</module>
+        <module>opentcs-common-core</module>
+        <module>opentcs-common-doc</module>
+        <module>opentcs-common-encrypt</module>
+        <module>opentcs-common-idempotent</module>
+        <module>opentcs-common-redis</module>
+        <module>opentcs-common-json</module>
+        <module>opentcs-common-log</module>
+        <module>opentcs-common-mybatis</module>
+        <module>opentcs-common-satoken</module>
+        <module>opentcs-common-web</module>
+        <module>opentcs-common-websocket</module>
+        <module>opentcs-common-social</module>
+        <module>opentcs-common-ratelimiter</module>
+        <module>opentcs-common-mail</module>
+        <!-- 缺失的模块 -->
+        <module>opentcs-common-translation</module>
+        <module>opentcs-common-oss</module>
+        <module>opentcs-common-excel</module>
+        <module>opentcs-common-sms</module>
+        <module>opentcs-common-tenant</module>
+        <module>opentcs-common-security</module>
+        <module>opentcs-common-sensitive</module>
+        <module>opentcs-common-sse</module>
+        <module>opentcs-common-job</module>
+    </modules>
 </project>
