@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.opentcs.map.mapper.PointMapper">
+
+    <!-- 导航点表映射 -->
+    <resultMap id="pointResultMap" type="org.opentcs.map.domain.entity.Point">
+        <id column="id" property="id"/>
+        <result column="plant_model_id" property="plantModelId"/>
+        <result column="name" property="name"/>
+        <result column="code" property="code"/>
+        <result column="point_type" property="pointType"/>
+        <result column="position" property="position"/>
+        <result column="x_position" property="xPosition"/>
+        <result column="y_position" property="yPosition"/>
+        <result column="z_position" property="zPosition"/>
+        <result column="vehicle_orientation" property="vehicleOrientation"/>
+        <result column="radius" property="radius"/>
+        <result column="functional_type" property="functionalType"/>
+        <result column="room_number" property="roomNumber"/>
+        <result column="department" property="department"/>
+        <result column="properties" property="properties"/>
+        <result column="is_locked" property="locked"/>
+        <result column="lock_holder" property="lockHolder"/>
+        <result column="occupied_by" property="occupiedBy"/>
+        <result column="occupied_time" property="occupiedTime"/>
+        <result column="created_by" property="createdBy"/>
+        <result column="created_time" property="createdTime"/>
+        <result column="updated_by" property="updatedBy"/>
+        <result column="updated_time" property="updatedTime"/>
+        <result column="version" property="version"/>
+    </resultMap>
+    
+    <!-- 基础查询字段 -->
+    <sql id="baseColumns">
+        id, plant_model_id, name, code, point_type, position, x_position, y_position, z_position,
+        vehicle_orientation, radius, functional_type, room_number, department, properties, 
+        is_locked, lock_holder, occupied_by, occupied_time, created_by, created_time, 
+        updated_by, updated_time, version
+    </sql>
+
+</mapper>

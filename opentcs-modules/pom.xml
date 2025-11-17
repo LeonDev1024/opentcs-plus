@@ -12,9 +12,7 @@
     <modules>
         <module>opentcs-module-algorithm</module>
         <module>opentcs-module-driver</module>
-        <module>opentcs-module-job</module>
         <module>opentcs-module-map</module>
-        <module>opentcs-module-monitor</module>
         <module>opentcs-module-system</module>
         <module>opentcs-module-task</module>
         <module>opentcs-module-vehicles</module>
