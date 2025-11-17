@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.opentcs.map.mapper.FunctionAreaMapper">
+
+    <!-- 功能区域表映射 -->
+    <resultMap id="functionAreaResultMap" type="org.opentcs.map.domain.entity.FunctionArea">
+        <id column="id" property="id"/>
+        <result column="plant_model_id" property="plantModelId"/>
+        <result column="name" property="name"/>
+        <result column="code" property="code"/>
+        <result column="area_type" property="areaType"/>
+        <result column="boundary" property="boundary"/>
+        <result column="department" property="department"/>
+        <result column="functional_description" property="functionalDescription"/>
+        <result column="access_level" property="accessLevel"/>
+        <result column="max_capacity" property="maxCapacity"/>
+        <result column="current_occupancy" property="currentOccupancy"/>
+        <result column="properties" property="properties"/>
+        <result column="is_active" property="active"/>
+        <result column="created_by" property="createdBy"/>
+        <result column="created_time" property="createdTime"/>
+        <result column="updated_by" property="updatedBy"/>
+        <result column="updated_time" property="updatedTime"/>
+    </resultMap>
+    
+    <!-- 基础查询字段 -->
+    <sql id="baseColumns">
+        id, plant_model_id, name, code, area_type, boundary, department, functional_description,
+        access_level, max_capacity, current_occupancy, properties, is_active, created_by, 
+        created_time, updated_by, updated_time
+    </sql>
+
+</mapper>

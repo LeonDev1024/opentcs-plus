@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.opentcs.map.mapper.FloorMapper">
+
+    <!-- 楼层表映射 -->
+    <resultMap id="floorResultMap" type="org.opentcs.map.domain.entity.Floor">
+        <id column="id" property="id"/>
+        <result column="building_id" property="buildingId"/>
+        <result column="floor_number" property="floorNumber"/>
+        <result column="floor_code" property="floorCode"/>
+        <result column="floor_name" property="floorName"/>
+        <result column="floor_type" property="floorType"/>
+        <result column="description" property="description"/>
+        <result column="layout_width" property="layoutWidth"/>
+        <result column="layout_height" property="layoutHeight"/>
+        <result column="scale" property="scale"/>
+        <result column="properties" property="properties"/>
+        <result column="is_active" property="active"/>
+        <result column="created_by" property="createdBy"/>
+        <result column="created_time" property="createdTime"/>
+        <result column="updated_by" property="updatedBy"/>
+        <result column="updated_time" property="updatedTime"/>
+    </resultMap>
+    
+    <!-- 基础查询字段 -->
+    <sql id="baseColumns">
+        id, building_id, floor_number, floor_code, floor_name, floor_type, description,
+        layout_width, layout_height, scale, properties, is_active, created_by, created_time, 
+        updated_by, updated_time
+    </sql>
+
+</mapper>

@@ -306,8 +306,8 @@ CREATE INDEX idx_floor_connection_to_plant ON floor_connection(to_plant_model_id
 CREATE INDEX idx_floor_connection_type ON floor_connection(connection_type);
 CREATE INDEX idx_floor_connection_active ON floor_connection(is_active);
 
-# 功能区模型 (FunctionalArea)
-CREATE TABLE functional_area (
+# 功能区模型 (FunctionArea)
+CREATE TABLE function_area (
      id BIGSERIAL PRIMARY KEY,                          -- 区域ID
      plant_model_id BIGINT NOT NULL,                    -- 所属地图ID
      name VARCHAR(100) NOT NULL,                        -- 区域名称
@@ -328,27 +328,27 @@ CREATE TABLE functional_area (
      FOREIGN KEY (plant_model_id) REFERENCES plant_model(id) ON DELETE CASCADE
 );
 
-COMMENT ON TABLE functional_area IS '功能区信息表，用于划分医院内的功能区域';
-COMMENT ON COLUMN functional_area.id IS '区域ID，主键自增';
-COMMENT ON COLUMN functional_area.plant_model_id IS '所属地图ID，外键关联plant_model表';
-COMMENT ON COLUMN functional_area.name IS '区域名称，如：门诊区、住院区、急诊区';
-COMMENT ON COLUMN functional_area.code IS '区域编码，唯一标识符，如：AREA_OPD';
-COMMENT ON COLUMN functional_area.area_type IS '区域类型：OUTPATIENT-门诊, INPATIENT-住院, EMERGENCY-急诊, SURGERY-手术, PHARMACY-药房, ADMIN-行政, RESTRICTED-限制区域';
-COMMENT ON COLUMN functional_area.boundary IS '区域几何边界，PostGIS多边形类型';
-COMMENT ON COLUMN functional_area.department IS '所属科室，如：内科、外科、儿科';
-COMMENT ON COLUMN functional_area.functional_description IS '功能区详细描述';
-COMMENT ON COLUMN functional_area.access_level IS '访问权限级别：PUBLIC-公共, RESTRICTED-限制, STAFF_ONLY-员工专用, AUTHORIZED_ONLY-授权进入';
-COMMENT ON COLUMN functional_area.max_capacity IS '区域最大容量，单位：人或车辆';
-COMMENT ON COLUMN functional_area.current_occupancy IS '当前占用数量';
-COMMENT ON COLUMN functional_area.properties IS '扩展属性，JSON格式，存储区域特殊属性';
-COMMENT ON COLUMN functional_area.is_active IS '是否激活状态';
-COMMENT ON COLUMN functional_area.created_by IS '记录创建人';
-COMMENT ON COLUMN functional_area.created_time IS '记录创建时间';
-COMMENT ON COLUMN functional_area.updated_by IS '最后更新人';
-COMMENT ON COLUMN functional_area.updated_time IS '最后更新时间';
+COMMENT ON TABLE function_area IS '功能区信息表，用于划分医院内的功能区域';
+COMMENT ON COLUMN function_area.id IS '区域ID，主键自增';
+COMMENT ON COLUMN function_area.plant_model_id IS '所属地图ID，外键关联plant_model表';
+COMMENT ON COLUMN function_area.name IS '区域名称，如：门诊区、住院区、急诊区';
+COMMENT ON COLUMN function_area.code IS '区域编码，唯一标识符，如：AREA_OPD';
+COMMENT ON COLUMN function_area.area_type IS '区域类型：OUTPATIENT-门诊, INPATIENT-住院, EMERGENCY-急诊, SURGERY-手术, PHARMACY-药房, ADMIN-行政, RESTRICTED-限制区域';
+COMMENT ON COLUMN function_area.boundary IS '区域几何边界，PostGIS多边形类型';
+COMMENT ON COLUMN function_area.department IS '所属科室，如：内科、外科、儿科';
+COMMENT ON COLUMN function_area.functional_description IS '功能区详细描述';
+COMMENT ON COLUMN function_area.access_level IS '访问权限级别：PUBLIC-公共, RESTRICTED-限制, STAFF_ONLY-员工专用, AUTHORIZED_ONLY-授权进入';
+COMMENT ON COLUMN function_area.max_capacity IS '区域最大容量，单位：人或车辆';
+COMMENT ON COLUMN function_area.current_occupancy IS '当前占用数量';
+COMMENT ON COLUMN function_area.properties IS '扩展属性，JSON格式，存储区域特殊属性';
+COMMENT ON COLUMN function_area.is_active IS '是否激活状态';
+COMMENT ON COLUMN function_area.created_by IS '记录创建人';
+COMMENT ON COLUMN function_area.created_time IS '记录创建时间';
+COMMENT ON COLUMN function_area.updated_by IS '最后更新人';
+COMMENT ON COLUMN function_area.updated_time IS '最后更新时间';
 
 -- 索引
-CREATE INDEX idx_functional_area_plant_model ON functional_area(plant_model_id);
-CREATE INDEX idx_functional_area_boundary ON functional_area USING GIST (boundary);
-CREATE INDEX idx_functional_area_type ON functional_area(area_type);
-CREATE INDEX idx_functional_area_department ON functional_area(department);
+CREATE INDEX idx_function_area_plant_model ON functional_area(plant_model_id);
+CREATE INDEX idx_function_area_boundary ON functional_area USING GIST (boundary);
+CREATE INDEX idx_function_area_type ON functional_area(area_type);
+CREATE INDEX idx_function_area_department ON functional_area(department);
