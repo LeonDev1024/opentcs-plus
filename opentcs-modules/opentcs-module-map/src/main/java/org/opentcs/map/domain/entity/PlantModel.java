@@ -2,15 +2,17 @@ package org.opentcs.map.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
+import org.opentcs.common.mybatis.core.domain.BaseEntity;
+
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  * 地图模型实体类
  */
 @Data
 @TableName("plant_model")
-public class PlantModel {
+public class PlantModel extends BaseEntity {
 
     /**
      * 主键ID
@@ -62,13 +64,13 @@ public class PlantModel {
      * 创建时间
      */
     @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime createdTime;
+    private Date createdTime;
 
     /**
      * 更新时间
      */
     @TableField(fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updatedTime;
+    private Date updatedTime;
 
     /**
      * 版本号

@@ -2,8 +2,12 @@ package org.opentcs.map.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.opentcs.common.core.domain.R;
+import org.opentcs.common.mybatis.core.page.PageQuery;
+import org.opentcs.common.mybatis.core.page.TableDataInfo;
+import org.opentcs.common.web.core.BaseController;
 import org.opentcs.map.domain.entity.PlantModel;
 import org.opentcs.map.service.PlantModelService;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,10 +16,11 @@ import java.util.List;
  * 地图模型管理
  * @author lyc
  */
+@Validated
 @RestController
 @RequestMapping("/map/model")
 @RequiredArgsConstructor
-public class MapModelController {
+public class MapModelController extends BaseController {
 
     private final PlantModelService plantModelService;
 
@@ -23,8 +28,8 @@ public class MapModelController {
      * 查询所有地图模型
      */
     @GetMapping("/list")
-    public R<List<PlantModel>> getAllPlantModels() {
-        return R.ok(plantModelService.list());
+    public TableDataInfo<PlantModel> list(PlantModel plantModel, PageQuery pageQuery) {
+        return plantModelService.selectPagePlantModel(plantModel, pageQuery);
     }
 
     /**
@@ -38,7 +43,7 @@ public class MapModelController {
     /**
      * 创建地图模型
      */
-    @PostMapping("/")
+    @PostMapping("/create")
     public R<Boolean> createPlantModel(@RequestBody PlantModel plantModel) {
         return R.ok(plantModelService.save(plantModel));
     }
