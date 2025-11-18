@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 地图模型 Controller
+ * 地图模型管理
+ * @author lyc
  */
 @RestController
 @RequestMapping("/plant-model")

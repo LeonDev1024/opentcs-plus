@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 位置类型 Controller
+ * 位置类型管理
+ * @author lyc
  */
 @RestController
 @RequestMapping("/location-type")

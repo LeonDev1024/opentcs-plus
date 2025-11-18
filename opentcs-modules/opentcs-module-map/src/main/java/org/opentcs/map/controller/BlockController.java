@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 区块 Controller
+ * 区块管理
+ * @author lyc
  */
 @RestController
 @RequestMapping("/block")

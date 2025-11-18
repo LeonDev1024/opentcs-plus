@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 车辆 Controller
+ * 车辆管理
+ * @author: lyc
  */
 @RestController
 @RequestMapping("/vehicle")
@@ -20,7 +21,7 @@ public class VehicleController {
     /**
      * 查询所有车辆
      */
-    @GetMapping("/")
+    @GetMapping("/getAll")
     public List<Vehicle> getAllVehicles() {
         return vehicleService.list();
     }
@@ -36,7 +37,7 @@ public class VehicleController {
     /**
      * 创建车辆
      */
-    @PostMapping("/")
+    @PostMapping("/create")
     public boolean createVehicle(@RequestBody Vehicle vehicle) {
         return vehicleService.save(vehicle);
     }
@@ -44,7 +45,7 @@ public class VehicleController {
     /**
      * 更新车辆
      */
-    @PutMapping("/")
+    @PutMapping("/update")
     public boolean updateVehicle(@RequestBody Vehicle vehicle) {
         return vehicleService.updateById(vehicle);
     }
@@ -52,7 +53,7 @@ public class VehicleController {
     /**
      * 删除车辆
      */
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public boolean deleteVehicle(@PathVariable Long id) {
         return vehicleService.removeById(id);
     }

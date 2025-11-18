@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 路径 Controller
+ * 路径管理
+ * @author lyc
  */
 @RestController
 @RequestMapping("/path")

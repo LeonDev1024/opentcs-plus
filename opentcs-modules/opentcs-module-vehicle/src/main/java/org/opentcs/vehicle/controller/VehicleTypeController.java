@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 车辆类型 Controller
+ * 车辆类型管理
+ * @author lyc
  */
 @RestController
 @RequestMapping("/vehicle-type")
