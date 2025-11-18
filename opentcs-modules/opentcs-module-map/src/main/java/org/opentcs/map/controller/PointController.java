@@ -8,9 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 导航点控制器
- *
- * @author lyc
+ * 点位 Controller
  */
 @RestController
 @RequestMapping("/point")
@@ -20,56 +18,42 @@ public class PointController {
     private final PointService pointService;
 
     /**
-     * 获取所有导航点
-     *
-     * @return 导航点列表
+     * 查询所有点位
      */
-    @GetMapping("/list")
-    public List<Point> list() {
+    @GetMapping("/")
+    public List<Point> getAllPoints() {
         return pointService.list();
     }
 
     /**
-     * 根据ID获取导航点
-     *
-     * @param id 导航点ID
-     * @return 导航点信息
+     * 根据ID查询点位
      */
     @GetMapping("/{id}")
-    public Point get(@PathVariable Long id) {
+    public Point getPointById(@PathVariable Long id) {
         return pointService.getById(id);
     }
 
     /**
-     * 创建导航点
-     *
-     * @param point 导航点信息
-     * @return 是否成功
+     * 创建点位
      */
-    @PostMapping
-    public boolean create(@RequestBody Point point) {
+    @PostMapping("/")
+    public boolean createPoint(@RequestBody Point point) {
         return pointService.save(point);
     }
 
     /**
-     * 更新导航点
-     *
-     * @param point 导航点信息
-     * @return 是否成功
+     * 更新点位
      */
-    @PutMapping
-    public boolean update(@RequestBody Point point) {
+    @PutMapping("/")
+    public boolean updatePoint(@RequestBody Point point) {
         return pointService.updateById(point);
     }
 
     /**
-     * 删除导航点
-     *
-     * @param id 导航点ID
-     * @return 是否成功
+     * 删除点位
      */
     @DeleteMapping("/{id}")
-    public boolean delete(@PathVariable Long id) {
+    public boolean deletePoint(@PathVariable Long id) {
         return pointService.removeById(id);
     }
 }

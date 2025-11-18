@@ -7,9 +7,7 @@ import org.opentcs.map.service.PointService;
 import org.springframework.stereotype.Service;
 
 /**
- * 导航点服务实现类
- *
- * @author lyc
+ * 点位 Service 实现类
  */
 @Service
 public class PointServiceImpl extends ServiceImpl<PointMapper, Point> implements PointService {

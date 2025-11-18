@@ -41,5 +41,11 @@
             <groupId>p6spy</groupId>
             <artifactId>p6spy</artifactId>
         </dependency>
+
+        <!-- PostgreSQL数据库驱动 -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
     </dependencies>
 </project>

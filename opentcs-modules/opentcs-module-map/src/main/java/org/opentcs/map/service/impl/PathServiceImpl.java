@@ -7,9 +7,7 @@ import org.opentcs.map.service.PathService;
 import org.springframework.stereotype.Service;
 
 /**
- * 路径服务实现类
- *
- * @author lyc
+ * 路径 Service 实现类
  */
 @Service
 public class PathServiceImpl extends ServiceImpl<PathMapper, Path> implements PathService {
