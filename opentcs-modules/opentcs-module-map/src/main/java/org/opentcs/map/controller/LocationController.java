@@ -1,6 +1,7 @@
 package org.opentcs.map.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.opentcs.common.core.domain.R;
 import org.opentcs.map.domain.entity.Location;
 import org.opentcs.map.service.LocationService;
 import org.springframework.web.bind.annotation.*;
@@ -22,39 +23,39 @@ public class LocationController {
      * 查询所有位置
      */
     @GetMapping("/")
-    public List<Location> getAllLocations() {
-        return locationService.list();
+    public R<List<Location>> getAllLocations() {
+        return R.ok(locationService.list());
     }
 
     /**
      * 根据ID查询位置
      */
     @GetMapping("/{id}")
-    public Location getLocationById(@PathVariable Long id) {
-        return locationService.getById(id);
+    public R<Location> getLocationById(@PathVariable Long id) {
+        return R.ok(locationService.getById(id));
     }
 
     /**
      * 创建位置
      */
     @PostMapping("/")
-    public boolean createLocation(@RequestBody Location location) {
-        return locationService.save(location);
+    public R<Boolean> createLocation(@RequestBody Location location) {
+        return R.ok(locationService.save(location));
     }
 
     /**
      * 更新位置
      */
     @PutMapping("/")
-    public boolean updateLocation(@RequestBody Location location) {
-        return locationService.updateById(location);
+    public R<Boolean> updateLocation(@RequestBody Location location) {
+        return R.ok(locationService.updateById(location));
     }
 
     /**
      * 删除位置
      */
     @DeleteMapping("/{id}")
-    public boolean deleteLocation(@PathVariable Long id) {
-        return locationService.removeById(id);
+    public R<Boolean> deleteLocation(@PathVariable Long id) {
+        return R.ok(locationService.removeById(id));
     }
 }

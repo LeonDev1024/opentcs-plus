@@ -1,6 +1,7 @@
 package org.opentcs.map.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.opentcs.common.core.domain.R;
 import org.opentcs.map.domain.entity.Block;
 import org.opentcs.map.service.BlockService;
 import org.springframework.web.bind.annotation.*;
@@ -22,39 +23,39 @@ public class BlockController {
      * 查询所有区块
      */
     @GetMapping("/")
-    public List<Block> getAllBlocks() {
-        return blockService.list();
+    public R<List<Block>> getAllBlocks() {
+        return R.ok(blockService.list());
     }
 
     /**
      * 根据ID查询区块
      */
     @GetMapping("/{id}")
-    public Block getBlockById(@PathVariable Long id) {
-        return blockService.getById(id);
+    public R<Block> getBlockById(@PathVariable Long id) {
+        return R.ok(blockService.getById(id));
     }
 
     /**
      * 创建区块
      */
     @PostMapping("/")
-    public boolean createBlock(@RequestBody Block block) {
-        return blockService.save(block);
+    public R<Boolean> createBlock(@RequestBody Block block) {
+        return R.ok(blockService.save(block));
     }
 
     /**
      * 更新区块
      */
     @PutMapping("/")
-    public boolean updateBlock(@RequestBody Block block) {
-        return blockService.updateById(block);
+    public R<Boolean> updateBlock(@RequestBody Block block) {
+        return R.ok(blockService.updateById(block));
     }
 
     /**
      * 删除区块
      */
     @DeleteMapping("/{id}")
-    public boolean deleteBlock(@PathVariable Long id) {
-        return blockService.removeById(id);
+    public R<Boolean> deleteBlock(@PathVariable Long id) {
+        return R.ok(blockService.removeById(id));
     }
 }
