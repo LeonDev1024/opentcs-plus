@@ -13,16 +13,16 @@ import java.util.List;
  * @author lyc
  */
 @RestController
-@RequestMapping("/plant-model")
+@RequestMapping("/map/model")
 @RequiredArgsConstructor
-public class PlantModelController {
+public class MapModelController {
 
     private final PlantModelService plantModelService;
 
     /**
      * 查询所有地图模型
      */
-    @GetMapping("/")
+    @GetMapping("/list")
     public R<List<PlantModel>> getAllPlantModels() {
         return R.ok(plantModelService.list());
     }
