@@ -1,6 +1,10 @@
 package org.opentcs.vehicle.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.opentcs.common.core.domain.R;
+import org.opentcs.common.mybatis.core.page.PageQuery;
+import org.opentcs.common.mybatis.core.page.TableDataInfo;
+import org.opentcs.common.web.core.BaseController;
 import org.opentcs.vehicle.domain.entity.Vehicle;
 import org.opentcs.vehicle.service.VehicleService;
 import org.springframework.web.bind.annotation.*;
@@ -8,52 +12,61 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 车辆 Controller
+ * 车辆管理
+ * @author: lyc
  */
 @RestController
 @RequestMapping("/vehicle")
 @RequiredArgsConstructor
-public class VehicleController {
+public class VehicleController extends BaseController {
 
     private final VehicleService vehicleService;
 
     /**
+     * 分页查询车辆列表
+     */
+    @GetMapping("/list")
+    public TableDataInfo<Vehicle> listVehicles(Vehicle vehicle, PageQuery pageQuery) {
+        return vehicleService.selectPageVehicle(vehicle, pageQuery);
+    }
+
+    /**
      * 查询所有车辆
      */
-    @GetMapping("/")
-    public List<Vehicle> getAllVehicles() {
-        return vehicleService.list();
+    @GetMapping("/getAll")
+    public R<List<Vehicle>> getAllVehicles() {
+        return R.ok(vehicleService.list());
     }
 
     /**
      * 根据ID查询车辆
      */
     @GetMapping("/{id}")
-    public Vehicle getVehicleById(@PathVariable Long id) {
-        return vehicleService.getById(id);
+    public R<Vehicle> getVehicleById(@PathVariable Long id) {
+        return R.ok(vehicleService.getById(id));
     }
 
     /**
      * 创建车辆
      */
-    @PostMapping("/")
-    public boolean createVehicle(@RequestBody Vehicle vehicle) {
-        return vehicleService.save(vehicle);
+    @PostMapping("/create")
+    public R<Boolean> createVehicle(@RequestBody Vehicle vehicle) {
+        return R.ok(vehicleService.save(vehicle));
     }
 
     /**
      * 更新车辆
      */
-    @PutMapping("/")
-    public boolean updateVehicle(@RequestBody Vehicle vehicle) {
-        return vehicleService.updateById(vehicle);
+    @PutMapping("/update")
+    public R<Boolean> updateVehicle(@RequestBody Vehicle vehicle) {
+        return R.ok(vehicleService.updateById(vehicle));
     }
 
     /**
      * 删除车辆
      */
-    @DeleteMapping("/{id}")
-    public boolean deleteVehicle(@PathVariable Long id) {
-        return vehicleService.removeById(id);
+    @DeleteMapping("/delete/{id}")
+    public R<Boolean> deleteVehicle(@PathVariable Long id) {
+        return R.ok(vehicleService.removeById(id));
     }
 }
