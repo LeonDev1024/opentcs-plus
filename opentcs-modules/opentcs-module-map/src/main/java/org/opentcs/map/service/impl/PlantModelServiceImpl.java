@@ -7,9 +7,7 @@ import org.opentcs.map.service.PlantModelService;
 import org.springframework.stereotype.Service;
 
 /**
- * 地图模型服务实现类
- *
- * @author lyc
+ * 地图模型 Service 实现类
  */
 @Service
 public class PlantModelServiceImpl extends ServiceImpl<PlantModelMapper, PlantModel> implements PlantModelService {

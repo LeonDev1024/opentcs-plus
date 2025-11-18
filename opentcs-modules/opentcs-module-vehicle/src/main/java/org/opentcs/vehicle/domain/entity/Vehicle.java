@@ -1,4 +1,4 @@
-package org.opentcs.map.domain.entity;
+package org.opentcs.vehicle.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
@@ -6,11 +6,11 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 路径实体类
+ * 车辆实体类
  */
 @Data
-@TableName("path")
-public class Path {
+@TableName("vehicle")
+public class Vehicle {
 
     /**
      * 主键ID
@@ -19,54 +19,44 @@ public class Path {
     private Long id;
 
     /**
-     * 所属地图模型ID
-     */
-    private Long plantModelId;
-
-    /**
-     * 路径名称
+     * 车辆名称
      */
     private String name;
 
     /**
-     * 起始点位ID
+     * 车辆类型ID
      */
-    private Long sourcePointId;
+    private Long vehicleTypeId;
 
     /**
-     * 目标点位ID
+     * 当前位置
      */
-    private Long destPointId;
+    private String currentPosition;
 
     /**
-     * 路径长度
+     * 下一个位置
      */
-    private BigDecimal length;
+    private String nextPosition;
 
     /**
-     * 最大允许速度
+     * 车辆状态：UNKNOWN, UNAVAILABLE, IDLE, CHARGING, WORKING, ERROR
      */
-    private BigDecimal maxVelocity;
+    private String state;
 
     /**
-     * 最大反向速度
+     * 集成级别：TO_BE_IGNORED, TO_BE_NOTICED, TO_BE_RESPECTED, TO_BE_UTILIZED
      */
-    private BigDecimal maxReverseVelocity;
+    private String integrationLevel;
 
     /**
-     * 路径方向类型：BIDIRECTIONAL, FORWARD, BACKWARD
+     * 能量级别
      */
-    private String routingType;
+    private BigDecimal energyLevel;
 
     /**
-     * 是否被锁定
+     * 当前运输订单
      */
-    private Boolean locked;
-
-    /**
-     * 是否被阻塞
-     */
-    private Boolean isBlocked;
+    private String currentTransportOrder;
 
     /**
      * 扩展属性

@@ -2,15 +2,14 @@ package org.opentcs.map.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 路径实体类
+ * 区块实体类
  */
 @Data
-@TableName("path")
-public class Path {
+@TableName("block")
+public class Block {
 
     /**
      * 主键ID
@@ -24,49 +23,24 @@ public class Path {
     private Long plantModelId;
 
     /**
-     * 路径名称
+     * 区块名称
      */
     private String name;
 
     /**
-     * 起始点位ID
+     * 区块类型：SINGLE, GROUP
      */
-    private Long sourcePointId;
+    private String type;
 
     /**
-     * 目标点位ID
+     * 区块成员（点位、路径、位置等元素的名称集合）
      */
-    private Long destPointId;
+    private String members;
 
     /**
-     * 路径长度
+     * 区块显示颜色
      */
-    private BigDecimal length;
-
-    /**
-     * 最大允许速度
-     */
-    private BigDecimal maxVelocity;
-
-    /**
-     * 最大反向速度
-     */
-    private BigDecimal maxReverseVelocity;
-
-    /**
-     * 路径方向类型：BIDIRECTIONAL, FORWARD, BACKWARD
-     */
-    private String routingType;
-
-    /**
-     * 是否被锁定
-     */
-    private Boolean locked;
-
-    /**
-     * 是否被阻塞
-     */
-    private Boolean isBlocked;
+    private String color;
 
     /**
      * 扩展属性

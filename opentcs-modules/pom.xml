@@ -14,7 +14,7 @@
         <module>opentcs-module-driver</module>
         <module>opentcs-module-map</module>
         <module>opentcs-module-system</module>
-        <module>opentcs-module-task</module>
-        <module>opentcs-module-vehicles</module>
+        <module>opentcs-module-order</module>
+        <module>opentcs-module-vehicle</module>
     </modules>
 </project>

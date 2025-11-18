@@ -1,4 +1,4 @@
-package org.opentcs.map.domain.entity;
+package org.opentcs.vehicle.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
@@ -6,11 +6,11 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 路径实体类
+ * 车辆类型实体类
  */
 @Data
-@TableName("path")
-public class Path {
+@TableName("vehicle_type")
+public class VehicleType {
 
     /**
      * 主键ID
@@ -19,32 +19,27 @@ public class Path {
     private Long id;
 
     /**
-     * 所属地图模型ID
-     */
-    private Long plantModelId;
-
-    /**
-     * 路径名称
+     * 车辆类型名称
      */
     private String name;
 
     /**
-     * 起始点位ID
-     */
-    private Long sourcePointId;
-
-    /**
-     * 目标点位ID
-     */
-    private Long destPointId;
-
-    /**
-     * 路径长度
+     * 车辆长度
      */
     private BigDecimal length;
 
     /**
-     * 最大允许速度
+     * 车辆宽度
+     */
+    private BigDecimal width;
+
+    /**
+     * 车辆高度
+     */
+    private BigDecimal height;
+
+    /**
+     * 最大速度
      */
     private BigDecimal maxVelocity;
 
@@ -54,19 +49,19 @@ public class Path {
     private BigDecimal maxReverseVelocity;
 
     /**
-     * 路径方向类型：BIDIRECTIONAL, FORWARD, BACKWARD
+     * 能量级别
      */
-    private String routingType;
+    private BigDecimal energyLevel;
 
     /**
-     * 是否被锁定
+     * 允许的订单
      */
-    private Boolean locked;
+    private String allowedOrders;
 
     /**
-     * 是否被阻塞
+     * 允许的外围设备操作
      */
-    private Boolean isBlocked;
+    private String allowedPeripheralOperations;
 
     /**
      * 扩展属性

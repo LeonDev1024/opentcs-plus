@@ -2,125 +2,77 @@ package org.opentcs.map.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 地图模型 plant_model
- * @author lyc
+ * 地图模型实体类
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
 @TableName("plant_model")
 public class PlantModel {
 
     /**
-     * 地图ID
+     * 主键ID
      */
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
     /**
-     * 所属建筑ID
+     * 地图模型名称，唯一标识
      */
-    @TableField("building_id")
-    private Long buildingId;
-
-    /**
-     * 所属楼层ID
-     */
-    @TableField("floor_id")
-    private Long floorId;
-
-    /**
-     * 地图名称
-     */
-    @TableField("name")
     private String name;
 
     /**
-     * 地图版本
+     * 模型版本
      */
-    @TableField("model_version")
     private String modelVersion;
 
     /**
-     * 地图比例尺
+     * 长度单位：mm, cm, m
      */
-    @TableField("scale")
+    private String lengthUnit;
+
+    /**
+     * 比例尺
+     */
     private BigDecimal scale;
 
     /**
-     * 地图布局宽度（米）
+     * 布局宽度
      */
-    @TableField("layout_width")
     private BigDecimal layoutWidth;
 
     /**
-     * 地图布局高度（米）
+     * 布局高度
      */
-    @TableField("layout_height")
     private BigDecimal layoutHeight;
 
     /**
-     * 坐标参考系统
+     * 地图状态：UNLOADED, LOADING, LOADED, LOCKED, ERROR
      */
-    @TableField("crs")
-    private String crs;
-
-    /**
-     * 地图边界
-     */
-    @TableField("bounds")
-    private String bounds;
-
-    /**
-     * 地图状态
-     */
-    @TableField("model_state")
     private String modelState;
-
-    /**
-     * 地图描述
-     */
-    @TableField("description")
-    private String description;
 
     /**
      * 扩展属性
      */
-    @TableField("properties")
     private String properties;
-
-    /**
-     * 创建人
-     */
-    @TableField("created_by")
-    private String createdBy;
 
     /**
      * 创建时间
      */
-    @TableField("created_time")
+    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdTime;
-
-    /**
-     * 更新人
-     */
-    @TableField("updated_by")
-    private String updatedBy;
 
     /**
      * 更新时间
      */
-    @TableField("updated_time")
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedTime;
 
     /**
-     * 版本号（乐观锁）
+     * 版本号
      */
-    @TableField("version")
+    @Version
     private Long version;
 }

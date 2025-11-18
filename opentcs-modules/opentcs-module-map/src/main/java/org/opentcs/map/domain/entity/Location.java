@@ -6,11 +6,11 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 点位实体类
+ * 位置实体类
  */
 @Data
-@TableName("point")
-public class Point {
+@TableName("location")
+public class Location {
 
     /**
      * 主键ID
@@ -24,7 +24,12 @@ public class Point {
     private Long plantModelId;
 
     /**
-     * 点位名称
+     * 位置类型ID
+     */
+    private Long locationTypeId;
+
+    /**
+     * 位置名称
      */
     private String name;
 
@@ -44,29 +49,14 @@ public class Point {
     private BigDecimal zPosition;
 
     /**
-     * 车辆方向角度（弧度）
+     * 车辆方向
      */
     private BigDecimal vehicleOrientation;
-
-    /**
-     * 点位类型：HALT_POSITION, PARK_POSITION, REPORT_POSITION
-     */
-    private String type;
-
-    /**
-     * 点位半径
-     */
-    private BigDecimal radius;
 
     /**
      * 是否被锁定
      */
     private Boolean locked;
-
-    /**
-     * 是否被阻塞
-     */
-    private Boolean isBlocked;
 
     /**
      * 是否被占用

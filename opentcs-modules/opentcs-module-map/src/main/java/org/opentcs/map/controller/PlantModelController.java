@@ -8,9 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 地图模型控制器
- *
- * @author lyc
+ * 地图模型 Controller
  */
 @RestController
 @RequestMapping("/plant-model")
@@ -20,56 +18,42 @@ public class PlantModelController {
     private final PlantModelService plantModelService;
 
     /**
-     * 获取所有地图模型
-     *
-     * @return 地图模型列表
+     * 查询所有地图模型
      */
-    @GetMapping("/list")
-    public List<PlantModel> list() {
+    @GetMapping("/")
+    public List<PlantModel> getAllPlantModels() {
         return plantModelService.list();
     }
 
     /**
-     * 根据ID获取地图模型
-     *
-     * @param id 地图模型ID
-     * @return 地图模型信息
+     * 根据ID查询地图模型
      */
     @GetMapping("/{id}")
-    public PlantModel get(@PathVariable Long id) {
+    public PlantModel getPlantModelById(@PathVariable Long id) {
         return plantModelService.getById(id);
     }
 
     /**
      * 创建地图模型
-     *
-     * @param plantModel 地图模型信息
-     * @return 是否成功
      */
-    @PostMapping
-    public boolean create(@RequestBody PlantModel plantModel) {
+    @PostMapping("/")
+    public boolean createPlantModel(@RequestBody PlantModel plantModel) {
         return plantModelService.save(plantModel);
     }
 
     /**
      * 更新地图模型
-     *
-     * @param plantModel 地图模型信息
-     * @return 是否成功
      */
-    @PutMapping
-    public boolean update(@RequestBody PlantModel plantModel) {
+    @PutMapping("/")
+    public boolean updatePlantModel(@RequestBody PlantModel plantModel) {
         return plantModelService.updateById(plantModel);
     }
 
     /**
      * 删除地图模型
-     *
-     * @param id 地图模型ID
-     * @return 是否成功
      */
     @DeleteMapping("/{id}")
-    public boolean delete(@PathVariable Long id) {
+    public boolean deletePlantModel(@PathVariable Long id) {
         return plantModelService.removeById(id);
     }
 }

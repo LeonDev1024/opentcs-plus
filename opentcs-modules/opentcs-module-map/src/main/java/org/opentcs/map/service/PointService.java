@@ -4,9 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import org.opentcs.map.domain.entity.Point;
 
 /**
- * 导航点服务接口
- *
- * @author lyc
+ * 点位 Service 接口
  */
 public interface PointService extends IService<Point> {
 
