@@ -1,6 +1,7 @@
 package org.opentcs.map.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.opentcs.common.core.domain.R;
 import org.opentcs.map.domain.entity.Point;
 import org.opentcs.map.service.PointService;
 import org.springframework.web.bind.annotation.*;
@@ -22,8 +23,8 @@ public class PointController {
      * 查询所有点位
      */
     @GetMapping("/")
-    public List<Point> getAllPoints() {
-        return pointService.list();
+    public R<List<Point>> getAllPoints() {
+        return R.ok(pointService.list());
     }
 
     /**
