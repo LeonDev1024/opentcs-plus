@@ -150,6 +150,13 @@
                 <artifactId>opentcs-common-websocket</artifactId>
                 <version>${revision}</version>
             </dependency>
+
+            <!-- PostgreSQL驱动 -->
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>42.7.4</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>
