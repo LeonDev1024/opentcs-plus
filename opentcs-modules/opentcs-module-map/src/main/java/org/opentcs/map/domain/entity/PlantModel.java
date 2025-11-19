@@ -5,7 +5,6 @@ import lombok.Data;
 import org.opentcs.common.mybatis.core.domain.BaseEntity;
 
 import java.math.BigDecimal;
-import java.util.Date;
 
 /**
  * 地图模型实体类
@@ -61,20 +60,38 @@ public class PlantModel extends BaseEntity {
     private String properties;
 
     /**
-     * 创建时间
-     */
-    @TableField(fill = FieldFill.INSERT)
-    private Date createdTime;
-
-    /**
-     * 更新时间
-     */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private Date updatedTime;
-
-    /**
      * 版本号
      */
     @Version
     private Long version;
+    
+    /**
+     * 创建部门
+     */
+    @TableField(exist = false)
+    private Long createDept;
+
+    /**
+     * 创建者
+     */
+    @TableField(exist = false)
+    private Long createBy;
+
+    /**
+     * 创建时间
+     */
+    @TableField(exist = false)
+    private java.util.Date createTime;
+
+    /**
+     * 更新者
+     */
+    @TableField(exist = false)
+    private Long updateBy;
+
+    /**
+     * 更新时间
+     */
+    @TableField(exist = false)
+    private java.util.Date updateTime;
 }
