@@ -1,6 +1,7 @@
 package org.opentcs.map.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.map.domain.entity.PlantModel;
@@ -16,6 +17,7 @@ public class PlantModelServiceImpl extends ServiceImpl<PlantModelMapper, PlantMo
 
     @Override
     public TableDataInfo<PlantModel> selectPagePlantModel(PlantModel plantModel, PageQuery pageQuery) {
-        return this.getBaseMapper().selectPagePlantModel(plantModel, pageQuery);
+        IPage<PlantModel> page = this.getBaseMapper().selectPagePlantModel(pageQuery.build(), plantModel);
+        return TableDataInfo.build(page);
     }
 }
