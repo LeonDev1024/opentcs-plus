@@ -2,16 +2,16 @@ package org.opentcs.map.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
-import org.opentcs.common.mybatis.core.domain.BaseEntity;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * 地图模型实体类
  */
 @Data
 @TableName("plant_model")
-public class PlantModel extends BaseEntity {
+public class PlantModel {
 
     /**
      * 主键ID
@@ -60,38 +60,20 @@ public class PlantModel extends BaseEntity {
     private String properties;
 
     /**
-     * 版本号
-     */
-    @Version
-    private Long version;
-    
-    /**
-     * 创建部门
-     */
-    @TableField(exist = false)
-    private Long createDept;
-
-    /**
-     * 创建者
-     */
-    @TableField(exist = false)
-    private Long createBy;
-
-    /**
      * 创建时间
      */
-    @TableField(exist = false)
-    private java.util.Date createTime;
-
-    /**
-     * 更新者
-     */
-    @TableField(exist = false)
-    private Long updateBy;
+    @TableField(value = "created_time", fill = FieldFill.INSERT)
+    private Date createTime;
 
     /**
      * 更新时间
      */
-    @TableField(exist = false)
-    private java.util.Date updateTime;
+    @TableField(value = "updated_time", fill = FieldFill.INSERT_UPDATE)
+    private Date updateTime;
+
+    /**
+     * 版本号
+     */
+    @Version
+    private Long version;
 }
