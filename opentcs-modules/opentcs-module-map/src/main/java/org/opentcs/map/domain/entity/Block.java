@@ -2,14 +2,18 @@ package org.opentcs.map.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.opentcs.common.mybatis.core.domain.BaseEntity;
+
 import java.time.LocalDateTime;
 
 /**
  * 区块实体类
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 @TableName("block")
-public class Block {
+public class Block extends BaseEntity {
 
     /**
      * 主键ID
@@ -47,15 +51,4 @@ public class Block {
      */
     private String properties;
 
-    /**
-     * 创建时间
-     */
-    @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime createdTime;
-
-    /**
-     * 更新时间
-     */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updatedTime;
 }
