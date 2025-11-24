@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.opentcs.map.mapper.VisualLayoutMapper">
+
+    <select id="selectPageVisualLayout" resultType="org.opentcs.map.domain.entity.VisualLayout">
+        SELECT * FROM visual_layout
+        <where>
+            <if test="visualLayout.name != null and visualLayout.name != ''">AND name LIKE CONCAT('%', #{visualLayout.name}, '%')</if>
+            <if test="visualLayout.plantModelId != null">AND plant_model_id = #{visualLayout.plantModelId}</if>
+        </where>
+    </select>
+
+</mapper>

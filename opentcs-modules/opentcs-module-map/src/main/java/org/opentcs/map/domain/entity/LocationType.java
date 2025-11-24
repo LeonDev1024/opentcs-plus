@@ -20,7 +20,7 @@ public class LocationType {
     /**
      * 所属地图模型ID
      */
-    private Long plantModelId;
+    private String plantModelId;
 
     /**
      * 位置类型名称

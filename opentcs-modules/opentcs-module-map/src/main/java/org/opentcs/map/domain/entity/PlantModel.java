@@ -1,23 +1,29 @@
 package org.opentcs.map.domain.entity;
 
+import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
-import org.opentcs.common.mybatis.core.domain.BaseEntity;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * 地图模型实体类
  */
 @Data
 @TableName("plant_model")
-public class PlantModel extends BaseEntity {
+public class PlantModel {
 
     /**
      * 主键ID
      */
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
+
+    /**
+     * 地图模型ID, 系统生成随机的字符串
+     */
+    private String plantModelId;
 
     /**
      * 地图模型名称，唯一标识
@@ -60,38 +66,25 @@ public class PlantModel extends BaseEntity {
     private String properties;
 
     /**
-     * 版本号
-     */
-    @Version
-    private Long version;
-    
-    /**
-     * 创建部门
-     */
-    @TableField(exist = false)
-    private Long createDept;
-
-    /**
-     * 创建者
-     */
-    @TableField(exist = false)
-    private Long createBy;
-
-    /**
      * 创建时间
      */
-    @TableField(exist = false)
-    private java.util.Date createTime;
-
-    /**
-     * 更新者
-     */
-    @TableField(exist = false)
-    private Long updateBy;
+    @TableField(value = "create_time", fill = FieldFill.INSERT)
+    private Date createTime;
 
     /**
      * 更新时间
      */
-    @TableField(exist = false)
-    private java.util.Date updateTime;
+    @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
+    private Date updateTime;
+
+    /**
+     * 版本号，这个字段主要作为数据库乐观锁的
+     */
+    @Version
+    private Long version;
+
+    /**
+     * 增加描述字段，用于描述地图模型
+     */
+    private String description;
 }

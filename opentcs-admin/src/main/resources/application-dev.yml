@@ -68,7 +68,7 @@ spring:
 spring.data:
   redis:
     # 地址
-    host: 192.168.100.122
+    host: 106.54.43.41
     # 端口，默认为6379
     port: 6379
     # 数据库索引
