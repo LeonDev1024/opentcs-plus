@@ -2,14 +2,15 @@ package org.opentcs.map.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 区块实体类
+ * 视觉布局实体类
  */
 @Data
-@TableName("block")
-public class Block {
+@TableName("visual_layout")
+public class VisualLayout {
 
     /**
      * 主键ID
@@ -18,34 +19,24 @@ public class Block {
     private Long id;
 
     /**
-     * 所属地图模型ID
-     */
-    private String plantModelId;
-
-    /**
-     * 区块名称
+     * 视觉布局名称
      */
     private String name;
 
     /**
-     * 区块类型：SINGLE, GROUP
+     * 关联的地图模型ID
      */
-    private String type;
+    private Long plantModelId;
 
     /**
-     * 区块成员（点位、路径、位置等元素的名称集合）
+     * X轴缩放比例
      */
-    private String members;
+    private BigDecimal scaleX;
 
     /**
-     * 区块显示颜色
+     * Y轴缩放比例
      */
-    private String color;
-
-    /**
-     * 扩展属性
-     */
-    private String properties;
+    private BigDecimal scaleY;
 
     /**
      * 创建时间

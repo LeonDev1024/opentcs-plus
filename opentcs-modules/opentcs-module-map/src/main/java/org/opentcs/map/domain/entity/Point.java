@@ -21,7 +21,7 @@ public class Point {
     /**
      * 所属地图模型ID
      */
-    private Long plantModelId;
+    private String plantModelId;
 
     /**
      * 点位名称

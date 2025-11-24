@@ -10,8 +10,6 @@ import org.opentcs.map.service.PlantModelService;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 /**
  * 地图模型管理
  * @author lyc
@@ -20,7 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/map/model")
 @RequiredArgsConstructor
-public class MapModelController extends BaseController {
+public class PlantModelController extends BaseController {
 
     private final PlantModelService plantModelService;
 

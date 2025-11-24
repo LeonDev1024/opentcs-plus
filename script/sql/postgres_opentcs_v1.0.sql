@@ -1,6 +1,7 @@
 -- OpenTCS 地图模型表 (核心表)
 CREATE TABLE plant_model (
     id BIGSERIAL PRIMARY KEY,
+    plant_model_id VARCHAR(255) NOT NULL UNIQUE,
     name VARCHAR(255) NOT NULL UNIQUE,
     model_version VARCHAR(50) NOT NULL DEFAULT '1.0',
     -- 地图属性
@@ -18,6 +19,7 @@ CREATE TABLE plant_model (
 );
 
 COMMENT ON TABLE plant_model IS 'OpenTCS地图模型表';
+COMMENT ON COLUMN plant_model.plant_model_id IS '地图模型唯一标识符';
 COMMENT ON COLUMN plant_model.name IS '地图模型名称，唯一标识';
 COMMENT ON COLUMN plant_model.model_version IS '模型版本';
 COMMENT ON COLUMN plant_model.length_unit IS '长度单位：mm, cm, m';
@@ -30,7 +32,7 @@ COMMENT ON COLUMN plant_model.properties IS '扩展属性';
 -- 点位表 (Point)
 CREATE TABLE point (
     id BIGSERIAL PRIMARY KEY,
-    plant_model_id BIGINT NOT NULL,
+    plant_model_id VARCHAR(255) NOT NULL,
     name VARCHAR(255) NOT NULL,
     -- 坐标信息
     x_position DECIMAL(12, 4) NOT NULL,
@@ -50,7 +52,7 @@ CREATE TABLE point (
     -- 审计字段
     created_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (plant_model_id) REFERENCES plant_model(id) ON DELETE CASCADE,
+    FOREIGN KEY (plant_model_id) REFERENCES plant_model(plant_model_id) ON DELETE CASCADE,
     CONSTRAINT uk_point_plant_model_name UNIQUE (plant_model_id, name)
 );
 
@@ -69,7 +71,7 @@ COMMENT ON COLUMN point.is_occupied IS '是否被占用';
 -- 路径表 (Path)
 CREATE TABLE path (
      id BIGSERIAL PRIMARY KEY,
-     plant_model_id BIGINT NOT NULL,
+     plant_model_id VARCHAR(255) NOT NULL,
      name VARCHAR(255) NOT NULL,
      source_point_id BIGINT NOT NULL,
      dest_point_id BIGINT NOT NULL,
@@ -86,7 +88,7 @@ CREATE TABLE path (
     -- 审计字段
      created_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
      updated_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-     FOREIGN KEY (plant_model_id) REFERENCES plant_model(id) ON DELETE CASCADE,
+     FOREIGN KEY (plant_model_id) REFERENCES plant_model(plant_model_id) ON DELETE CASCADE,
      FOREIGN KEY (source_point_id) REFERENCES point(id) ON DELETE CASCADE,
      FOREIGN KEY (dest_point_id) REFERENCES point(id) ON DELETE CASCADE,
      CONSTRAINT uk_path_plant_model_name UNIQUE (plant_model_id, name)
@@ -106,7 +108,7 @@ COMMENT ON COLUMN path.is_blocked IS '是否被阻塞';
 -- 位置类型表 (LocationType)
 CREATE TABLE location_type (
      id BIGSERIAL PRIMARY KEY,
-     plant_model_id BIGINT NOT NULL,
+     plant_model_id VARCHAR(255) NOT NULL,
      name VARCHAR(255) NOT NULL,
     -- 操作权限
      allowed_operations JSONB,
@@ -116,7 +118,7 @@ CREATE TABLE location_type (
     -- 审计字段
      created_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
      updated_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-     FOREIGN KEY (plant_model_id) REFERENCES plant_model(id) ON DELETE CASCADE,
+     FOREIGN KEY (plant_model_id) REFERENCES plant_model(plant_model_id) ON DELETE CASCADE,
      CONSTRAINT uk_location_type_plant_model_name UNIQUE (plant_model_id, name)
 );
 
@@ -128,7 +130,7 @@ COMMENT ON COLUMN location_type.allowed_peripheral_operations IS '允许的外�
 -- 位置表 (Location)
 CREATE TABLE location (
      id BIGSERIAL PRIMARY KEY,
-     plant_model_id BIGINT NOT NULL,
+     plant_model_id VARCHAR(255) NOT NULL,
      location_type_id BIGINT NOT NULL,
      name VARCHAR(255) NOT NULL,
     -- 坐标信息
@@ -145,7 +147,7 @@ CREATE TABLE location (
     -- 审计字段
      created_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
      updated_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-     FOREIGN KEY (plant_model_id) REFERENCES plant_model(id) ON DELETE CASCADE,
+     FOREIGN KEY (plant_model_id) REFERENCES plant_model(plant_model_id) ON DELETE CASCADE,
      FOREIGN KEY (location_type_id) REFERENCES location_type(id) ON DELETE CASCADE,
      CONSTRAINT uk_location_plant_model_name UNIQUE (plant_model_id, name)
 );
@@ -162,7 +164,7 @@ COMMENT ON COLUMN location.is_occupied IS '是否被占用';
 -- 区块表 (Block)
 CREATE TABLE block (
      id BIGSERIAL PRIMARY KEY,
-     plant_model_id BIGINT NOT NULL,
+     plant_model_id VARCHAR(255) NOT NULL,
      name VARCHAR(255) NOT NULL,
      type VARCHAR(50) NOT NULL DEFAULT 'SINGLE',
     -- 区块成员
@@ -173,7 +175,7 @@ CREATE TABLE block (
     -- 审计字段
      created_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
      updated_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-     FOREIGN KEY (plant_model_id) REFERENCES plant_model(id) ON DELETE CASCADE,
+     FOREIGN KEY (plant_model_id) REFERENCES plant_model(plant_model_id) ON DELETE CASCADE,
      CONSTRAINT uk_block_plant_model_name UNIQUE (plant_model_id, name)
 );
 
@@ -183,89 +185,60 @@ COMMENT ON COLUMN block.type IS '区块类型：SINGLE, GROUP';
 COMMENT ON COLUMN block.members IS '区块成员（点位、路径、位置等元素的名称集合）';
 COMMENT ON COLUMN block.color IS '区块显示颜色';
 
--- 车辆类型表 (VehicleType)
-CREATE TABLE vehicle_type (
-     id BIGSERIAL PRIMARY KEY,
-     name VARCHAR(255) NOT NULL UNIQUE,
-    -- 车辆尺寸
-     length DECIMAL(8, 4) NOT NULL,
-     width DECIMAL(8, 4) NOT NULL,
-     height DECIMAL(8, 4) NOT NULL,
-    -- 性能参数
-    max_velocity DECIMAL(8, 4) NOT NULL,
-    max_reverse_velocity DECIMAL(8, 4),
-    energy_level DECIMAL(8, 4),
-    -- 操作能力
-    allowed_orders JSONB,
-    allowed_peripheral_operations JSONB,
-    -- 扩展属性
-    properties JSONB,
-    -- 审计字段
-    created_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    updated_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
-);
-
-COMMENT ON TABLE vehicle_type IS '车辆类型表';
-COMMENT ON COLUMN vehicle_type.name IS '车辆类型名称';
-COMMENT ON COLUMN vehicle_type.length IS '车辆长度';
-COMMENT ON COLUMN vehicle_type.width IS '车辆宽度';
-COMMENT ON COLUMN vehicle_type.height IS '车辆高度';
-COMMENT ON COLUMN vehicle_type.max_velocity IS '最大速度';
-COMMENT ON COLUMN vehicle_type.max_reverse_velocity IS '最大反向速度';
-COMMENT ON COLUMN vehicle_type.energy_level IS '能量级别';
-
--- 车辆表 (Vehicle)
-CREATE TABLE vehicle (
+-- 图层组表 (LayerGroup)
+CREATE TABLE layer_group (
     id BIGSERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL UNIQUE,
-    vehicle_type_id BIGINT NOT NULL,
-    -- 车辆状态
-    current_position VARCHAR(255),
-    next_position VARCHAR(255),
-    state VARCHAR(50) DEFAULT 'UNKNOWN',
-    integration_level VARCHAR(50) DEFAULT 'TO_BE_IGNORED',
-    -- 能源和进程
-    energy_level DECIMAL(8, 4),
-    current_transport_order VARCHAR(255),
+    plant_model_id VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    -- 可视化属性
+    visible BOOLEAN DEFAULT TRUE,
+    ordinal INTEGER DEFAULT 0,
     -- 扩展属性
     properties JSONB,
     -- 审计字段
     created_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (vehicle_type_id) REFERENCES vehicle_type(id)
+    FOREIGN KEY (plant_model_id) REFERENCES plant_model(plant_model_id) ON DELETE CASCADE,
+    CONSTRAINT uk_layer_group_plant_model_name UNIQUE (plant_model_id, name)
 );
 
-COMMENT ON TABLE vehicle IS '车辆表';
-COMMENT ON COLUMN vehicle.name IS '车辆名称';
-COMMENT ON COLUMN vehicle.state IS '车辆状态：UNKNOWN, UNAVAILABLE, IDLE, CHARGING, WORKING, ERROR';
-COMMENT ON COLUMN vehicle.integration_level IS '集成级别：TO_BE_IGNORED, TO_BE_NOTICED, TO_BE_RESPECTED, TO_BE_UTILIZED';
-COMMENT ON COLUMN vehicle.energy_level IS '能量级别';
-COMMENT ON COLUMN vehicle.current_transport_order IS '当前运输订单';
+COMMENT ON TABLE layer_group IS '图层组表';
+COMMENT ON COLUMN layer_group.name IS '图层组名称';
+COMMENT ON COLUMN layer_group.visible IS '是否可见';
+COMMENT ON COLUMN layer_group.ordinal IS '显示顺序';
 
--- 运输订单表 (TransportOrder)
-CREATE TABLE transport_order (
-     id BIGSERIAL PRIMARY KEY,
-     name VARCHAR(255) NOT NULL UNIQUE,
-    -- 订单状态
-     state VARCHAR(50) DEFAULT 'RAW',
-     intended_vehicle VARCHAR(255),
-     processing_vehicle VARCHAR(255),
-    -- 订单内容
-     destinations JSONB NOT NULL,
-    -- 时间管理
-     creation_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-     finished_time TIMESTAMPTZ,
-     deadline TIMESTAMPTZ,
+-- 图层表 (Layer)
+CREATE TABLE layer (
+    id BIGSERIAL PRIMARY KEY,
+    plant_model_id VARCHAR(255) NOT NULL,
+    layer_group_id BIGINT,
+    name VARCHAR(255) NOT NULL,
+    -- 可视化属性
+    visible BOOLEAN DEFAULT TRUE,
+    ordinal INTEGER DEFAULT 0,
     -- 扩展属性
-     properties JSONB,
-     FOREIGN KEY (intended_vehicle) REFERENCES vehicle(name),
-     FOREIGN KEY (processing_vehicle) REFERENCES vehicle(name)
+    properties JSONB,
+    -- 审计字段
+    created_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (plant_model_id) REFERENCES plant_model(plant_model_id) ON DELETE CASCADE,
+    FOREIGN KEY (layer_group_id) REFERENCES layer_group(id) ON DELETE SET NULL,
+    CONSTRAINT uk_layer_plant_model_name UNIQUE (plant_model_id, name)
 );
 
-COMMENT ON TABLE transport_order IS '运输订单表';
-COMMENT ON COLUMN transport_order.name IS '订单名称';
-COMMENT ON COLUMN transport_order.state IS '订单状态：RAW, ACTIVE, FINISHED, FAILED';
-COMMENT ON COLUMN transport_order.destinations IS '目的地序列';
-COMMENT ON COLUMN transport_order.creation_time IS '创建时间';
-COMMENT ON COLUMN transport_order.finished_time IS '完成时间';
-COMMENT ON COLUMN transport_order.deadline IS '截止时间';
+COMMENT ON TABLE layer IS '图层表';
+COMMENT ON COLUMN layer.name IS '图层名称';
+COMMENT ON COLUMN layer.visible IS '是否可见';
+COMMENT ON COLUMN layer.ordinal IS '显示顺序';
+
+-- 视觉布局表 (VisualLayout)
+CREATE TABLE visual_layout (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL COMMENT '视觉布局名称 (如 "Default Layout")',
+    plant_model_id VARCHAR(255) NOT NULL COMMENT '关联的地图模型ID (外键指向 plant_model.plant_model_id)',
+    scale_x DECIMAL(10, 6) NOT NULL DEFAULT 50.0 COMMENT 'X轴缩放比例 (单位: 像素/单位)',
+    scale_y DECIMAL(10, 6) NOT NULL DEFAULT 50.0 COMMENT 'Y轴缩放比例 (单位: 像素/单位)',
+    created_time TIMESTAMPTZ NOT NULL DEFAULT NOW() COMMENT '创建时间 (UTC)',
+    updated_time TIMESTAMPTZ NOT NULL DEFAULT NOW() COMMENT '最后更新时间 (UTC)',
+    FOREIGN KEY (plant_model_id) REFERENCES plant_model(plant_model_id) ON DELETE CASCADE
+) COMMENT = '存储地图的视觉布局配置';

@@ -1,5 +1,6 @@
 package org.opentcs.map.domain.entity;
 
+import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
@@ -18,6 +19,11 @@ public class PlantModel {
      */
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
+
+    /**
+     * 地图模型ID, 系统生成随机的字符串
+     */
+    private String plantModelId;
 
     /**
      * 地图模型名称，唯一标识
@@ -62,17 +68,17 @@ public class PlantModel {
     /**
      * 创建时间
      */
-    @TableField(value = "created_time", fill = FieldFill.INSERT)
+    @TableField(value = "create_time", fill = FieldFill.INSERT)
     private Date createTime;
 
     /**
      * 更新时间
      */
-    @TableField(value = "updated_time", fill = FieldFill.INSERT_UPDATE)
+    @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
 
     /**
-     * 版本号
+     * 版本号，这个字段主要作为数据库乐观锁的
      */
     @Version
     private Long version;
