@@ -82,4 +82,9 @@ public class PlantModel {
      */
     @Version
     private Long version;
+
+    /**
+     * 增加描述字段，用于描述地图模型
+     */
+    private String description;
 }

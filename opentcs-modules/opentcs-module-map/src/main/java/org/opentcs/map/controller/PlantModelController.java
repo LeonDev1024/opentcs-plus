@@ -49,7 +49,7 @@ public class PlantModelController extends BaseController {
     /**
      * 更新地图模型
      */
-    @PutMapping("/")
+    @PutMapping("/update")
     public R<Boolean> updatePlantModel(@RequestBody PlantModel plantModel) {
         return R.ok(plantModelService.updateById(plantModel));
     }
