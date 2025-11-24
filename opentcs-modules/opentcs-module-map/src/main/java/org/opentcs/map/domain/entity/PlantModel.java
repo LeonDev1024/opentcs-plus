@@ -1,6 +1,5 @@
 package org.opentcs.map.domain.entity;
 
-import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
