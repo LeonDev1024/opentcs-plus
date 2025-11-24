@@ -2,15 +2,19 @@ package org.opentcs.map.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.opentcs.common.mybatis.core.domain.BaseEntity;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
  * 位置实体类
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 @TableName("location")
-public class Location {
+public class Location extends BaseEntity {
 
     /**
      * 主键ID
@@ -72,16 +76,4 @@ public class Location {
      * 扩展属性
      */
     private String properties;
-
-    /**
-     * 创建时间
-     */
-    @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime createdTime;
-
-    /**
-     * 更新时间
-     */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updatedTime;
 }

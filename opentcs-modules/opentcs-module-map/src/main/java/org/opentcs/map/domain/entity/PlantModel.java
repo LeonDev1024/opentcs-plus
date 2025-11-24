@@ -1,18 +1,19 @@
 package org.opentcs.map.domain.entity;
 
-import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.opentcs.common.mybatis.core.domain.BaseEntity;
 
 import java.math.BigDecimal;
-import java.util.Date;
 
 /**
  * 地图模型实体类
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 @TableName("plant_model")
-public class PlantModel {
+public class PlantModel extends BaseEntity {
 
     /**
      * 主键ID
@@ -64,18 +65,6 @@ public class PlantModel {
      * 扩展属性
      */
     private String properties;
-
-    /**
-     * 创建时间
-     */
-    @TableField(value = "create_time", fill = FieldFill.INSERT)
-    private Date createTime;
-
-    /**
-     * 更新时间
-     */
-    @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
-    private Date updateTime;
 
     /**
      * 版本号，这个字段主要作为数据库乐观锁的
