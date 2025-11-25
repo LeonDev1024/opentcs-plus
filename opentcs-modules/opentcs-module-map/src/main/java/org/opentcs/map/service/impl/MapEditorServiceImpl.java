@@ -29,7 +29,7 @@ public class MapEditorServiceImpl implements IMapEditorService {
             return null;
         }
         PlantModelBO plantModelBO = new PlantModelBO();
-        plantModelBO.setPlantModel(plantModel);
+        plantModelBO.setMapInfo(plantModel);
         return plantModelBO;
     }
 }

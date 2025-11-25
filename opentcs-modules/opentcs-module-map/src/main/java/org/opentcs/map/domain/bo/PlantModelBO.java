@@ -20,7 +20,7 @@ public class PlantModelBO implements Serializable {
     /**
      * 地图模型信息
      */
-    private PlantModel plantModel;
+    private PlantModel mapInfo;
 
     /**
      * 导航点集合
