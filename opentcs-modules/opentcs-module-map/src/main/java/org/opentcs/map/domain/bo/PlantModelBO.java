@@ -4,15 +4,23 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.opentcs.map.domain.entity.*;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Set;
 
 /**
  * 地图模型BO
  */
-@EqualsAndHashCode(callSuper = true)
 @Data
-public class PlantModelBO extends PlantModel implements Serializable {
+public class PlantModelBO implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * 地图模型信息
+     */
+    private PlantModel plantModel;
 
     /**
      * 导航点集合
