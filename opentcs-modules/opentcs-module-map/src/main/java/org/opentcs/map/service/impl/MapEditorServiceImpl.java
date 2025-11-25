@@ -10,6 +10,7 @@ import org.opentcs.map.service.PlantModelService;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -19,19 +20,16 @@ public class MapEditorServiceImpl implements IMapEditorService {
     private final PlantModelService plantModelService;
     @Override
     public PlantModelBO load(LoadModelVO loadModelVO) {
-        // Query by plantModelId (the string identifier) instead of id (the numeric primary key)
-        List<PlantModel> plantModels = plantModelService.list(
-            new LambdaQueryWrapper<PlantModel>()
-                .eq(PlantModel::getPlantModelId, 3)
-        );
+        LambdaQueryWrapper<PlantModel> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(PlantModel::getPlantModelId, loadModelVO.getPlantModelId());
+        PlantModel plantModel = plantModelService.getOne(queryWrapper);
         
-        Optional<PlantModel> plantModel = plantModels.stream().findFirst();
-        if (plantModel.isEmpty()) {
+        if (Objects.isNull(plantModel)) {
             log.error("地图模型不存在");
             return null;
         }
         PlantModelBO plantModelBO = new PlantModelBO();
-        plantModelBO.setPlantModel(plantModel.get());
+        plantModelBO.setPlantModel(plantModel);
         return plantModelBO;
     }
 }
