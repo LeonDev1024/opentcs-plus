@@ -19,7 +19,23 @@ public class PlantModelBO implements Serializable {
     /**
      * 地图模型信息
      */
-    private PlantModel mapInfo;
+    private Long plantModelId;
+
+    /**
+     * 语义拓扑地图id
+     */
+    private String mapId;
+
+    /**
+     * 地图模型名称，唯一标识
+     */
+    private String name;
+
+    /**
+     * 模型版本
+     */
+    private String modelVersion;
+
 
     /**
      * 导航点集合
