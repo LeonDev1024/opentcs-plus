@@ -34,11 +34,13 @@ public class PlantModelServiceImpl extends ServiceImpl<PlantModelMapper, PlantMo
         // 校验地图名称是否存在
         boolean isExist = this.getBaseMapper().selectCount(new LambdaQueryWrapper<>(PlantModel.class)
                         .eq(PlantModel::getName, plantModel.getName())
+                        .eq(PlantModel::getModelVersion, "1.0")
                         .eq(PlantModel::getDelFlag, "0")) > 0;
         if (isExist) {
             throw new RuntimeException("地图名称已存在");
         }
         plantModel.setMapId(IdUtil.fastSimpleUUID());
+        plantModel.setModelVersion("1.0");
 
         this.save(plantModel);
 

@@ -112,7 +112,6 @@ COMMENT ON COLUMN path.is_blocked IS '是否被阻塞';
 -- 位置类型表 (LocationType)
 CREATE TABLE location_type (
     id BIGSERIAL PRIMARY KEY,
-    plant_model_id BIGINT NOT NULL,
     name VARCHAR(255) NOT NULL,
     -- 操作权限
     allowed_operations JSONB,
