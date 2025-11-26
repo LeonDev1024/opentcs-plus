@@ -25,7 +25,7 @@ public class Point extends BaseEntity {
     /**
      * 所属地图模型ID
      */
-    private String plantModelId;
+    private Long plantModelId;
 
     /**
      * 点位名称

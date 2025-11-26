@@ -24,7 +24,7 @@ public class Block extends BaseEntity {
     /**
      * 所属地图模型ID
      */
-    private String plantModelId;
+    private Long plantModelId;
 
     /**
      * 区块名称

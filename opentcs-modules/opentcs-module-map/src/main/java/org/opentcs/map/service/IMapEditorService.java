@@ -6,4 +6,6 @@ import org.opentcs.map.domain.vo.LoadModelVO;
 public interface IMapEditorService {
 
     PlantModelBO load(LoadModelVO loadModelVO);
+
+    boolean save(PlantModelBO plantModelBO);
 }

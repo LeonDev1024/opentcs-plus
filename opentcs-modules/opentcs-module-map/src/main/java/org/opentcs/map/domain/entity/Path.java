@@ -25,7 +25,7 @@ public class Path extends BaseEntity {
     /**
      * 所属地图模型ID
      */
-    private String plantModelId;
+    private Long plantModelId;
 
     /**
      * 路径名称

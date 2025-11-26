@@ -1,5 +1,7 @@
 package org.opentcs.map.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opentcs.map.domain.bo.PlantModelBO;
@@ -7,13 +9,11 @@ import org.opentcs.map.domain.bo.VisualLayoutBO;
 import org.opentcs.map.domain.entity.*;
 import org.opentcs.map.domain.vo.LoadModelVO;
 import org.opentcs.map.service.*;
+import org.opentcs.map.utils.ModelVersionUtil;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -60,5 +60,55 @@ public class MapEditorServiceImpl implements IMapEditorService {
         List<Block> blocks = blockService.selectAllBlockByPlantModelId(plantModel.getId());
         plantModelBO.setBlocks(new HashSet<>(blocks));
         return plantModelBO;
+    }
+
+    @Override
+    public boolean save(PlantModelBO plantModelBO) {
+        // 版本号是1.0时，为第一次新建地图元素不需要复制，直接更新视图元素
+        if (StrUtil.equals(plantModelBO.getModelVersion(), "1.0")) {
+            pointService.saveBatch(plantModelBO.getPoints());
+            pathService.saveBatch(plantModelBO.getPaths());
+            locationService.saveBatch(plantModelBO.getLocations());
+            locationTypeService.saveBatch(plantModelBO.getLocationTypes());
+            blockService.saveBatch(plantModelBO.getBlocks());
+        } else {
+            // 复制地图元素
+            PlantModel plantModel = new PlantModel();
+            plantModel.setMapId(plantModelBO.getMapId());
+            plantModel.setName(plantModelBO.getName());
+            // 模型版本+1
+            plantModel.setModelVersion(ModelVersionUtil.getNextModelVersion(plantModelBO.getModelVersion()));
+            plantModelService.save(plantModel);
+
+            // 保存地图元素
+            Set<Point> points = plantModelBO.getPoints();
+            if (CollUtil.isNotEmpty( points)) {
+                // 替换地图模型id
+                points.forEach(point -> point.setPlantModelId(plantModel.getId()));
+                pointService.saveBatch(points);
+            }
+
+            Set<Path> paths = plantModelBO.getPaths();
+            if (CollUtil.isNotEmpty(paths)) {
+                // 替换地图模型id
+                paths.forEach(path -> path.setPlantModelId(plantModel.getId()));
+                pathService.saveBatch(paths);
+            }
+
+            Set<Location> locations = plantModelBO.getLocations();
+            if (CollUtil.isNotEmpty(locations)) {
+                // 替换地图模型id
+                locations.forEach(location -> location.setPlantModelId(plantModel.getId()));
+                locationService.saveBatch(locations);
+            }
+
+            Set<Block> blocks = plantModelBO.getBlocks();
+            if (CollUtil.isNotEmpty(blocks)) {
+                // 替换地图模型id
+                blocks.forEach(block -> block.setPlantModelId(plantModel.getId()));
+                blockService.saveBatch(blocks);
+            }
+        }
+        return true;
     }
 }

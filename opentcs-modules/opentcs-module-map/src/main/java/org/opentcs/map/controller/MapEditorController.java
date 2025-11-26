@@ -31,4 +31,10 @@ public class MapEditorController {
     public R<PlantModelBO> load(@RequestBody LoadModelVO loadModelVO) {
         return R.ok(mapEditorService.load(loadModelVO));
     }
+
+
+    @PostMapping("/save")
+    public R<Boolean> save(@RequestBody PlantModelBO plantModelBO) {
+        return R.ok(mapEditorService.save(plantModelBO));
+    }
 }
