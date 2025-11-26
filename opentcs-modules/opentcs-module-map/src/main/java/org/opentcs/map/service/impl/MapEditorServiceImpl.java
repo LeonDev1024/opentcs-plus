@@ -37,7 +37,10 @@ public class MapEditorServiceImpl implements IMapEditorService {
             return null;
         }
         PlantModelBO plantModelBO = new PlantModelBO();
-        plantModelBO.setMapInfo(plantModel);
+        plantModelBO.setPlantModelId(plantModel.getId());
+        plantModelBO.setName(plantModel.getName());
+        plantModelBO.setMapId(plantModel.getMapId());
+        plantModelBO.setModelVersion(plantModel.getModelVersion());
         VisualLayoutBO visualLayoutBO = visualLayoutService.getVisualLayoutByPlantModelId(plantModel.getId());
         plantModelBO.setVisualLayout(visualLayoutBO);
 

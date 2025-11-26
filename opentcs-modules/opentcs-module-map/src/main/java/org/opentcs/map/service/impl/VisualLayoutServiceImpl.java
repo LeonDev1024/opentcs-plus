@@ -35,7 +35,10 @@ public class VisualLayoutServiceImpl extends ServiceImpl<VisualLayoutMapper, Vis
         VisualLayoutBO visualLayoutBO = new VisualLayoutBO();
         VisualLayout visualLayout = this.getOne(new LambdaQueryWrapper<VisualLayout>()
                 .eq(VisualLayout::getPlantModelId, plantModelId));
-        visualLayoutBO.setVisualLayout(visualLayout);
+        visualLayoutBO.setVisualLayoutId(visualLayout.getId());
+        visualLayoutBO.setName(visualLayout.getName());
+        visualLayoutBO.setScaleX(visualLayout.getScaleX());
+        visualLayoutBO.setScaleY(visualLayout.getScaleY());
 
         List<LayerGroup> layerGroups = layerGroupService.list(new LambdaQueryWrapper<LayerGroup>()
                 .eq(LayerGroup::getVisualLayoutId, visualLayout.getId()));
