@@ -21,10 +21,6 @@ public class LocationType extends BaseEntity {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
-    /**
-     * 所属地图模型ID
-     */
-    private String plantModelId;
 
     /**
      * 位置类型名称
