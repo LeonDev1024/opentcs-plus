@@ -22,9 +22,9 @@ public class Layer extends BaseEntity {
     private Long id;
 
     /**
-     * 所属地图模型ID
+     * 所属可视化布局
      */
-    private String plantModelId;
+    private Long visualLayoutId;
 
     /**
      * 图层组ID
