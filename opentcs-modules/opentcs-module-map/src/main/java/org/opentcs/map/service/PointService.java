@@ -5,6 +5,8 @@ import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.map.domain.entity.Point;
 
+import java.util.List;
+
 /**
  * 点位 Service 接口
  */
@@ -17,4 +19,6 @@ public interface PointService extends IService<Point> {
      * @return 分页结果
      */
     TableDataInfo<Point> selectPagePoint(Point point, PageQuery pageQuery);
+
+    List<Point> selectAllPointByPlantModelId(Long plantModelId);
 }

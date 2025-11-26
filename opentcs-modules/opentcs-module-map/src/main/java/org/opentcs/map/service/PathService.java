@@ -5,6 +5,8 @@ import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.map.domain.entity.Path;
 
+import java.util.List;
+
 /**
  * 路径 Service 接口
  */
@@ -17,4 +19,6 @@ public interface PathService extends IService<Path> {
      * @return 分页结果
      */
     TableDataInfo<Path> selectPagePath(Path path, PageQuery pageQuery);
+
+    List<Path> selectAllPathByPlantModelId(Long plantModelId);
 }

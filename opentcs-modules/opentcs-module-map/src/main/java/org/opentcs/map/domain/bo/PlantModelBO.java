@@ -1,7 +1,6 @@
 package org.opentcs.map.domain.bo;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import org.opentcs.map.domain.entity.*;
 
 import java.io.Serial;
@@ -47,10 +46,9 @@ public class PlantModelBO implements Serializable {
      */
     private Set<Block> blocks;
 
-
     /**
      * 地图模型可视化
      */
-    private VisualLayout visualLayout;
+    private VisualLayoutBO visualLayout;
 
 }

@@ -6,9 +6,10 @@
 
     <select id="selectPagePlantModel" resultType="org.opentcs.map.domain.entity.PlantModel">
         SELECT * FROM plant_model
-        <where>
-            <if test="plantModel.name != null and plantModel.name != ''">AND name LIKE CONCAT('%', #{plantModel.name}, '%')</if>
-        </where>
+        WHERE del_flag = '0'
+        <if test="plantModel.name != null and plantModel.name != ''">
+            AND name LIKE CONCAT('%', #{plantModel.name}, '%')
+        </if>
     </select>
 
 </mapper>

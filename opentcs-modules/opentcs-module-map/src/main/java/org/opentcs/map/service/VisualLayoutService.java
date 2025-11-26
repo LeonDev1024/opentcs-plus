@@ -4,12 +4,15 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
+import org.opentcs.map.domain.bo.VisualLayoutBO;
 import org.opentcs.map.domain.entity.VisualLayout;
 
 /**
  * 视觉布局 Service 接口
  */
 public interface VisualLayoutService extends IService<VisualLayout> {
+
+    VisualLayoutBO getVisualLayoutByPlantModelId(Long plantModelId);
 
     /**
      * 分页查询视觉布局列表
