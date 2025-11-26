@@ -1,5 +1,9 @@
 package org.opentcs.map.utils;
 
+/**
+ * 模型版本工具类
+ * @author lyc
+ */
 public class ModelVersionUtil {
 
     /**
