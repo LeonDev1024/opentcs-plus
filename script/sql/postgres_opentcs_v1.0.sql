@@ -198,65 +198,12 @@ COMMENT ON COLUMN block.type IS '区块类型：SINGLE, GROUP';
 COMMENT ON COLUMN block.members IS '区块成员（点位、路径、位置等元素的名称集合）';
 COMMENT ON COLUMN block.color IS '区块显示颜色';
 
--- 图层组表 (LayerGroup)
-CREATE TABLE layer_group (
-    id BIGSERIAL PRIMARY KEY,
-    plant_model_id BIGINT NOT NULL,
-    name VARCHAR(255) NOT NULL,
-    -- 可视化属性
-    visible BOOLEAN DEFAULT TRUE,
-    ordinal INTEGER DEFAULT 0,
-    -- 扩展属性
-    properties JSONB,
-    -- 审计字段
-    create_dept BIGINT,
-    create_by BIGINT,
-    update_by BIGINT,
-    create_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    update_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (plant_model_id) REFERENCES plant_model(id) ON DELETE CASCADE,
-    CONSTRAINT uk_layer_group_plant_model_name UNIQUE (id, name)
-);
-
-COMMENT ON TABLE layer_group IS '图层组表';
-COMMENT ON COLUMN layer_group.name IS '图层组名称';
-COMMENT ON COLUMN layer_group.visible IS '是否可见';
-COMMENT ON COLUMN layer_group.ordinal IS '显示顺序';
-
--- 图层表 (Layer)
-CREATE TABLE layer (
-    id BIGSERIAL PRIMARY KEY,
-    plant_model_id BIGINT NOT NULL,
-    layer_group_id BIGINT,
-    name VARCHAR(255) NOT NULL,
-    -- 可视化属性
-    visible BOOLEAN DEFAULT TRUE,
-    ordinal INTEGER DEFAULT 0,
-    -- 扩展属性
-    properties JSONB,
-    -- 审计字段
-    create_dept BIGINT,
-    create_by BIGINT,
-    update_by BIGINT,
-    create_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    update_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (plant_model_id) REFERENCES plant_model(id) ON DELETE CASCADE,
-    FOREIGN KEY (layer_group_id) REFERENCES layer_group(id) ON DELETE SET NULL,
-    CONSTRAINT uk_layer_plant_model_name UNIQUE (plant_model_id, name)
-);
-
-COMMENT ON TABLE layer IS '图层表';
-COMMENT ON COLUMN layer.name IS '图层名称';
-COMMENT ON COLUMN layer.visible IS '是否可见';
-COMMENT ON COLUMN layer.ordinal IS '显示顺序';
-
--- 视觉布局表 (VisualLayout)
 CREATE TABLE visual_layout (
-    id BIGSERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    plant_model_id BIGINT NOT NULL,
-    scale_x DECIMAL(10, 6) NOT NULL DEFAULT 50.0,
-    scale_y DECIMAL(10, 6) NOT NULL DEFAULT 50.0,
+     id BIGSERIAL PRIMARY KEY,
+     plant_model_id BIGINT NOT NULL UNIQUE,  -- 添加 UNIQUE 约束确保 1:1
+     name VARCHAR(255) NOT NULL DEFAULT 'Default Layout',
+     scale_x DECIMAL(10, 6) NOT NULL DEFAULT 50.0,
+     scale_y DECIMAL(10, 6) NOT NULL DEFAULT 50.0,
     -- 扩展属性
     properties JSONB DEFAULT '{}',
     -- 审计字段
@@ -268,21 +215,64 @@ CREATE TABLE visual_layout (
     FOREIGN KEY (plant_model_id) REFERENCES plant_model(id) ON DELETE CASCADE
 );
 
--- 添加索引
-CREATE INDEX idx_visual_layout_plant_model ON visual_layout(plant_model_id);
-CREATE INDEX idx_visual_layout_name ON visual_layout(name);
+COMMENT ON TABLE visual_layout IS '视觉布局表，与地图模型 1:1 对应';
+COMMENT ON COLUMN visual_layout.plant_model_id IS '关联的地图模型ID (1:1关系)';
+COMMENT ON COLUMN visual_layout.name IS '视觉布局名称';
+COMMENT ON COLUMN visual_layout.scale_x IS 'X轴缩放比例';
+COMMENT ON COLUMN visual_layout.scale_y IS 'Y轴缩放比例';
+COMMENT ON COLUMN visual_layout.properties IS '扩展属性';
 
--- 添加表注释
-COMMENT ON TABLE visual_layout IS '存储地图的视觉布局配置';
+CREATE TABLE layer_group (
+    id BIGSERIAL PRIMARY KEY,
+    visual_layout_id BIGINT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    -- 可视化属性
+    visible BOOLEAN DEFAULT TRUE,
+    ordinal INTEGER DEFAULT 0,
+    -- 扩展属性
+    properties JSONB,
+    -- 审计字段
+    create_dept BIGINT,
+    create_by BIGINT,
+    update_by BIGINT,
+    create_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    update_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (visual_layout_id) REFERENCES visual_layout(id) ON DELETE CASCADE,
+    CONSTRAINT uk_layer_group_visual_layout_name UNIQUE (visual_layout_id, name)
+);
 
--- 添加字段注释
-COMMENT ON COLUMN visual_layout.name IS '视觉布局名称 (如 "Default Layout")';
-COMMENT ON COLUMN visual_layout.plant_model_id IS '关联的地图模型ID (外键指向 plant_model.id)';
-COMMENT ON COLUMN visual_layout.scale_x IS 'X轴缩放比例 (单位: 像素/单位)';
-COMMENT ON COLUMN visual_layout.scale_y IS 'Y轴缩放比例 (单位: 像素/单位)';
-COMMENT ON COLUMN visual_layout.properties IS '布局的扩展属性';
-COMMENT ON COLUMN visual_layout.create_dept IS '创建部门ID (外键指向 dept.dept_id)';
-COMMENT ON COLUMN visual_layout.create_by IS '创建人ID (外键指向 user.id)';
-COMMENT ON COLUMN visual_layout.update_by IS '更新人ID (外键指向 user.id)';
-COMMENT ON COLUMN visual_layout.create_time IS '创建时间 (UTC)';
-COMMENT ON COLUMN visual_layout.update_time IS '最后更新时间 (UTC)';
+COMMENT ON TABLE layer_group IS '图层组表';
+COMMENT ON COLUMN layer_group.visual_layout_id IS '关联的视觉布局ID';
+COMMENT ON COLUMN layer_group.name IS '图层组名称';
+COMMENT ON COLUMN layer_group.visible IS '是否可见';
+COMMENT ON COLUMN layer_group.ordinal IS '显示顺序';
+COMMENT ON COLUMN layer_group.properties IS '扩展属性';
+
+CREATE TABLE layer (
+     id BIGSERIAL PRIMARY KEY,
+     visual_layout_id BIGINT NOT NULL,
+     layer_group_id BIGINT,
+     name VARCHAR(255) NOT NULL,
+    -- 可视化属性
+    visible BOOLEAN DEFAULT TRUE,
+    ordinal INTEGER DEFAULT 0,
+    -- 扩展属性
+    properties JSONB,
+    -- 审计字段
+    create_dept BIGINT,
+    create_by BIGINT,
+    update_by BIGINT,
+    create_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    update_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (visual_layout_id) REFERENCES visual_layout(id) ON DELETE CASCADE,
+    FOREIGN KEY (layer_group_id) REFERENCES layer_group(id) ON DELETE SET NULL,
+    CONSTRAINT uk_layer_visual_layout_name UNIQUE (visual_layout_id, name)
+);
+
+COMMENT ON TABLE layer IS '图层表';
+COMMENT ON COLUMN layer.visual_layout_id IS '关联的视觉布局ID';
+COMMENT ON COLUMN layer.layer_group_id IS '关联的图层组ID（可为空，表示不属于任何组）';
+COMMENT ON COLUMN layer.name IS '图层名称';
+COMMENT ON COLUMN layer.visible IS '是否可见';
+COMMENT ON COLUMN layer.ordinal IS '显示顺序';
+COMMENT ON COLUMN layer.properties IS '扩展属性';
