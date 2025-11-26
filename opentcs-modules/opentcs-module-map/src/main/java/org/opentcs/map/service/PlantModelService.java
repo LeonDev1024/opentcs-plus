@@ -11,6 +11,8 @@ import org.opentcs.map.domain.entity.PlantModel;
  */
 public interface PlantModelService extends IService<PlantModel> {
 
+    boolean createPlantModel(PlantModel plantModel);
+
     /**
      * 分页查询地图模型列表
      * @param plantModel 查询条件

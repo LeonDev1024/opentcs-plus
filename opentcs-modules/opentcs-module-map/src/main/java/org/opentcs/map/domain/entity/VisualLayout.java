@@ -42,4 +42,9 @@ public class VisualLayout extends BaseEntity {
      */
     private BigDecimal scaleY;
 
+    /**
+     * 扩展属性
+     */
+    private String properties;
+
 }

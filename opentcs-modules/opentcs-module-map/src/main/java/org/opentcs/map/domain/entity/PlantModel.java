@@ -5,8 +5,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.opentcs.common.mybatis.core.domain.BaseEntity;
 
-import java.math.BigDecimal;
-
 /**
  * 地图模型实体类
  */
@@ -22,9 +20,9 @@ public class PlantModel extends BaseEntity {
     private Long id;
 
     /**
-     * 地图模型ID, 系统生成随机的字符串
+     * 语义拓扑地图id
      */
-    private String plantModelId;
+    private String mapId;
 
     /**
      * 地图模型名称，唯一标识
@@ -37,29 +35,9 @@ public class PlantModel extends BaseEntity {
     private String modelVersion;
 
     /**
-     * 长度单位：mm, cm, m
+     * 地图状态：0 未启用 1 停用
      */
-    private String lengthUnit;
-
-    /**
-     * 比例尺
-     */
-    private BigDecimal scale;
-
-    /**
-     * 布局宽度
-     */
-    private BigDecimal layoutWidth;
-
-    /**
-     * 布局高度
-     */
-    private BigDecimal layoutHeight;
-
-    /**
-     * 地图状态：UNLOADED, LOADING, LOADED, LOCKED, ERROR
-     */
-    private String modelState;
+    private String status;
 
     /**
      * 扩展属性
@@ -67,13 +45,10 @@ public class PlantModel extends BaseEntity {
     private String properties;
 
     /**
-     * 版本号，这个字段主要作为数据库乐观锁的
-     */
-    @Version
-    private Long version;
-
-    /**
      * 增加描述字段，用于描述地图模型
      */
     private String description;
+
+    @TableLogic
+    private String delFlag;
 }

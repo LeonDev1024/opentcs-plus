@@ -6,5 +6,5 @@ import java.io.Serializable;
 
 @Data
 public class LoadModelVO implements Serializable {
-    private String plantModelId;
+    private String mapId;
 }
