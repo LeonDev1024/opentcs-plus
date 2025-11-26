@@ -1,5 +1,7 @@
 package org.opentcs.map.service.impl;
 
+import cn.hutool.core.util.IdUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.opentcs.common.mybatis.core.page.PageQuery;
@@ -14,6 +16,19 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class PlantModelServiceImpl extends ServiceImpl<PlantModelMapper, PlantModel> implements PlantModelService {
+
+    @Override
+    public boolean createPlantModel(PlantModel plantModel) {
+        // 校验地图名称是否存在
+        boolean isExist = this.getBaseMapper().selectCount(new LambdaQueryWrapper<>(PlantModel.class)
+                        .eq(PlantModel::getName, plantModel.getName())
+                        .eq(PlantModel::getDelFlag, "0")) > 0;
+        if (isExist) {
+            throw new RuntimeException("地图名称已存在");
+        }
+        plantModel.setMapId(IdUtil.fastSimpleUUID());
+        return this.save(plantModel);
+    }
 
     @Override
     public TableDataInfo<PlantModel> selectPagePlantModel(PlantModel plantModel, PageQuery pageQuery) {

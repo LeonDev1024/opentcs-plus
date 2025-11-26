@@ -1,5 +1,6 @@
 package org.opentcs.map.controller;
 
+import cn.hutool.core.util.IdUtil;
 import lombok.RequiredArgsConstructor;
 import org.opentcs.common.core.domain.R;
 import org.opentcs.common.mybatis.core.page.PageQuery;
@@ -43,7 +44,7 @@ public class PlantModelController extends BaseController {
      */
     @PostMapping("/create")
     public R<Boolean> createPlantModel(@RequestBody PlantModel plantModel) {
-        return R.ok(plantModelService.save(plantModel));
+        return R.ok(plantModelService.createPlantModel(plantModel));
     }
 
     /**

@@ -21,7 +21,7 @@ public class MapEditorServiceImpl implements IMapEditorService {
     @Override
     public PlantModelBO load(LoadModelVO loadModelVO) {
         LambdaQueryWrapper<PlantModel> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(PlantModel::getPlantModelId, loadModelVO.getPlantModelId());
+        queryWrapper.eq(PlantModel::getMapId, loadModelVO.getMapId());
         PlantModel plantModel = plantModelService.getOne(queryWrapper);
         
         if (Objects.isNull(plantModel)) {
