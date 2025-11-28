@@ -8,7 +8,6 @@ import org.opentcs.map.domain.to.AllowedOperationTO;
 import org.opentcs.map.domain.to.AllowedPeripheralOperationTO;
 import org.opentcs.map.domain.to.PropertyTO;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
