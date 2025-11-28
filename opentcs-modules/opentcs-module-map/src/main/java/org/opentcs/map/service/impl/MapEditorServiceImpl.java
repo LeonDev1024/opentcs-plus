@@ -50,9 +50,6 @@ public class MapEditorServiceImpl implements IMapEditorService {
         // 路径集合
         List<Path> paths = pathService.selectAllPathByPlantModelId(plantModel.getId());
         plantModelBO.setPaths(new HashSet<>(paths));
-        // 业务点位类型集合
-        List<LocationType> locationTypes = locationTypeService.selectAllLocationTypeByPlantModelId(plantModel.getId());
-        plantModelBO.setLocationTypes(new HashSet<>(locationTypes));
         // 业务点位集合
         List<Location> locations = locationService.selectAllLocationByPlantModelId(plantModel.getId());
         plantModelBO.setLocations(new HashSet<>(locations));
