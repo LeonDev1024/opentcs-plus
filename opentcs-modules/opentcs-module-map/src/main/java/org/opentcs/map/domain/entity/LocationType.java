@@ -1,9 +1,11 @@
 package org.opentcs.map.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.opentcs.common.mybatis.core.domain.BaseEntity;
+import org.opentcs.common.mybatis.handler.JsonbTypeHandler;
 import org.opentcs.map.domain.to.AllowedOperationTO;
 import org.opentcs.map.domain.to.AllowedPeripheralOperationTO;
 import org.opentcs.map.domain.to.PropertyTO;
@@ -33,15 +35,18 @@ public class LocationType extends BaseEntity {
     /**
      * 允许的操作列表：LOAD, UNLOAD, NOP等
      */
+    @TableField(typeHandler = JsonbTypeHandler.class)
     private List<AllowedOperationTO> allowedOperations = new ArrayList<>();
     /**
      * 允许的外围设备操作
      */
+    @TableField(typeHandler = JsonbTypeHandler.class)
     private List<AllowedPeripheralOperationTO> allowedPeripheralOperations = new ArrayList<>();
 
     /**
      * 扩展属性
      */
+    @TableField(typeHandler = JsonbTypeHandler.class)
     private List<PropertyTO> properties = new ArrayList<>();
 
 
