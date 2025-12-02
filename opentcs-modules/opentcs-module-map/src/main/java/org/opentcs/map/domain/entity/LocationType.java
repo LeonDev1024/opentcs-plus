@@ -1,7 +1,6 @@
 package org.opentcs.map.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
-import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.opentcs.common.mybatis.core.domain.BaseEntity;
