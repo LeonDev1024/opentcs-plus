@@ -22,12 +22,6 @@
             <version>${spring-boot.version}</version>
         </dependency>
 
-        <!-- Mysql驱动包 -->
-        <dependency>
-            <groupId>com.mysql</groupId>
-            <artifactId>mysql-connector-j</artifactId>
-        </dependency>
-
         <!-- PostgreSQL驱动包 -->
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -74,7 +68,14 @@
             <groupId>org.opentcs</groupId>
             <artifactId>opentcs-common-job</artifactId>
             <version>1.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.xuxueli</groupId>
+                    <artifactId>xxl-job-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
+
         <dependency>
             <groupId>org.opentcs</groupId>
             <artifactId>opentcs-common-web</artifactId>

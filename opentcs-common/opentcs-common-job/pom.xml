@@ -10,7 +10,7 @@
     <name>opentcs-common-job</name>
 
     <description>
-        opentcsß-common-job 定时任务
+        opentcs-common-job 定时任务
     </description>
 
     <dependencies>
@@ -20,14 +20,11 @@
             <artifactId>spring-boot-autoconfigure</artifactId>
         </dependency>
 
-        <!-- SnailJob client -->
+        <!-- XXL-JOB client -->
         <dependency>
-            <groupId>com.aizuda</groupId>
-            <artifactId>snail-job-client-starter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.aizuda</groupId>
-            <artifactId>snail-job-client-job-core</artifactId>
+            <groupId>com.xuxueli</groupId>
+            <artifactId>xxl-job-core</artifactId>
+            <version>3.3.0</version>
         </dependency>
 
         <dependency>
@@ -38,6 +35,13 @@
         <dependency>
             <groupId>org.opentcs</groupId>
             <artifactId>opentcs-common-core</artifactId>
+        </dependency>
+
+        <!-- Spring AI -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-core</artifactId>
+            <version>1.0.0-M4</version>
         </dependency>
 
     </dependencies>
