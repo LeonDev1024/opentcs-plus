@@ -1,4 +1,3 @@
-# 开发环境配置
 server:
   # 服务器的HTTP端口，默认为8080
   port: 8080
@@ -250,16 +249,3 @@ websocket:
   path: /resource/websocket
   # 设置访问源地址
   allowedOrigins: '*'
-
---- # warm-flow工作流配置
-warm-flow:
-  # 是否开启工作流，默认true
-  enabled: true
-  # 是否开启设计器ui
-  ui: true
-  # 是否显示流程图顶部文字
-  top-text-show: true
-  # 是否渲染节点悬浮提示，默认true
-  node-tooltip: true
-  # 默认Authorization，如果有多个token，用逗号分隔
-  token-name: ${sa-token.token-name},clientid

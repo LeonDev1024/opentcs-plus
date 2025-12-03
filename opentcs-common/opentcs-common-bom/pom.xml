@@ -70,7 +70,7 @@
             <!-- 限流 -->
             <dependency>
                 <groupId>org.opentcs</groupId>
-                <artifactId>ruoyi-common-ratelimiter</artifactId>
+                <artifactId>opentcs-common-ratelimiter</artifactId>
                 <version>${revision}</version>
             </dependency>
 
@@ -156,6 +156,15 @@
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>42.7.4</version>
+            </dependency>
+
+            <!-- Spring AI BOM (支持 xxl-job 3.3.0 的 AI 功能) -->
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>1.0.1</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
