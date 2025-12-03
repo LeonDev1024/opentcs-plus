@@ -8,4 +8,9 @@
     </parent>
     <artifactId>opentcs-extends</artifactId>
     <name>opentcs-extends</name>
+
+    <packaging>pom</packaging>
+    <modules>
+        <module>opentcs-job-server</module>
+    </modules>
 </project>
