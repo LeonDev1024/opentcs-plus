@@ -88,6 +88,11 @@
             <artifactId>opentcs-module-map</artifactId>
             <version>${revision}</version>
         </dependency>
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-module-vehicle</artifactId>
+            <version>${revision}</version>
+        </dependency>
 
         <dependency>
             <groupId>de.codecentric</groupId>

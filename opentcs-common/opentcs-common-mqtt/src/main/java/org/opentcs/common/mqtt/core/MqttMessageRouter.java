@@ -28,7 +28,12 @@ public class MqttMessageRouter implements MessageHandler {
     public void handleMessage(Message<?> message) throws MessagingException {
         try {
             // 1. 提取MQTT主题
-            String mqttTopic = message.getHeaders().get("mqtt_receivedTopic").toString();
+            Object topicHeader = message.getHeaders().get("mqtt_receivedTopic");
+            if (topicHeader == null) {
+                log.warn("MQTT消息缺少主题头信息");
+                return;
+            }
+            String mqttTopic = topicHeader.toString();
             
             // 2. 提取消息内容（处理 byte[] 和 String 两种情况）
             String content;
@@ -43,29 +48,40 @@ public class MqttMessageRouter implements MessageHandler {
 
             log.info("收到MQTT消息 - Topic: {}, Payload: {}", mqttTopic, content);
 
-            // 3. 解析消息内容
+            // 3. 解析消息内容（尝试解析为JSON，如果失败则使用原始内容）
             MqttMessageContent messageContent = parseMessageContent(content);
-            if (messageContent == null) {
-                log.warn("无法解析MQTT消息内容: {}", content);
-                return;
+            String messageType = null;
+            
+            if (messageContent != null) {
+                // 4. 提取消息类型（优先使用 topic，其次使用 commandId）
+                messageType = messageContent.getMessageType();
+                log.debug("解析消息成功 - MessageType: {}", messageType);
+            } else {
+                // 如果解析失败，创建一个包含原始内容的消息对象
+                log.debug("消息不是标准JSON格式，使用原始内容处理");
+                messageContent = new MqttMessageContent();
+                java.util.HashMap<String, Object> data = new java.util.HashMap<>();
+                data.put("raw", content);
+                messageContent.setData(data);
             }
 
-            // 4. 提取消息类型（优先使用 topic，其次使用 commandId）
-            String messageType = messageContent.getMessageType();
-
-            // 5. 查找匹配的处理器
+            // 5. 查找匹配的处理器（即使消息类型为空，也尝试根据主题匹配）
             List<MqttMessageProcessor> processors = processorRegistry.findProcessors(mqttTopic, messageType);
 
             if (processors.isEmpty()) {
-                log.warn("未找到匹配的处理器 - MQTT Topic: {}, Message Type: {}", mqttTopic, messageType);
+                log.warn("未找到匹配的处理器 - MQTT Topic: {}, Message Type: {}", mqttTopic, messageType != null ? messageType : "null");
+                log.debug("当前注册的处理器数量: {}", processorRegistry.getProcessorCount());
                 return;
             }
+
+            log.info("找到 {} 个匹配的处理器 - Topic: {}, MessageType: {}", processors.size(), mqttTopic, messageType);
 
             // 6. 执行所有匹配的处理器
             for (MqttMessageProcessor processor : processors) {
                 try {
+                    log.debug("执行处理器: {}", processor.getClass().getName());
                     processor.process(mqttTopic, messageContent);
-                    log.debug("处理器 {} 处理消息成功", processor.getClass().getName());
+                    log.info("处理器 {} 处理消息成功", processor.getClass().getName());
                 } catch (Exception e) {
                     log.error("处理器 {} 处理消息时发生异常", processor.getClass().getName(), e);
                     // 继续处理下一个处理器，不中断
