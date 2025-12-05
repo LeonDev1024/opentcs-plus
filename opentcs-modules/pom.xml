@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.opentcs</groupId>
         <artifactId>opentcs-plus</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
     <artifactId>opentcs-modules</artifactId>
     <packaging>pom</packaging>

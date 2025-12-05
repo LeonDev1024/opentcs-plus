@@ -6,7 +6,7 @@
 
     <groupId>org.opentcs</groupId>
     <artifactId>opentcs-plus</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>${revision}</version>
     <packaging>pom</packaging>
     <modules>
         <!-- 核心模块 -->
@@ -304,18 +304,6 @@
                 <groupId>com.alibaba</groupId>
                 <artifactId>fastjson</artifactId>
                 <version>${fastjson.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.opentcs</groupId>
-                <artifactId>opentcs-module-system</artifactId>
-                <version>${revision}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.opentcs</groupId>
-                <artifactId>opentcs-common-job</artifactId>
-                <version>${revision}</version>
             </dependency>
 
         </dependencies>

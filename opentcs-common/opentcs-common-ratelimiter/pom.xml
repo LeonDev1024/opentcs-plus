@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.opentcs</groupId>
         <artifactId>opentcs-common</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
     <artifactId>opentcs-common-ratelimiter</artifactId>
     <name>opentcs-common-ratelimiter</name>
