@@ -152,4 +152,20 @@ public class MqttProcessorRegistry {
             .replace("/", "\\/");
         return topic.matches(regex);
     }
+
+    /**
+     * 获取注册的处理器总数（用于调试）
+     *
+     * @return 处理器总数
+     */
+    public int getProcessorCount() {
+        int count = generalProcessors.size();
+        for (List<MqttMessageProcessor> processors : topicProcessors.values()) {
+            count += processors.size();
+        }
+        for (List<MqttMessageProcessor> processors : messageTypeProcessors.values()) {
+            count += processors.size();
+        }
+        return count;
+    }
 }

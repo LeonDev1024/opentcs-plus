@@ -93,14 +93,14 @@ redisson:
 
 
 mqtt:
-  enabled: false
+  enabled: true
   username: root
   password: 123456
   serverUrls:
     - tcp://106.54.43.41:1883
-  clientId: opentcs-plus
+  clientId: opentcs
   topics:
-    - bridge/#
+    - /opentcs/#
   timeout: 30
   keepAliveInterval: 60
   cleanSession: true
