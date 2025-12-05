@@ -23,6 +23,12 @@
             <artifactId>opentcs-common-core</artifactId>
         </dependency>
 
+        <!-- Spring Context for ApplicationListener -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+
         <!-- Eclipse Paho MQTT Client -->
         <dependency>
             <groupId>org.eclipse.paho</groupId>
