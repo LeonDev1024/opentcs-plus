@@ -38,13 +38,6 @@
                 <version>${revision}</version>
             </dependency>
 
-            <!-- 调度模块 -->
-            <dependency>
-                <groupId>org.opentcs</groupId>
-                <artifactId>opentcs-job-server</artifactId>
-                <version>${revision}</version>
-            </dependency>
-
             <!-- 日志记录 -->
             <dependency>
                 <groupId>org.opentcs</groupId>
@@ -151,11 +144,38 @@
                 <version>${revision}</version>
             </dependency>
 
+            <!-- 翻译模块 -->
+            <dependency>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-common-translation</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- Excel模块 -->
+            <dependency>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-common-excel</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- SSE模块 -->
+            <dependency>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-common-sse</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- MQTT模块 -->
+            <dependency>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-common-mqtt</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
             <!-- PostgreSQL驱动 -->
             <dependency>
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
-                <version>42.7.4</version>
             </dependency>
 
             <!-- Spring AI BOM (支持 xxl-job 3.3.0 的 AI 功能) -->

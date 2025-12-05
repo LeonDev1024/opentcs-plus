@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.opentcs</groupId>
         <artifactId>opentcs-modules</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
     <artifactId>opentcs-module-driver</artifactId>
     <name>opentcs-module-driver</name>

@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.opentcs</groupId>
         <artifactId>opentcs-plus</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
     <artifactId>opentcs-common</artifactId>
     <packaging>pom</packaging>
@@ -25,7 +25,6 @@
         <module>opentcs-common-social</module>
         <module>opentcs-common-ratelimiter</module>
         <module>opentcs-common-mail</module>
-        <!-- 缺失的模块 -->
         <module>opentcs-common-translation</module>
         <module>opentcs-common-oss</module>
         <module>opentcs-common-excel</module>
@@ -35,5 +34,6 @@
         <module>opentcs-common-sensitive</module>
         <module>opentcs-common-sse</module>
         <module>opentcs-common-job</module>
+        <module>opentcs-common-mqtt</module>
     </modules>
 </project>

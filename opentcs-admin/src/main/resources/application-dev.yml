@@ -91,6 +91,24 @@ redisson:
     # 发布和订阅连接池大小
     subscriptionConnectionPoolSize: 50
 
+
+mqtt:
+  enabled: false
+  username: root
+  password: 123456
+  serverUrls:
+    - tcp://106.54.43.41:1883
+  clientId: opentcs-plus
+  topics:
+    - bridge/#
+  timeout: 30
+  keepAliveInterval: 60
+  cleanSession: true
+  automaticReconnect: true
+  qos: 1
+  async: true
+
+
 # mail 邮件发送
 mail:
   enabled: false
