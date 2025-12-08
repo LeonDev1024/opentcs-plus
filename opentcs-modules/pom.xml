@@ -16,6 +16,5 @@
         <module>opentcs-module-system</module>
         <module>opentcs-module-order</module>
         <module>opentcs-module-vehicle</module>
-        <module>opentcs-module-job</module>
     </modules>
 </project>
