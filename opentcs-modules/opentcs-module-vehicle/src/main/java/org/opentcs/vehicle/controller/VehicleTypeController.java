@@ -49,7 +49,7 @@ public class VehicleTypeController extends BaseController {
     /**
      * 创建车辆类型
      */
-    @PostMapping("/")
+    @PostMapping("/add")
     public R<Boolean> createVehicleType(@RequestBody VehicleType vehicleType) {
         return R.ok(vehicleTypeService.save(vehicleType));
     }
@@ -57,7 +57,7 @@ public class VehicleTypeController extends BaseController {
     /**
      * 更新车辆类型
      */
-    @PutMapping("/")
+    @PutMapping("/edit")
     public R<Boolean> updateVehicleType(@RequestBody VehicleType vehicleType) {
         return R.ok(vehicleTypeService.updateById(vehicleType));
     }

@@ -277,7 +277,7 @@ COMMENT ON COLUMN layer.ordinal IS '显示顺序';
 COMMENT ON COLUMN layer.properties IS '扩展属性';
 
 
---车辆类型表（Vehicle_Type）
+-- 车辆类型表（Vehicle Type）
 CREATE TABLE vehicle_type (
     id bigserial NOT NULL,
     name varchar(255) NOT NULL,
@@ -300,3 +300,59 @@ CREATE TABLE vehicle_type (
     CONSTRAINT vehicle_type_name_key UNIQUE (name),
     CONSTRAINT vehicle_type_pkey PRIMARY KEY (id)
 );
+
+COMMENT ON TABLE vehicle_type IS '车辆类型表';
+COMMENT ON COLUMN vehicle_type.id IS '主键ID';
+COMMENT ON COLUMN vehicle_type.name IS '车辆类型名称';
+COMMENT ON COLUMN vehicle_type.length IS '车辆长度';
+COMMENT ON COLUMN vehicle_type.width IS '车辆宽度';
+COMMENT ON COLUMN vehicle_type.height IS '车辆高度';
+COMMENT ON COLUMN vehicle_type.max_velocity IS '最大速度';
+COMMENT ON COLUMN vehicle_type.max_reverse_velocity IS '最大反向速度';
+COMMENT ON COLUMN vehicle_type.energy_level IS '能量级别';
+COMMENT ON COLUMN vehicle_type.allowed_orders IS '允许的订单（JSON格式）';
+COMMENT ON COLUMN vehicle_type.allowed_peripheral_operations IS '允许的外围设备操作（JSON格式）';
+COMMENT ON COLUMN vehicle_type.properties IS '扩展属性';
+COMMENT ON COLUMN vehicle_type.create_dept IS '创建部门';
+COMMENT ON COLUMN vehicle_type.create_by IS '创建者';
+COMMENT ON COLUMN vehicle_type.update_by IS '更新者';
+COMMENT ON COLUMN vehicle_type.create_time IS '创建时间';
+COMMENT ON COLUMN vehicle_type.update_time IS '更新时间';
+
+CREATE TABLE vehicle (
+    id bigserial NOT NULL,
+    name varchar(255) NOT NULL,
+    vehicle_type_id int8 NOT NULL,
+    current_position varchar(255) NULL,
+    next_position varchar(255) NULL,
+    state varchar(50) DEFAULT 'UNKNOWN'::character varying NULL,
+    integration_level varchar(50) DEFAULT 'TO_BE_IGNORED'::character varying NULL,
+    energy_level numeric(8, 4) NULL,
+    current_transport_order varchar(255) NULL,
+    properties jsonb NULL,
+    create_time timestamptz DEFAULT CURRENT_TIMESTAMP NULL,
+    update_time timestamptz DEFAULT CURRENT_TIMESTAMP NULL,
+    create_by int8 NULL,
+    update_by int8 NULL,
+    create_dept int8 NULL,
+    CONSTRAINT vehicle_name_key UNIQUE (name),
+    CONSTRAINT vehicle_pkey PRIMARY KEY (id),
+    CONSTRAINT vehicle_vehicle_type_id_fkey FOREIGN KEY (vehicle_type_id) REFERENCES public.vehicle_type(id)
+);
+
+COMMENT ON TABLE vehicle IS '车辆表';
+COMMENT ON COLUMN vehicle.id IS '主键ID';
+COMMENT ON COLUMN vehicle.name IS '车辆名称';
+COMMENT ON COLUMN vehicle.vehicle_type_id IS '车辆类型ID';
+COMMENT ON COLUMN vehicle.current_position IS '当前位置';
+COMMENT ON COLUMN vehicle.next_position IS '下一个位置';
+COMMENT ON COLUMN vehicle.state IS '车辆状态：UNKNOWN, UNAVAILABLE, IDLE, CHARGING, WORKING, ERROR';
+COMMENT ON COLUMN vehicle.integration_level IS '集成级别：TO_BE_IGNORED, TO_BE_NOTICED, TO_BE_RESPECTED, TO_BE_UTILIZED';
+COMMENT ON COLUMN vehicle.energy_level IS '能量级别';
+COMMENT ON COLUMN vehicle.current_transport_order IS '当前运输订单';
+COMMENT ON COLUMN vehicle.properties IS '扩展属性';
+COMMENT ON COLUMN vehicle.create_time IS '创建时间';
+COMMENT ON COLUMN vehicle.update_time IS '更新时间';
+COMMENT ON COLUMN vehicle.create_by IS '创建者';
+COMMENT ON COLUMN vehicle.update_by IS '更新者';
+COMMENT ON COLUMN vehicle.create_dept IS '创建部门';

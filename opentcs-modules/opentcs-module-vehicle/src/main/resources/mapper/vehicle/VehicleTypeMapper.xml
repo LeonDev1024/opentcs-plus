@@ -26,7 +26,7 @@
     </sql>
 
     <select id="selectPageVehicleType" parameterType="org.opentcs.vehicle.domain.entity.VehicleType"
-            resultMap="VehicleTypeResult">
+            resultType="org.opentcs.vehicle.domain.entity.VehicleType">
         <include refid="selectVehicleTypeVo"/>
         <where>
             <if test="vehicleType.name != null and vehicleType.name != ''">
