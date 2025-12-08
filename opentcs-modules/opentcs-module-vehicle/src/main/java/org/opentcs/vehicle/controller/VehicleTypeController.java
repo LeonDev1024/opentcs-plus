@@ -2,6 +2,9 @@ package org.opentcs.vehicle.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.opentcs.common.core.domain.R;
+import org.opentcs.common.mybatis.core.page.PageQuery;
+import org.opentcs.common.mybatis.core.page.TableDataInfo;
+import org.opentcs.common.web.core.BaseController;
 import org.opentcs.vehicle.domain.entity.VehicleType;
 import org.opentcs.vehicle.service.VehicleTypeService;
 import org.springframework.web.bind.annotation.*;
@@ -13,16 +16,24 @@ import java.util.List;
  * @author lyc
  */
 @RestController
-@RequestMapping("/vehicle-type")
+@RequestMapping("/vehicle/type")
 @RequiredArgsConstructor
-public class VehicleTypeController {
+public class VehicleTypeController extends BaseController {
 
     private final VehicleTypeService vehicleTypeService;
 
     /**
-     * 查询所有车辆类型
+     * 分页查询车辆类型列表
      */
-    @GetMapping("/")
+    @GetMapping("/list")
+    public TableDataInfo<VehicleType> listVehicleTypes(VehicleType vehicleType, PageQuery pageQuery) {
+        return vehicleTypeService.selectPageVehicleType(vehicleType, pageQuery);
+    }
+
+    /**
+     * 查询所有车辆类型（不分页）
+     */
+    @GetMapping("/all")
     public R<List<VehicleType>> getAllVehicleTypes() {
         return R.ok(vehicleTypeService.list());
     }

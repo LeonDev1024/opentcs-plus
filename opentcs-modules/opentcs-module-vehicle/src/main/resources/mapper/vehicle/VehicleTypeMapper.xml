@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.opentcs.vehicle.mapper.VehicleTypeMapper">
+
+    <resultMap type="org.opentcs.vehicle.domain.entity.VehicleType" id="VehicleTypeResult">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="length" column="length"/>
+        <result property="width" column="width"/>
+        <result property="height" column="height"/>
+        <result property="maxVelocity" column="max_velocity"/>
+        <result property="maxReverseVelocity" column="max_reverse_velocity"/>
+        <result property="energyLevel" column="energy_level"/>
+        <result property="allowedOrders" column="allowed_orders"/>
+        <result property="allowedPeripheralOperations" column="allowed_peripheral_operations"/>
+        <result property="properties" column="properties"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="createBy" column="create_by"/>
+        <result property="updateBy" column="update_by"/>
+    </resultMap>
+
+    <sql id="selectVehicleTypeVo">
+        SELECT id, name, length, width, height, max_velocity, max_reverse_velocity, energy_level, allowed_orders, allowed_peripheral_operations, properties, create_time, update_time, create_by, update_by
+        FROM vehicle_type
+    </sql>
+
+    <select id="selectPageVehicleType" parameterType="org.opentcs.vehicle.domain.entity.VehicleType"
+            resultMap="VehicleTypeResult">
+        <include refid="selectVehicleTypeVo"/>
+        <where>
+            <if test="vehicleType.name != null and vehicleType.name != ''">
+                AND name LIKE CONCAT('%', #{vehicleType.name}, '%')
+            </if>
+        </where>
+    </select>
+
+</mapper>

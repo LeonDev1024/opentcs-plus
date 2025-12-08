@@ -275,3 +275,28 @@ COMMENT ON COLUMN layer.name IS '图层名称';
 COMMENT ON COLUMN layer.visible IS '是否可见';
 COMMENT ON COLUMN layer.ordinal IS '显示顺序';
 COMMENT ON COLUMN layer.properties IS '扩展属性';
+
+
+--车辆类型表（Vehicle_Type）
+CREATE TABLE vehicle_type (
+    id bigserial NOT NULL,
+    name varchar(255) NOT NULL,
+    length numeric(8, 4) NOT NULL,
+    width numeric(8, 4) NOT NULL,
+    height numeric(8, 4) NOT NULL,
+    max_velocity numeric(8, 4) NOT NULL,
+    max_reverse_velocity numeric(8, 4) NULL,
+    energy_level numeric(8, 4) NULL,
+    allowed_orders jsonb NULL,
+    allowed_peripheral_operations jsonb NULL,
+    -- 扩展属性
+    properties jsonb NULL,
+    -- 审计字段
+    create_dept BIGINT,
+    create_by BIGINT,
+    update_by BIGINT,
+    create_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    update_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT vehicle_type_name_key UNIQUE (name),
+    CONSTRAINT vehicle_type_pkey PRIMARY KEY (id)
+);
