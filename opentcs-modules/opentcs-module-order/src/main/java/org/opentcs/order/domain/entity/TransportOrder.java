@@ -2,6 +2,8 @@ package org.opentcs.order.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
+import org.opentcs.common.mybatis.core.domain.BaseEntity;
+
 import java.time.LocalDateTime;
 
 /**
@@ -9,7 +11,7 @@ import java.time.LocalDateTime;
  */
 @Data
 @TableName("transport_order")
-public class TransportOrder {
+public class TransportOrder extends BaseEntity {
 
     /**
      * 主键ID
