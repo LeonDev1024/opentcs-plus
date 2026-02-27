@@ -10,6 +10,8 @@ import org.opentcs.map.domain.entity.PlantModel;
 import org.opentcs.map.service.PlantModelService;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * 地图模型管理
@@ -61,5 +63,53 @@ public class PlantModelController extends BaseController {
     @DeleteMapping("/{id}")
     public R<Boolean> deletePlantModel(@PathVariable Long id) {
         return R.ok(plantModelService.removeById(id));
+    }
+
+    /**
+     * 导入地图
+     */
+    @PostMapping("/import")
+    public R<Boolean> importMap(@RequestParam("file") MultipartFile file) {
+        return R.ok(plantModelService.importMap(file));
+    }
+
+    /**
+     * 导出地图
+     */
+    @GetMapping("/export/{id}")
+    public void exportMap(@PathVariable Long id, HttpServletResponse response) {
+        plantModelService.exportMap(id, response);
+    }
+
+    /**
+     * 创建地图版本
+     */
+    @PostMapping("/version/create")
+    public R<Long> createVersion(@RequestParam Long modelId, @RequestParam String versionName) {
+        return R.ok(plantModelService.createVersion(modelId, versionName));
+    }
+
+    /**
+     * 获取版本历史
+     */
+    @GetMapping("/version/history/{id}")
+    public TableDataInfo<PlantModel> getVersionHistory(@PathVariable Long id, PageQuery pageQuery) {
+        return plantModelService.getVersionHistory(id, pageQuery);
+    }
+
+    /**
+     * 拓扑验证
+     */
+    @GetMapping("/validate/{id}")
+    public R<String> validateTopology(@PathVariable Long id) {
+        return R.ok(plantModelService.validateTopology(id));
+    }
+
+    /**
+     * 复制地图
+     */
+    @PostMapping("/copy")
+    public R<Long> copyMap(@RequestParam Long modelId, @RequestParam String newName) {
+        return R.ok(plantModelService.copyMap(modelId, newName));
     }
 }

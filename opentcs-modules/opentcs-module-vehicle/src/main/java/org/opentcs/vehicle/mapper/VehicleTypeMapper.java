@@ -2,7 +2,6 @@ package org.opentcs.vehicle.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.vehicle.domain.entity.VehicleType;
 
 /**

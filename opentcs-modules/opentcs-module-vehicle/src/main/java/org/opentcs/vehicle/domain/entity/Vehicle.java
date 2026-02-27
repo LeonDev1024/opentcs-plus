@@ -27,6 +27,11 @@ public class Vehicle extends BaseEntity {
     private String name;
 
     /**
+     * 车辆VIN码
+     */
+    private String vinCode;
+
+    /**
      * 车辆类型ID
      */
     private Long vehicleTypeId;

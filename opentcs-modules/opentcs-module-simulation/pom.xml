@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>opentcs-modules</artifactId>
+        <groupId>org.opentcs</groupId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>opentcs-module-simulation</artifactId>
+    <name>OpenTCS Simulation Module</name>
+    <description>Simulation module for OpenTCS Plus</description>
+
+    <dependencies>
+        <!-- Core dependencies -->
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
+        <!-- Algorithm module -->
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-module-algorithm</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
+        <!-- Vehicle module -->
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-module-vehicle</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
+        <!-- Order module -->
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-module-order</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
+        <!-- Map module -->
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-module-map</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
+        <!-- Driver module -->
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-module-driver</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
+
+        
+        <!-- Spring Boot dependencies -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+        
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+
+</project>

@@ -25,6 +25,11 @@ public class TransportOrder extends BaseEntity {
     private String name;
 
     /**
+     * 订单编号
+     */
+    private String orderNo;
+
+    /**
      * 订单状态：RAW, ACTIVE, FINISHED, FAILED
      */
     private String state;
@@ -64,4 +69,16 @@ public class TransportOrder extends BaseEntity {
      * 扩展属性
      */
     private String properties;
+
+    /**
+     * 临时字段：车辆VIN码（前端传递）
+     */
+    @TableField(exist = false)
+    private String vehicleVin;
+
+    /**
+     * 临时字段：订单状态（前端传递）
+     */
+    @TableField(exist = false)
+    private String status;
 }

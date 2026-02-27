@@ -8,5 +8,38 @@
     </parent>
     <artifactId>opentcs-module-driver</artifactId>
     <name>opentcs-module-driver</name>
+    
+    <dependencies>
+        <!-- Core dependencies -->
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-core</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-json</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-mqtt</artifactId>
+        </dependency>
+        
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+        
+        <!-- MQTT Client -->
+        <dependency>
+            <groupId>org.eclipse.paho</groupId>
+            <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+            <version>1.2.5</version>
+        </dependency>
+        
 
+    </dependencies>
 </project>

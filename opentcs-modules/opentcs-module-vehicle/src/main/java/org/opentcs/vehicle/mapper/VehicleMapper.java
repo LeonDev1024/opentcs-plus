@@ -1,8 +1,7 @@
 package org.opentcs.vehicle.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import org.opentcs.common.mybatis.core.page.PageQuery;
-import org.opentcs.common.mybatis.core.page.TableDataInfo;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.opentcs.vehicle.domain.entity.Vehicle;
 
 /**
@@ -12,9 +11,9 @@ public interface VehicleMapper extends BaseMapper<Vehicle> {
 
     /**
      * 分页查询车辆列表
+     * @param page 分页参数
      * @param vehicle 查询条件
-     * @param pageQuery 分页参数
      * @return 分页结果
      */
-    TableDataInfo<Vehicle> selectPageVehicle(Vehicle vehicle, PageQuery pageQuery);
+    IPage<Vehicle> selectPageVehicle(IPage<Vehicle> page, Vehicle vehicle);
 }
