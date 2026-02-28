@@ -23,6 +23,13 @@
             <version>${spring-boot.version}</version>
         </dependency>
 
+        <!-- SpringBoot Web -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <version>${spring-boot.version}</version>
+        </dependency>
+
         <!-- PostgreSQL驱动包 -->
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -67,6 +74,12 @@
 
         <dependency>
             <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-mybatis</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opentcs</groupId>
             <artifactId>opentcs-common-job</artifactId>
             <version>${revision}</version>
             <exclusions>
@@ -91,6 +104,12 @@
         <dependency>
             <groupId>org.opentcs</groupId>
             <artifactId>opentcs-module-vehicle</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-module-order</artifactId>
             <version>${revision}</version>
         </dependency>
 

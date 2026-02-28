@@ -10,6 +10,7 @@ import org.opentcs.order.service.TransportOrderService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 运输订单 Controller
@@ -50,7 +51,15 @@ public class TransportOrderController extends BaseController {
      */
     @PostMapping("/")
     public R<Boolean> createTransportOrder(@RequestBody TransportOrder transportOrder) {
-        return R.ok(transportOrderService.save(transportOrder));
+        return R.ok(transportOrderService.createTransportOrder(transportOrder));
+    }
+
+    /**
+     * 批量创建运输订单
+     */
+    @PostMapping("/batch")
+    public R<Boolean> batchCreateTransportOrder(@RequestBody List<TransportOrder> transportOrders) {
+        return R.ok(transportOrderService.batchCreateTransportOrder(transportOrders));
     }
 
     /**
@@ -67,5 +76,53 @@ public class TransportOrderController extends BaseController {
     @DeleteMapping("/{id}")
     public R<Boolean> deleteTransportOrder(@PathVariable Long id) {
         return R.ok(transportOrderService.removeById(id));
+    }
+
+    /**
+     * 取消运输订单
+     */
+    @PostMapping("/cancel/{id}")
+    public R<Boolean> cancelTransportOrder(@PathVariable Long id) {
+        return R.ok(transportOrderService.cancelTransportOrder(id));
+    }
+
+    /**
+     * 分配车辆
+     */
+    @PostMapping("/assign/{id}")
+    public R<Boolean> assignVehicle(@PathVariable Long id, @RequestParam String vehicleId) {
+        return R.ok(transportOrderService.assignVehicle(id, vehicleId));
+    }
+
+    /**
+     * 获取订单执行状态
+     */
+    @GetMapping("/status/{id}")
+    public R<Map<String, Object>> getOrderStatus(@PathVariable Long id) {
+        return R.ok(transportOrderService.getOrderStatus(id));
+    }
+
+    /**
+     * 获取订单执行历史
+     */
+    @GetMapping("/history/{id}")
+    public TableDataInfo<Map<String, Object>> getOrderHistory(@PathVariable Long id, PageQuery pageQuery) {
+        return transportOrderService.getOrderHistory(id, pageQuery);
+    }
+
+    /**
+     * 优化订单调度
+     */
+    @PostMapping("/optimize")
+    public R<Map<String, Object>> optimizeOrderDispatch(@RequestBody List<Long> orderIds) {
+        return R.ok(transportOrderService.optimizeOrderDispatch(orderIds));
+    }
+
+    /**
+     * 获取订单统计数据
+     */
+    @GetMapping("/statistics")
+    public R<Map<String, Object>> getOrderStatistics() {
+        return R.ok(transportOrderService.getOrderStatistics());
     }
 }

@@ -5,10 +5,30 @@
 <mapper namespace="org.opentcs.order.mapper.TransportOrderMapper">
 
     <select id="selectPageTransportOrder" resultType="org.opentcs.order.domain.entity.TransportOrder">
-        SELECT * FROM transport_order
+        SELECT 
+            id, 
+            order_no as orderNo, 
+            processing_vehicle as vehicleVin, 
+            CASE 
+                WHEN state = 'RAW' THEN '0' 
+                WHEN state = 'ACTIVE' THEN '1' 
+                WHEN state = 'FINISHED' THEN '3' 
+                WHEN state = 'FAILED' THEN '4' 
+                ELSE state 
+            END as status 
+        FROM transport_order
         <where>
-            <if test="name != null and name != ''">AND name LIKE CONCAT('%', #{name}, '%')</if>
-            <if test="status != null and status != ''">AND status = #{status}</if>
+            <if test="transportOrder.orderNo != null and transportOrder.orderNo != ''">AND order_no = #{transportOrder.orderNo}</if>
+            <if test="transportOrder.vehicleVin != null and transportOrder.vehicleVin != ''">AND processing_vehicle = #{transportOrder.vehicleVin}</if>
+            <if test="transportOrder.status != null and transportOrder.status != ''">
+                AND state = CASE 
+                    WHEN #{transportOrder.status} = '0' THEN 'RAW'
+                    WHEN #{transportOrder.status} = '1' THEN 'ACTIVE'
+                    WHEN #{transportOrder.status} = '3' THEN 'FINISHED'
+                    WHEN #{transportOrder.status} = '4' THEN 'FAILED'
+                    ELSE state
+                END
+            </if>
         </where>
     </select>
 

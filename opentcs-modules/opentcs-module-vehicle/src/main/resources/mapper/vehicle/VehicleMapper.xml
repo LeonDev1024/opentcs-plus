@@ -7,8 +7,10 @@
     <select id="selectPageVehicle" resultType="org.opentcs.vehicle.domain.entity.Vehicle">
         SELECT * FROM vehicle
         <where>
-            <if test="vehicle.name != null and vehicle.name != ''">AND name LIKE CONCAT('%', #{vehicle.name}, '%')</if>
-            <if test="vehicle.state != null and vehicle.state != ''">AND state = #{vehicle.state}</if>
+            <if test="param2.name != null and param2.name != ''">AND name LIKE CONCAT('%', #{param2.name}, '%')</if>
+            <if test="param2.state != null and param2.state != ''">AND state = #{param2.state}</if>
+            <if test="param2.vinCode != null and param2.vinCode != ''">AND vin_code LIKE CONCAT('%', #{param2.vinCode}, '%')</if>
+            <if test="param2.vehicleTypeId != null">AND vehicle_type_id = #{param2.vehicleTypeId}</if>
         </where>
     </select>
 
