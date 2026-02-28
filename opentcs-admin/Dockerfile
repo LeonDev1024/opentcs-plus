@@ -8,7 +8,7 @@ WORKDIR /app
 COPY target/opentcs-admin.jar /app/opentcs-admin.jar
 
 # 暴露端口
-EXPOSE 8080
+EXPOSE 8088
 
 # 启动命令
 CMD ["java", "-jar", "/app/opentcs-admin.jar"]

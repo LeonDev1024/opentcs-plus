@@ -61,14 +61,14 @@ start_service() {
     # 启动新容器
     docker run -d \
       --name opentcs-admin \
-      -p 8080:8080 \
+      -p 8088:8088 \
       -v "$(pwd)/logs:/app/logs" \
       --restart unless-stopped \
       opentcs-admin:latest
     
     if [ $? -eq 0 ]; then
         echo "OpenTCS Plus服务启动成功！"
-        echo "服务地址: http://localhost:8080"
+        echo "服务地址: http://localhost:8088"
         return 0
     else
         echo "OpenTCS Plus服务启动失败！"
