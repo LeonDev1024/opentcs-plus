@@ -1,4 +1,10 @@
-# OpenTCS Plus 机器人调度管理系统
+# 平台简介
+![Spring Boot 3.5](https://img.shields.io/badge/Spring%20Boot-3.5-green)
+![JDK 21](https://img.shields.io/badge/JDK-21-orange)
+![Redis](https://img.shields.io/badge/Redis-7.0-red)
+![Maven](https://img.shields.io/badge/Maven-3.9-blue)
+![Docker](https://img.shields.io/badge/Docker-20.10-blue)
+
 OpenTCS Plus 是基于 OpenTCS 核心思想构建的企业级AGV调度系统，在保留 OpenTCS 稳定调度内核的同时，提供了更现代化的架构、更友好的用户界面和更强大的功能扩展。
 
 ## 项目架构
@@ -74,7 +80,7 @@ opentcs-plus-web/
 
 ## 在线体验
 
-- **演示地址**: http://localhost:8080
+- **演示地址**: http://localhost:8088
 - **默认账号**: admin
 - **默认密码**: admin123
 
