@@ -21,14 +21,14 @@ opentcsplus/
 opentcs-plus/
 ├── opentcs-admin/                     # Web入口模块
 │   ├── src/main/java/org/opentcs/web/ # Web控制器和服务
-│   └── src/main/resources/           # 配置文件
+│   └── src/main/resources/            # 配置文件
 ├── opentcs-common/                    # 通用模块
-│   ├── opentcs-common-core/          # 核心通用功能
-│   ├── opentcs-common-mybatis/       # MyBatis集成
-│   ├── opentcs-common-redis/         # Redis集成
-│   ├── opentcs-common-security/      # 安全模块
-│   └── opentcs-common-web/           # Web通用功能
-├── opentcs-modules/                   # 业务模块
+│   ├── opentcs-common-core/           # 核心通用功能
+│   ├── opentcs-common-mybatis/        # MyBatis集成
+│   ├── opentcs-common-redis/          # Redis集成
+│   ├── opentcs-common-security/       # 安全模块
+│   └── opentcs-common-web/            # Web通用功能
+├── opentcs-modules/                   # 业务模块（按照领域拆分）
 │   ├── opentcs-module-algorithm/      # 路径规划和调度算法
 │   ├── opentcs-module-driver/         # 车辆驱动和通信
 │   ├── opentcs-module-map/            # 地图管理和编辑
@@ -104,6 +104,6 @@ opentcs-plus-web/
 ---
 
 ## 最后
-目前正在逐步迭代完善中，有什么建议可以微信联系我
+目前正在逐步迭代完善中，有什么问题、建议可以微信联系我 \
 vx: SmFzb25FeHBsb3Jlcg== (需要base64解码)
 
