@@ -18,15 +18,15 @@ CREATE TABLE plant_model (
     CONSTRAINT plant_model_name_key UNIQUE (name),
     CONSTRAINT plant_model_pkey PRIMARY KEY (id)
 );
-COMMENT ON TABLE public.plant_model IS 'OpenTCS地图模型表';
+COMMENT ON TABLE plant_model IS 'OpenTCS地图模型表';
 
 -- Column comments
 
-COMMENT ON COLUMN public.plant_model.map_id IS '地图模型唯一标识符';
-COMMENT ON COLUMN public.plant_model."name" IS '地图模型名称，唯一标识';
-COMMENT ON COLUMN public.plant_model.model_version IS '模型版本';
-COMMENT ON COLUMN public.plant_model.properties IS '扩展属性';
-COMMENT ON COLUMN public.plant_model.description IS '备注';
+COMMENT ON COLUMN plant_model.map_id IS '地图模型唯一标识符';
+COMMENT ON COLUMN plant_model."name" IS '地图模型名称，唯一标识';
+COMMENT ON COLUMN plant_model.model_version IS '模型版本';
+COMMENT ON COLUMN plant_model.properties IS '扩展属性';
+COMMENT ON COLUMN plant_model.description IS '备注';
 
 -- 点位表 (Point)
 CREATE TABLE point (
