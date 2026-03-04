@@ -1,31 +1,32 @@
 -- OpenTCS 地图模型表 (核心表)
 CREATE TABLE plant_model (
-    id BIGSERIAL PRIMARY KEY,
-    map_id VARCHAR(255) NOT NULL UNIQUE,
-    name VARCHAR(255) NOT NULL UNIQUE,
-    model_version VARCHAR(50) NOT NULL DEFAULT '1.0',
-    -- 状态管理
-    status      char        default '0'::bpchar,
-    properties JSONB,
-    -- 审计字段
-    create_dept BIGINT,
-    create_by BIGINT,
-    update_by BIGINT,
-    create_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    update_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    model_version VARCHAR(1000)  NULL ,
-    del_flag      char        default '0'::bpchar
+    id bigserial NOT NULL,
+    map_id varchar(255) NOT NULL, -- 地图模型唯一标识符
+    "name" varchar(255) NOT NULL, -- 地图模型名称，唯一标识
+    model_version varchar(50) DEFAULT '1.0'::character varying NOT NULL, -- 模型版本
+    properties jsonb NULL, -- 扩展属性
+    create_dept int8 NULL,
+    create_by int8 NULL,
+    update_by int8 NULL,
+    create_time timestamptz DEFAULT CURRENT_TIMESTAMP NULL,
+    update_time timestamptz DEFAULT CURRENT_TIMESTAMP NULL,
+    "version" int8 DEFAULT 0 NULL,
+    description varchar(1000) NULL, -- 备注
+    del_flag bpchar(1) DEFAULT '0'::bpchar NULL,
+    status bpchar(1) DEFAULT '0'::bpchar NULL,
+    CONSTRAINT plant_model_map_id_key UNIQUE (map_id),
+    CONSTRAINT plant_model_name_key UNIQUE (name),
+    CONSTRAINT plant_model_pkey PRIMARY KEY (id)
 );
-
 COMMENT ON TABLE plant_model IS 'OpenTCS地图模型表';
+
+-- Column comments
+
 COMMENT ON COLUMN plant_model.map_id IS '地图模型唯一标识符';
-COMMENT ON COLUMN plant_model.name IS '地图模型名称，唯一标识';
+COMMENT ON COLUMN plant_model."name" IS '地图模型名称，唯一标识';
 COMMENT ON COLUMN plant_model.model_version IS '模型版本';
-COMMENT ON COLUMN plant_model.length_unit IS '长度单位：mm, cm, m';
-COMMENT ON COLUMN plant_model.scale IS '比例尺';
-COMMENT ON COLUMN plant_model.layout_width IS '布局宽度';
-COMMENT ON COLUMN plant_model.layout_height IS '布局高度';
 COMMENT ON COLUMN plant_model.properties IS '扩展属性';
+COMMENT ON COLUMN plant_model.description IS '备注';
 
 -- 点位表 (Point)
 CREATE TABLE point (
