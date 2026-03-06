@@ -277,7 +277,27 @@ COMMENT ON COLUMN layer.visible IS '是否可见';
 COMMENT ON COLUMN layer.ordinal IS '显示顺序';
 COMMENT ON COLUMN layer.properties IS '扩展属性';
 
+CREATE TABLE plant_model_history (
+    id BIGSERIAL PRIMARY KEY,
+    plant_model_id BIGINT NOT NULL,
+    model_version VARCHAR(50) NOT NULL,
+    file_url VARCHAR(500),
+    snapshot_type VARCHAR(50) DEFAULT 'EDITOR_JSON',
+    change_summary VARCHAR(1000),
+    properties JSONB,
+    create_dept BIGINT,
+    create_by BIGINT,
+    create_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (plant_model_id) REFERENCES plant_model(id) ON DELETE CASCADE
+);
 
+COMMENT ON TABLE plant_model_history IS '地图模型历史版本快照表';
+COMMENT ON COLUMN plant_model_history.plant_model_id IS '关联的当前地图模型ID';
+COMMENT ON COLUMN plant_model_history.model_version IS '对应的业务版本号，例如1.0,1.1';
+COMMENT ON COLUMN plant_model_history.file_url IS '快照文件路径或URL(JSON/XML)';
+COMMENT ON COLUMN plant_model_history.snapshot_type IS '快照类型：EDITOR_JSON, OPENTCS_XML, MERGED等';
+COMMENT ON COLUMN plant_model_history.change_summary IS '本次修改的简要说明';
+COMMENT ON COLUMN plant_model_history.properties IS '扩展属性';
 -- 车辆类型表（Vehicle Type）
 CREATE TABLE vehicle_type (
     id bigserial NOT NULL,

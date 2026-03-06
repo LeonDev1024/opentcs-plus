@@ -66,4 +66,12 @@ public interface PlantModelService extends IService<PlantModel> {
      * @return 新地图ID
      */
     Long copyMap(Long modelId, String newName);
+
+    /**
+     * 上传并保存地图编辑器完整数据文件（JSON/XML 快照）
+     * @param modelId 地图模型ID
+     * @param file 编辑器导出的地图数据文件
+     * @return 是否保存成功
+     */
+    boolean uploadEditorData(Long modelId, MultipartFile file);
 }

@@ -3,25 +3,45 @@ package org.opentcs.map.service.impl;
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
-import org.opentcs.map.domain.entity.*;
-import org.opentcs.map.mapper.*;
-import org.opentcs.map.service.*;
+import org.opentcs.map.domain.entity.Block;
+import org.opentcs.map.domain.entity.Path;
+import org.opentcs.map.domain.entity.PlantModel;
+import org.opentcs.map.domain.entity.PlantModelHistory;
+import org.opentcs.map.domain.entity.Point;
+import org.opentcs.map.domain.entity.VisualLayout;
+import org.opentcs.map.domain.entity.Layer;
+import org.opentcs.map.domain.entity.LayerGroup;
+import org.opentcs.map.mapper.PlantModelMapper;
+import org.opentcs.map.service.BlockService;
+import org.opentcs.map.service.LayerGroupService;
+import org.opentcs.map.service.LayerService;
+import org.opentcs.map.service.LocationService;
+import org.opentcs.map.service.PathService;
+import org.opentcs.map.service.PlantModelHistoryService;
+import org.opentcs.map.service.PlantModelService;
+import org.opentcs.map.service.PointService;
+import org.opentcs.map.service.VisualLayoutService;
+import org.opentcs.map.utils.ModelVersionUtil;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -42,6 +62,13 @@ public class PlantModelServiceImpl extends ServiceImpl<PlantModelMapper, PlantMo
     private final LocationService locationService;
     private final BlockService blockService;
     private final ObjectMapper objectMapper;
+    private final PlantModelHistoryService plantModelHistoryService;
+
+    /**
+     * 地图编辑器文件存储根目录（相对当前工作目录）
+     */
+    @Value("${opentcs.map.storage-root:maps}")
+    private String mapStorageRoot;
 
     @Override
     @CacheEvict(allEntries = true)
@@ -221,5 +248,45 @@ public class PlantModelServiceImpl extends ServiceImpl<PlantModelMapper, PlantMo
         // 这里简化处理，实际应该实现完整的复制逻辑
 
         return newModel.getId();
+    }
+
+    @Override
+    @CacheEvict(allEntries = true)
+    public boolean uploadEditorData(Long modelId, MultipartFile file) {
+        PlantModel plantModel = this.getById(modelId);
+        if (plantModel == null) {
+            throw new RuntimeException("地图模型不存在");
+        }
+
+        // 计算新的业务版本号
+        String currentVersion = plantModel.getModelVersion();
+        String nextVersion = ModelVersionUtil.getNextModelVersion(currentVersion);
+        plantModel.setModelVersion(nextVersion);
+        this.updateById(plantModel);
+
+        // 计算存储路径：maps/{mapId}/versions/map_v{version}.json
+        String mapId = plantModel.getMapId();
+        String fileName = String.format("map_v%s.json", nextVersion);
+        java.nio.file.Path baseDir = Paths.get(mapStorageRoot, mapId, "versions");
+        java.nio.file.Path targetFile = baseDir.resolve(fileName);
+        try {
+            Files.createDirectories(baseDir);
+            try (InputStream in = file.getInputStream()) {
+                Files.copy(in, targetFile, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("保存地图编辑器文件失败", e);
+        }
+
+        // 记录历史快照
+        PlantModelHistory history = new PlantModelHistory();
+        history.setPlantModelId(plantModel.getId());
+        history.setModelVersion(nextVersion);
+        // 使用相对路径，前端如需下载可再组合为完整URL
+        history.setFileUrl(Paths.get(mapStorageRoot, mapId, "versions", fileName).toString());
+        history.setSnapshotType("EDITOR_JSON");
+        plantModelHistoryService.recordHistory(history);
+
+        return true;
     }
 }

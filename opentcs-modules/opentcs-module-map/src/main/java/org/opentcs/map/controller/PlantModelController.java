@@ -1,6 +1,4 @@
 package org.opentcs.map.controller;
-
-import cn.hutool.core.util.IdUtil;
 import lombok.RequiredArgsConstructor;
 import org.opentcs.common.core.domain.R;
 import org.opentcs.common.mybatis.core.page.PageQuery;
@@ -79,6 +77,15 @@ public class PlantModelController extends BaseController {
     @GetMapping("/export/{id}")
     public void exportMap(@PathVariable Long id, HttpServletResponse response) {
         plantModelService.exportMap(id, response);
+    }
+
+    /**
+     * 上传地图编辑器完整数据文件（JSON/XML）
+     * 对应前端 /map/model/{id}/editor-data/upload
+     */
+    @PostMapping("/{id}/editor-data/upload")
+    public R<Boolean> uploadEditorData(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        return R.ok(plantModelService.uploadEditorData(id, file));
     }
 
     /**

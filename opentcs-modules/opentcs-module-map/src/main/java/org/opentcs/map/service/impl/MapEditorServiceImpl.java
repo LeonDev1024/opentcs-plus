@@ -29,7 +29,9 @@ public class MapEditorServiceImpl implements IMapEditorService {
     @Override
     public PlantModelBO load(LoadModelVO loadModelVO) {
         LambdaQueryWrapper<PlantModel> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(PlantModel::getMapId, loadModelVO.getMapId());
+        queryWrapper.eq(PlantModel::getMapId, loadModelVO.getMapId())
+            .orderByDesc(PlantModel::getModelVersion)
+            .last("limit 1");
         PlantModel plantModel = plantModelService.getOne(queryWrapper);
         
         if (Objects.isNull(plantModel)) {
