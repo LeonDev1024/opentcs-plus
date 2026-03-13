@@ -1,12 +1,15 @@
 package org.opentcs.map.domain.entity;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.opentcs.common.mybatis.core.domain.BaseEntity;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 路径实体类
@@ -76,4 +79,18 @@ public class Path extends BaseEntity {
      * 扩展属性
      */
     private String properties;
+
+    /**
+     * 几何连接类型（仅导入 openTCS XML 时使用，不入库）：
+     * DIRECT / ELBOW / SLANTED / POLYPATH / BEZIER / BEZIER_3
+     */
+    @TableField(exist = false)
+    private String connectionType;
+
+    /**
+     * 路径控制点列表（仅导入 openTCS XML 时使用，不入库），
+     * 用于前端重建近似的路径几何形状。
+     */
+    @TableField(exist = false)
+    private List<PathLayoutControlPoint> layoutControlPoints;
 }

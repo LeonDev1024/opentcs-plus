@@ -17,14 +17,9 @@ public class PlantModelBO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 地图模型信息
+     * 地图模型主键ID
      */
     private Long plantModelId;
-
-    /**
-     * 语义拓扑地图id
-     */
-    private String mapId;
 
     /**
      * 地图模型名称，唯一标识

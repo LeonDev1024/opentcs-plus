@@ -24,11 +24,11 @@ public interface PlantModelService extends IService<PlantModel> {
     TableDataInfo<PlantModel> selectPagePlantModel(PlantModel plantModel, PageQuery pageQuery);
 
     /**
-     * 导入地图
+     * 导入地图（仅解析 openTCS XML/JSON，返回内存模型，不直接入库）
      * @param file 地图文件
-     * @return 导入结果
+     * @return 解析后的地图模型（PlantModelBO 或等价结构）
      */
-    boolean importMap(MultipartFile file);
+    org.opentcs.map.domain.bo.PlantModelBO importMap(MultipartFile file);
 
     /**
      * 导出地图
@@ -69,7 +69,7 @@ public interface PlantModelService extends IService<PlantModel> {
 
     /**
      * 上传并保存地图编辑器完整数据文件（JSON/XML 快照）
-     * @param modelId 地图模型ID
+     * @param modelId 地图模型主键ID
      * @param file 编辑器导出的地图数据文件
      * @return 是否保存成功
      */

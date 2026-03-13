@@ -1,7 +1,6 @@
 package org.opentcs.map.service.impl;
 
 import cn.hutool.core.io.IoUtil;
-import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -11,15 +10,26 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
+import org.opentcs.map.domain.bo.PlantModelBO;
 import org.opentcs.map.domain.entity.Block;
 import org.opentcs.map.domain.entity.Path;
 import org.opentcs.map.domain.entity.PlantModel;
 import org.opentcs.map.domain.entity.PlantModelHistory;
 import org.opentcs.map.domain.entity.Point;
+import org.opentcs.map.domain.entity.Location;
+import org.opentcs.map.domain.entity.LocationType;
+import org.opentcs.map.domain.entity.Block;
 import org.opentcs.map.domain.entity.VisualLayout;
 import org.opentcs.map.domain.entity.Layer;
 import org.opentcs.map.domain.entity.LayerGroup;
 import org.opentcs.map.mapper.PlantModelMapper;
+import org.opentcs.map.importer.OpenTcsXmlImporter;
+import org.opentcs.map.importer.OpenTcsXmlImporter.OpenTcsImportResult;
+import org.opentcs.map.importer.OpenTcsXmlImporter.OpenTcsPath;
+import org.opentcs.map.importer.OpenTcsXmlImporter.OpenTcsPoint;
+import org.opentcs.map.importer.OpenTcsXmlImporter.OpenTcsLocation;
+import org.opentcs.map.importer.OpenTcsXmlImporter.OpenTcsLocationType;
+import org.opentcs.map.importer.OpenTcsXmlImporter.OpenTcsBlock;
 import org.opentcs.map.service.BlockService;
 import org.opentcs.map.service.LayerGroupService;
 import org.opentcs.map.service.LayerService;
@@ -42,9 +52,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import java.util.Map;
 
 /**
  * 地图模型 Service 实现类
@@ -81,7 +92,6 @@ public class PlantModelServiceImpl extends ServiceImpl<PlantModelMapper, PlantMo
         if (isExist) {
             throw new RuntimeException("地图名称已存在");
         }
-        plantModel.setMapId(IdUtil.fastSimpleUUID());
         plantModel.setModelVersion("1.0");
 
         this.save(plantModel);
@@ -118,16 +128,140 @@ public class PlantModelServiceImpl extends ServiceImpl<PlantModelMapper, PlantMo
     @SneakyThrows
     @Override
     @CacheEvict(allEntries = true)
-    public boolean importMap(MultipartFile file) {
+    public PlantModelBO importMap(MultipartFile file) {
         try (InputStream inputStream = file.getInputStream()) {
-            // 读取文件内容
+            // 读取完整文件内容，基于首字符判断 XML / JSON，避免仅依赖文件名导致误判
             String content = IoUtil.read(inputStream, "UTF-8");
-            // 解析地图数据
-            // 这里简化处理，实际应该根据文件格式进行解析
-            // 例如：JSON、XML等格式
-            PlantModel plantModel = objectMapper.readValue(content, PlantModel.class);
-            // 保存地图模型
-            return this.save(plantModel);
+            String trimmed = content != null ? content.trim() : "";
+            boolean isXml = !trimmed.isEmpty() && trimmed.charAt(0) == '<';
+
+            if (isXml) {
+                // 解析 openTCS XML 模型，仅构造内存模型，不直接落库
+                OpenTcsXmlImporter importer = new OpenTcsXmlImporter();
+                InputStream xmlStream = new java.io.ByteArrayInputStream(content.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                OpenTcsImportResult result = importer.parse(xmlStream);
+
+                PlantModelBO bo = new PlantModelBO();
+                bo.setPlantModelId(null);
+                bo.setName(result.getModelName() != null ? result.getModelName() : "Imported-Model");
+                bo.setModelVersion("1.0");
+
+                // 点
+                List<Point> pointList = new ArrayList<>();
+                Map<String, OpenTcsPoint> pointByName = new HashMap<>();
+                for (OpenTcsPoint op : result.getPoints()) {
+                    Point p = new Point();
+                    p.setName(op.name);
+                    p.setXPosition(op.x);
+                    p.setYPosition(op.y);
+                    p.setZPosition(op.z);
+                    p.setType(op.type);
+                    pointList.add(p);
+                    if (op.name != null) {
+                        pointByName.put(op.name, op);
+                    }
+                }
+                bo.setPoints(new java.util.HashSet<>(pointList));
+
+                // 路径：如果 XML 中 length 为空或为 0，则根据两端点坐标计算几何长度（单位：mm），
+                // 以保证与 openTCS 中路径长度显示一致。
+                List<Path> pathList = new ArrayList<>();
+                for (OpenTcsPath op : result.getPaths()) {
+                    Path path = new Path();
+                    path.setName(op.name);
+
+                    java.math.BigDecimal effectiveLength = op.length;
+                    if (effectiveLength == null || effectiveLength.compareTo(java.math.BigDecimal.ZERO) == 0) {
+                        OpenTcsPoint src = pointByName.get(op.sourcePointName);
+                        OpenTcsPoint dst = pointByName.get(op.destPointName);
+                        if (src != null && dst != null
+                            && src.x != null && src.y != null
+                            && dst.x != null && dst.y != null) {
+                            double dx = dst.x.subtract(src.x).doubleValue();
+                            double dy = dst.y.subtract(src.y).doubleValue();
+                            double len = Math.hypot(dx, dy);
+                            // openTCS 使用 mm 作为长度单位，这里取整数 mm
+                            effectiveLength = new java.math.BigDecimal(len).setScale(0, java.math.RoundingMode.HALF_UP);
+                        }
+                    }
+
+                    path.setLength(effectiveLength);
+                    path.setMaxVelocity(op.maxVelocity);
+                    path.setMaxReverseVelocity(op.maxReverseVelocity);
+                    // routingType 对应 openTCS 中 Path 的 RoutingType（BIDIRECTIONAL/FORWARD/BACKWARD）
+                    path.setRoutingType(op.routingType);
+                    // connectionType / 控制点 仅在内存中使用，用于前端重建几何形状
+                    path.setConnectionType(op.connectionType);
+                    if (op.controlPoints != null && !op.controlPoints.isEmpty()) {
+                        List<org.opentcs.map.domain.entity.PathLayoutControlPoint> cps = new ArrayList<>();
+                        for (org.opentcs.map.importer.OpenTcsXmlImporter.ControlPoint cp : op.controlPoints) {
+                            org.opentcs.map.domain.entity.PathLayoutControlPoint dto = new org.opentcs.map.domain.entity.PathLayoutControlPoint();
+                            dto.setX(cp.x);
+                            dto.setY(cp.y);
+                            cps.add(dto);
+                        }
+                        path.setLayoutControlPoints(cps);
+                    }
+                    pathList.add(path);
+                }
+                bo.setPaths(new java.util.HashSet<>(pathList));
+
+                // 位置类型
+                List<LocationType> locationTypeList = new ArrayList<>();
+                for (OpenTcsLocationType ot : result.getLocationTypes()) {
+                    LocationType lt = new LocationType();
+                    lt.setName(ot.name);
+                    locationTypeList.add(lt);
+                }
+                bo.setLocationTypes(new java.util.HashSet<>(locationTypeList));
+
+                // 位置（业务点位）
+                List<Location> locationList = new ArrayList<>();
+                for (OpenTcsLocation ol : result.getLocations()) {
+                    Location loc = new Location();
+                    loc.setName(ol.name);
+                    loc.setXPosition(ol.x);
+                    loc.setYPosition(ol.y);
+                    loc.setZPosition(ol.z);
+                    // 暂不绑定具体 LocationType，保留 typeName 在扩展属性中
+                    loc.setProperties(ol.typeName);
+                    locationList.add(loc);
+                }
+                bo.setLocations(new java.util.HashSet<>(locationList));
+
+                // 区域规则 Block（先仅保存名称、类型和成员名称，以便前端或后续保存时使用）
+                List<Block> blockList = new ArrayList<>();
+                for (OpenTcsBlock ob : result.getBlocks()) {
+                    Block b = new Block();
+                    b.setName(ob.name);
+                    b.setType(ob.type);
+                    // 成员路径和点名称用逗号分隔后放入 members 字段，供前端或持久化逻辑解析
+                    java.util.List<String> members = new java.util.ArrayList<>();
+                    members.addAll(ob.memberPathNames);
+                    members.addAll(ob.memberPointNames);
+                    b.setMembers(String.join(",", members));
+                    blockList.add(b);
+                }
+                bo.setBlocks(new java.util.HashSet<>(blockList));
+
+                bo.setVisualLayout(null);
+
+                return bo;
+            } else {
+                // JSON 情况：反序列化为 PlantModel 再转换为 BO 返回
+                PlantModel plantModel = objectMapper.readValue(content, PlantModel.class);
+                PlantModelBO bo = new PlantModelBO();
+                bo.setPlantModelId(plantModel.getId());
+                bo.setName(plantModel.getName());
+                bo.setModelVersion(plantModel.getModelVersion());
+                bo.setPoints(new java.util.HashSet<>());
+                bo.setPaths(new java.util.HashSet<>());
+                bo.setLocations(new java.util.HashSet<>());
+                bo.setBlocks(new java.util.HashSet<>());
+                bo.setLocationTypes(new java.util.HashSet<>());
+                bo.setVisualLayout(null);
+                return bo;
+            }
         }
     }
 
@@ -158,9 +292,8 @@ public class PlantModelServiceImpl extends ServiceImpl<PlantModelMapper, PlantMo
             throw new RuntimeException("地图模型不存在");
         }
 
-        // 创建新版本
+        // 创建新版本（按主键维度管理版本，不再使用 mapId）
         PlantModel newModel = new PlantModel();
-        newModel.setMapId(originalModel.getMapId());
         newModel.setName(originalModel.getName());
         newModel.setModelVersion(versionName);
         newModel.setStatus(originalModel.getStatus());
@@ -179,11 +312,11 @@ public class PlantModelServiceImpl extends ServiceImpl<PlantModelMapper, PlantMo
             throw new RuntimeException("地图模型不存在");
         }
 
-        // 查询同一地图ID的所有版本
+        // 查询同一地图名称的所有版本（也可以改成只按同一主键 id 管理）
         IPage<PlantModel> page = this.getBaseMapper().selectPage(
                 pageQuery.build(),
                 new LambdaQueryWrapper<>(PlantModel.class)
-                        .eq(PlantModel::getMapId, originalModel.getMapId())
+                        .eq(PlantModel::getName, originalModel.getName())
                         .eq(PlantModel::getDelFlag, "0")
                         .orderByDesc(PlantModel::getModelVersion)
         );
@@ -233,9 +366,8 @@ public class PlantModelServiceImpl extends ServiceImpl<PlantModelMapper, PlantMo
             throw new RuntimeException("地图名称已存在");
         }
 
-        // 创建新地图
+        // 创建新地图（不再生成 mapId，仅按主键 id 管理）
         PlantModel newModel = new PlantModel();
-        newModel.setMapId(IdUtil.fastSimpleUUID());
         newModel.setName(newName);
         newModel.setModelVersion("1.0");
         newModel.setStatus(originalModel.getStatus());
@@ -264,18 +396,71 @@ public class PlantModelServiceImpl extends ServiceImpl<PlantModelMapper, PlantMo
         plantModel.setModelVersion(nextVersion);
         this.updateById(plantModel);
 
-        // 计算存储路径：maps/{mapId}/versions/map_v{version}.json
-        String mapId = plantModel.getMapId();
+        // 将上传文件读入内存，既用于存盘也用于解析 JSON
+        byte[] bytes;
+        try {
+            bytes = file.getBytes();
+        } catch (IOException e) {
+            throw new RuntimeException("读取地图编辑器上传数据失败", e);
+        }
+
+        // 计算存储路径：maps/{id}/versions/map_v{version}.json
+        String idPath = String.valueOf(plantModel.getId());
         String fileName = String.format("map_v%s.json", nextVersion);
-        java.nio.file.Path baseDir = Paths.get(mapStorageRoot, mapId, "versions");
+        java.nio.file.Path baseDir = Paths.get(mapStorageRoot, idPath, "versions");
         java.nio.file.Path targetFile = baseDir.resolve(fileName);
         try {
             Files.createDirectories(baseDir);
-            try (InputStream in = file.getInputStream()) {
-                Files.copy(in, targetFile, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-            }
+            Files.write(targetFile, bytes);
         } catch (IOException e) {
             throw new RuntimeException("保存地图编辑器文件失败", e);
+        }
+
+        // 解析 JSON，按名称回写 point 坐标到数据库
+        try {
+            InputStream jsonIn = new java.io.ByteArrayInputStream(bytes);
+            com.fasterxml.jackson.databind.JsonNode root = objectMapper.readTree(jsonIn);
+            com.fasterxml.jackson.databind.JsonNode elements = root.path("elements");
+            com.fasterxml.jackson.databind.JsonNode pointsNode = elements.path("points");
+            if (pointsNode.isArray()) {
+                List<Point> pointsToUpdate = new ArrayList<>();
+                for (com.fasterxml.jackson.databind.JsonNode pNode : pointsNode) {
+                    String name = pNode.path("name").asText(null);
+                    if (name == null || name.isEmpty()) {
+                        continue;
+                    }
+                    java.math.BigDecimal x = pNode.hasNonNull("x")
+                        ? new java.math.BigDecimal(pNode.get("x").asText())
+                        : null;
+                    java.math.BigDecimal y = pNode.hasNonNull("y")
+                        ? new java.math.BigDecimal(pNode.get("y").asText())
+                        : null;
+                    if (x == null && y == null) {
+                        continue;
+                    }
+                    Point existing = pointService.getOne(
+                        new LambdaQueryWrapper<>(Point.class)
+                            .eq(Point::getPlantModelId, modelId)
+                            .eq(Point::getName, name),
+                        false
+                    );
+                    if (existing != null) {
+                        if (x != null) {
+                            existing.setXPosition(x);
+                        }
+                        if (y != null) {
+                            existing.setYPosition(y);
+                        }
+                        pointsToUpdate.add(existing);
+                    }
+                }
+                if (!pointsToUpdate.isEmpty()) {
+                    pointService.updateBatchById(pointsToUpdate);
+                }
+            }
+        } catch (IOException e) {
+            // 解析失败不影响快照保存和版本更新，只记录日志
+            System.err.println("解析地图编辑器 JSON 失败，未回写坐标: " + e.getMessage());
         }
 
         // 记录历史快照
@@ -283,7 +468,7 @@ public class PlantModelServiceImpl extends ServiceImpl<PlantModelMapper, PlantMo
         history.setPlantModelId(plantModel.getId());
         history.setModelVersion(nextVersion);
         // 使用相对路径，前端如需下载可再组合为完整URL
-        history.setFileUrl(Paths.get(mapStorageRoot, mapId, "versions", fileName).toString());
+        history.setFileUrl(Paths.get(mapStorageRoot, idPath, "versions", fileName).toString());
         history.setSnapshotType("EDITOR_JSON");
         plantModelHistoryService.recordHistory(history);
 

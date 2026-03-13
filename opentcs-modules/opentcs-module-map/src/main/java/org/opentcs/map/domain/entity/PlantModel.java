@@ -20,11 +20,6 @@ public class PlantModel extends BaseEntity {
     private Long id;
 
     /**
-     * 语义拓扑地图id
-     */
-    private String mapId;
-
-    /**
      * 地图模型名称，唯一标识
      */
     private String name;

@@ -67,7 +67,7 @@ public class PlantModelController extends BaseController {
      * 导入地图
      */
     @PostMapping("/import")
-    public R<Boolean> importMap(@RequestParam("file") MultipartFile file) {
+    public R<org.opentcs.map.domain.bo.PlantModelBO> importMap(@RequestParam("file") MultipartFile file) {
         return R.ok(plantModelService.importMap(file));
     }
 
@@ -81,7 +81,7 @@ public class PlantModelController extends BaseController {
 
     /**
      * 上传地图编辑器完整数据文件（JSON/XML）
-     * 对应前端 /map/model/{id}/editor-data/upload
+     * 路径参数为地图模型主键 id（Long）
      */
     @PostMapping("/{id}/editor-data/upload")
     public R<Boolean> uploadEditorData(@PathVariable Long id, @RequestParam("file") MultipartFile file) {

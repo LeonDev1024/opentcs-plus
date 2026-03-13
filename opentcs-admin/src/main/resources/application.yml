@@ -144,7 +144,7 @@ mybatis-plus:
   mapperPackage: org.dromara.**.mapper
   # 对应的 XML 文件位置
   mapperLocations: classpath*:mapper/**/*Mapper.xml
-  # 实体扫描，多个package用逗号或者分号分隔
+  # 实体扫描，多个 package 用逗号或者分号分隔
   typeAliasesPackage: org.dromara.**.domain
   global-config:
     dbConfig:
@@ -152,6 +152,10 @@ mybatis-plus:
       # AUTO 自增 NONE 空 INPUT 用户输入 ASSIGN_ID 雪花 ASSIGN_UUID 唯一 UUID
       # 如需改为自增 需要将数据库表全部设置为自增
       idType: ASSIGN_ID
+      # 逻辑删除字段的全局配置
+      logic-delete-field: delFlag
+      logic-delete-value: 1
+      logic-not-delete-value: 0
 
 # 数据加密
 mybatis-encryptor:

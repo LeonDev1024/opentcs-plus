@@ -35,6 +35,9 @@ public class VisualLayoutServiceImpl extends ServiceImpl<VisualLayoutMapper, Vis
         VisualLayoutBO visualLayoutBO = new VisualLayoutBO();
         VisualLayout visualLayout = this.getOne(new LambdaQueryWrapper<VisualLayout>()
                 .eq(VisualLayout::getPlantModelId, plantModelId));
+        if (visualLayout == null) {
+            return visualLayoutBO;
+        }
         visualLayoutBO.setVisualLayoutId(visualLayout.getId());
         visualLayoutBO.setName(visualLayout.getName());
         visualLayoutBO.setScaleX(visualLayout.getScaleX());

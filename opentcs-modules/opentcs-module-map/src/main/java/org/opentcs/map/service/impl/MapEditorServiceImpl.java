@@ -28,12 +28,8 @@ public class MapEditorServiceImpl implements IMapEditorService {
     private final BlockService blockService;
     @Override
     public PlantModelBO load(LoadModelVO loadModelVO) {
-        LambdaQueryWrapper<PlantModel> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(PlantModel::getMapId, loadModelVO.getMapId())
-            .orderByDesc(PlantModel::getModelVersion)
-            .last("limit 1");
-        PlantModel plantModel = plantModelService.getOne(queryWrapper);
-        
+        PlantModel plantModel = plantModelService.getById(loadModelVO.getModelId());
+
         if (Objects.isNull(plantModel)) {
             log.error("地图模型不存在");
             return null;
@@ -41,7 +37,6 @@ public class MapEditorServiceImpl implements IMapEditorService {
         PlantModelBO plantModelBO = new PlantModelBO();
         plantModelBO.setPlantModelId(plantModel.getId());
         plantModelBO.setName(plantModel.getName());
-        plantModelBO.setMapId(plantModel.getMapId());
         plantModelBO.setModelVersion(plantModel.getModelVersion());
         VisualLayoutBO visualLayoutBO = visualLayoutService.getVisualLayoutByPlantModelId(plantModel.getId());
         plantModelBO.setVisualLayout(visualLayoutBO);
@@ -73,7 +68,6 @@ public class MapEditorServiceImpl implements IMapEditorService {
         } else {
             // 复制地图元素
             PlantModel plantModel = new PlantModel();
-            plantModel.setMapId(plantModelBO.getMapId());
             plantModel.setName(plantModelBO.getName());
             // 模型版本+1
             plantModel.setModelVersion(ModelVersionUtil.getNextModelVersion(plantModelBO.getModelVersion()));
