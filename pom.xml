@@ -9,10 +9,18 @@
     <version>${revision}</version>
     <packaging>pom</packaging>
     <modules>
-        <!-- 核心模块 -->
+        <!-- 接口层 -->
         <module>opentcs-admin</module>
+        <!-- 公共模块 -->
         <module>opentcs-common</module>
-        <module>opentcs-modules</module>
+        <!-- 应用层 - 基于 OpenTCS Kernel 重构 -->
+        <module>opentcs-applications</module>
+        <!-- 领域层 - OpenTCS Kernel -->
+        <module>opentcs-kernel</module>
+        <!-- 基础设施层 - Driver 驱动适配 -->
+        <module>opentcs-driver</module>
+        <!-- 安全模块 -->
+        <module>opentcs-security</module>
     </modules>
 
     <properties>
@@ -117,6 +125,47 @@
                 <version>${revision}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+
+            <!-- kernel 的依赖配置-->
+            <dependency>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-kernel-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-kernel-core</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-kernel-persistence</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- driver 的依赖配置-->
+            <dependency>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-driver-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-driver-adapter-vda5050</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- security 的依赖配置-->
+            <dependency>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-security-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-security-core</artifactId>
+                <version>${revision}</version>
             </dependency>
 
             <!-- Spring AI 的依赖配置-->

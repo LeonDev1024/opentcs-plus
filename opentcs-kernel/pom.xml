@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.opentcs</groupId>
+        <artifactId>opentcs-plus</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <artifactId>opentcs-kernel</artifactId>
+    <packaging>pom</packaging>
+    <name>opentcs-kernel</name>
+    <description>OpenTCS Plus 领域层核心模块</description>
+
+    <modules>
+        <module>opentcs-kernel-bom</module>
+        <module>opentcs-kernel-api</module>
+        <module>opentcs-kernel-core</module>
+        <module>opentcs-kernel-persistence</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-kernel-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-kernel-core</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-kernel-persistence</artifactId>
+                <version>${revision}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>
