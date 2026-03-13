@@ -15,7 +15,6 @@ import org.opentcs.common.core.constant.Constants;
 import org.opentcs.common.core.constant.SystemConstants;
 import org.opentcs.common.core.constant.TenantConstants;
 import org.opentcs.common.core.exception.ServiceException;
-import org.opentcs.common.core.service.WorkflowService;
 import org.opentcs.common.core.utils.MapstructUtils;
 import org.opentcs.common.core.utils.SpringUtils;
 import org.opentcs.common.core.utils.StreamUtils;
@@ -26,10 +25,8 @@ import org.opentcs.common.redis.utils.CacheUtils;
 import org.opentcs.common.tenant.core.TenantEntity;
 import org.opentcs.common.tenant.helper.TenantHelper;
 import org.opentcs.system.domain.*;
-import org.opentcs.system.domain.*;
 import org.opentcs.system.domain.bo.SysTenantBo;
 import org.opentcs.system.domain.vo.SysTenantVo;
-import org.opentcs.system.mapper.*;
 import org.opentcs.system.mapper.*;
 import org.opentcs.system.service.ISysTenantService;
 import org.springframework.cache.annotation.CacheEvict;
@@ -211,13 +208,6 @@ public class SysTenantServiceImpl implements ISysTenantService {
             config.setUpdateTime(null);
         }
         configMapper.insertBatch(sysConfigList);
-
-        // 未开启工作流不执行下方操作
-        if (SpringUtils.getProperty("warm-flow.enabled", Boolean.class, false)) {
-            WorkflowService workflowService = SpringUtils.getBean(WorkflowService.class);
-            // 新增租户流程定义
-            workflowService.syncDef(tenantId);
-        }
         return true;
     }
 

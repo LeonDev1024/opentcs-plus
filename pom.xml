@@ -49,9 +49,6 @@
         <fastjson.version>1.2.83</fastjson.version>
         <!-- 面向运行时的D-ORM依赖 -->
         <anyline.version>8.7.2-20250603</anyline.version>
-        <!-- 工作流配置 -->
-        <warm-flow.version>1.8.2</warm-flow.version>
-
         <!-- 默认活动配置文件 -->
         <profiles.active>dev</profiles.active>
 
