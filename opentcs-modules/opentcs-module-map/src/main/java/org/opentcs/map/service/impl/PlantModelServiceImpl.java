@@ -50,6 +50,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -473,5 +474,14 @@ public class PlantModelServiceImpl extends ServiceImpl<PlantModelMapper, PlantMo
         plantModelHistoryService.recordHistory(history);
 
         return true;
+    }
+
+    /**
+     * 删除地图模型后需要清理列表等缓存，否则会出现 delFlag 与数据库不一致的问题
+     */
+    @Override
+    @CacheEvict(allEntries = true)
+    public boolean removeById(Serializable id) {
+        return super.removeById(id);
     }
 }
