@@ -8,7 +8,8 @@
 OpenTCS Plus 是基于 OpenTCS 核心思想构建的企业级AGV调度系统，在保留 OpenTCS 稳定调度内核的同时，提供了更现代化的架构、更友好的用户界面和更强大的功能扩展。
 
 ## 项目架构
-考虑仓储物流核心私有化部署的场景，实现单机模式调度系统，采用模块化划分，方便可扩展为微服务集群模式。
+考虑仓储物流核心私有化部署的场景，实现单机模式调度系统，采用领域驱动模式，将核心领域模型、应用层、接口层、基础设施层进行分离，实现模块化、可扩展、可维护、可测试。
+![架构图.png](doc/img/%E6%9E%B6%E6%9E%84%E5%9B%BE.png)
 
 ## 目录结构
 
@@ -18,34 +19,38 @@ opentcsplus/
 ├── opentcs-plus/            # 后端核心系统
 ├── opentcs-plus-web/        # 前端Web界面
 ├── opentcs-plus-docs/       # 项目文档
-├── logs/                    # 日志文件
-└── .trae/                   # 开发工具配置
+└── logs/                    # 日志文件
 ```
 
 ### 后端系统结构
 ```
 opentcs-plus/
-├── opentcs-admin/                     # Web入口模块
-│   ├── src/main/java/org/opentcs/web/ # Web控制器和服务
-│   └── src/main/resources/            # 配置文件
-├── opentcs-common/                    # 通用模块
-│   ├── opentcs-common-core/           # 核心通用功能
-│   ├── opentcs-common-mybatis/        # MyBatis集成
-│   ├── opentcs-common-redis/          # Redis集成
-│   ├── opentcs-common-security/       # 安全模块
-│   └── opentcs-common-web/            # Web通用功能
-├── opentcs-modules/                   # 业务模块（按照领域拆分）
-│   ├── opentcs-module-algorithm/      # 路径规划和调度算法
-│   ├── opentcs-module-driver/         # 车辆驱动和通信
-│   ├── opentcs-module-map/            # 地图管理和编辑
-│   ├── opentcs-module-monitor/        # 系统监控
-│   ├── opentcs-module-order/          # 订单管理
-│   ├── opentcs-module-simulation/     # 仿真模拟
-│   ├── opentcs-module-system/         # 系统管理
-│   └── opentcs-module-vehicle/        # 车辆管理
-├── doc/                               # 项目文档
-│   └── img/                           # 演示图片
-└── pom.xml                            # Maven配置
+├── opentcs-admin/                          # 接口层 - Web 入口（Controller）
+├── opentcs-applications/                   # 应用层 - 业务用例/服务编排
+│   ├── opentcs-map-editor/                 # 地图编辑器
+│   ├── opentcs-order/                      # 订单任务
+│   ├── opentcs-vehicle/                    # 车辆管理
+│   ├── opentcs-system/                     # 系统管理
+│   └── opentcs-simulation/                 # 仿真模拟
+├── opentcs-kernel/                         # 领域层 - OpenTCS Kernel 核心重构
+│   ├── opentcs-kernel-api/                 # 核心接口定义
+│   ├── opentcs-kernel-core/                # 核心领域模型
+│   └── opentcs-kernel-persistence/         # 持久化
+├── opentcs-driver/                         # 基础设施层 - AGV 驱动适配
+│   ├── opentcs-driver-api/                 # 驱动接口
+│   └── opentcs-driver-adapter-vda5050/     # VDA5050协议适配器
+├── opentcs-common/                         # 通用模块
+│   ├── opentcs-common-core/                # 核心：DTO、枚举、异常
+│   ├── opentcs-common-mybatis/             # MyBatis Plus
+│   ├── opentcs-common-redis/               # Redisson 缓存
+│   ├── opentcs-common-security/            # 安全模块
+│   ├── opentcs-common-satoken/             # Sa-Token JWT
+│   ├── opentcs-common-websocket/           # WebSocket
+│   ├── opentcs-common-mqtt/                # MQTT 集成
+│   ├── opentcs-common-oss/                 # 文件存储
+│   └── opentcs-common-sms/                 # 短信
+├── opentcs-security/                       # 安全模块
+└── pom.xml
 ```
 
 ### 前端系统结构

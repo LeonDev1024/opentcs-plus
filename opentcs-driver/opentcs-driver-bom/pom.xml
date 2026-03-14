@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.opentcs</groupId>
+        <artifactId>opentcs-driver</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <artifactId>opentcs-driver-bom</artifactId>
+    <packaging>pom</packaging>
+    <name>OpenTCS Driver BOM</name>
+    <description>OpenTCS Driver Bill of Materials</description>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-driver-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-driver-adapter-vda5050</artifactId>
+                <version>${revision}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>

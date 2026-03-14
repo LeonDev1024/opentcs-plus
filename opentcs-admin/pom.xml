@@ -30,10 +30,10 @@
             <version>${spring-boot.version}</version>
         </dependency>
 
-        <!-- PostgreSQL驱动包 -->
+        <!-- MySQL驱动包 -->
         <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
         </dependency>
 
         <dependency>
@@ -62,7 +62,7 @@
 
         <dependency>
             <groupId>org.opentcs</groupId>
-            <artifactId>opentcs-module-system</artifactId>
+            <artifactId>opentcs-system</artifactId>
             <version>${revision}</version>
         </dependency>
 
@@ -98,18 +98,18 @@
 
         <dependency>
             <groupId>org.opentcs</groupId>
-            <artifactId>opentcs-module-map</artifactId>
+            <artifactId>opentcs-map-editor</artifactId>
             <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>org.opentcs</groupId>
-            <artifactId>opentcs-module-vehicle</artifactId>
+            <artifactId>opentcs-vehicle</artifactId>
             <version>${revision}</version>
         </dependency>
         
         <dependency>
             <groupId>org.opentcs</groupId>
-            <artifactId>opentcs-module-order</artifactId>
+            <artifactId>opentcs-order</artifactId>
             <version>${revision}</version>
         </dependency>
 

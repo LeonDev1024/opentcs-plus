@@ -1,0 +1,102 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.opentcs</groupId>
+        <artifactId>opentcs-applications</artifactId>
+        <version>${revision}</version>
+    </parent>
+    <artifactId>opentcs-system</artifactId>
+    <name>opentcs-system</name>
+
+    <description>
+        system系统模块
+    </description>
+
+    <dependencies>
+        <!-- 通用工具-->
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-doc</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-mybatis</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-translation</artifactId>
+        </dependency>
+
+        <!-- OSS功能模块 -->
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-oss</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-log</artifactId>
+        </dependency>
+
+        <!-- excel-->
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-excel</artifactId>
+        </dependency>
+
+        <!-- SMS功能模块 -->
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-sms</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-tenant</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-security</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-idempotent</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-sensitive</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-encrypt</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-websocket</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-sse</artifactId>
+        </dependency>
+
+    </dependencies>
+</project>

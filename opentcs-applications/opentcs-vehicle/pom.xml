@@ -1,0 +1,72 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.opentcs</groupId>
+        <artifactId>opentcs-applications</artifactId>
+        <version>${revision}</version>
+    </parent>
+    <artifactId>opentcs-vehicle</artifactId>
+    <name>opentcs-vehicle</name>
+
+    <dependencies>
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Common -->
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-doc</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-mybatis</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-translation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-mqtt</artifactId>
+        </dependency>
+
+        <!-- Kernel -->
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-kernel-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-kernel-persistence</artifactId>
+        </dependency>
+
+        <!-- Driver -->
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-driver-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-driver-adapter-vda5050</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+</project>
