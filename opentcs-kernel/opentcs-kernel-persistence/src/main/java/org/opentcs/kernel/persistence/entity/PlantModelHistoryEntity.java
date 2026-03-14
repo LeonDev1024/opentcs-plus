@@ -5,15 +5,16 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.opentcs.common.mybatis.core.domain.BaseEntity;
+import org.opentcs.common.mybatis.core.domain.HistoryEntity;
 
 /**
  * 地图模型历史版本快照数据模型
+ * 历史表，最简化审计字段
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TableName("plant_model_history")
-public class PlantModelHistoryEntity extends BaseEntity {
+public class PlantModelHistoryEntity extends HistoryEntity {
 
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;

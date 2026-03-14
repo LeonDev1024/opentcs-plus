@@ -5,15 +5,16 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.opentcs.common.mybatis.core.domain.BaseEntity;
+import org.opentcs.common.mybatis.core.domain.DataEntity;
 
 /**
  * 区块数据模型
+ * 地图数据表，简化审计字段
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TableName("block")
-public class BlockEntity extends BaseEntity {
+public class BlockEntity extends DataEntity {
 
     /**
      * 主键ID

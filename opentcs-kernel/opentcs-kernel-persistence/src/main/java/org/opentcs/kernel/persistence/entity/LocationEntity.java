@@ -5,17 +5,18 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.opentcs.common.mybatis.core.domain.BaseEntity;
+import org.opentcs.common.mybatis.core.domain.DataEntity;
 
 import java.math.BigDecimal;
 
 /**
  * 位置数据模型
+ * 地图数据表，简化审计字段
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TableName("location")
-public class LocationEntity extends BaseEntity {
+public class LocationEntity extends DataEntity {
 
     /**
      * 主键ID

@@ -5,17 +5,18 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.opentcs.common.mybatis.core.domain.BaseEntity;
+import org.opentcs.common.mybatis.core.domain.BusinessEntity;
 
 import java.math.BigDecimal;
 
 /**
  * 车辆数据模型
+ * 业务主表，保留完整审计字段
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TableName("vehicle")
-public class VehicleEntity extends BaseEntity {
+public class VehicleEntity extends BusinessEntity {
 
     /**
      * 主键ID

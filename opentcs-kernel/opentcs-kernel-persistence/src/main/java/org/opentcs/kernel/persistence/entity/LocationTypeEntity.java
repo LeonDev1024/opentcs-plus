@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.opentcs.common.mybatis.core.domain.BaseEntity;
+import org.opentcs.common.mybatis.core.domain.ConfigEntity;
 import org.opentcs.common.mybatis.handler.JsonbTypeHandler;
 import org.opentcs.kernel.persistence.to.AllowedOperationTO;
 import org.opentcs.kernel.persistence.to.AllowedPeripheralOperationTO;
@@ -17,11 +17,12 @@ import java.util.List;
 
 /**
  * 位置类型数据模型
+ * 配置表，简化审计字段
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TableName("location_type")
-public class LocationTypeEntity extends BaseEntity {
+public class LocationTypeEntity extends ConfigEntity {
 
     /**
      * 主键ID

@@ -5,17 +5,18 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.opentcs.common.mybatis.core.domain.BaseEntity;
+import org.opentcs.common.mybatis.core.domain.ConfigEntity;
 
 import java.math.BigDecimal;
 
 /**
  * 视觉布局数据模型
+ * 配置表，简化审计字段
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TableName("visual_layout")
-public class VisualLayoutEntity extends BaseEntity {
+public class VisualLayoutEntity extends ConfigEntity {
 
     /**
      * 主键ID

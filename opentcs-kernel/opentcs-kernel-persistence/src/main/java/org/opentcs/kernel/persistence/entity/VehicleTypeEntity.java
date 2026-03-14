@@ -4,16 +4,17 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
-import org.opentcs.common.mybatis.core.domain.BaseEntity;
+import org.opentcs.common.mybatis.core.domain.ConfigEntity;
 
 import java.math.BigDecimal;
 
 /**
  * 车辆类型数据模型
+ * 配置表，简化审计字段
  */
 @Data
 @TableName("vehicle_type")
-public class VehicleTypeEntity extends BaseEntity {
+public class VehicleTypeEntity extends ConfigEntity {
 
     /**
      * 主键ID

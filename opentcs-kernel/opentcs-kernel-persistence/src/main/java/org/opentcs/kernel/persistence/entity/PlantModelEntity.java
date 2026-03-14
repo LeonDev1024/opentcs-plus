@@ -2,19 +2,19 @@ package org.opentcs.kernel.persistence.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.opentcs.common.mybatis.core.domain.BaseEntity;
+import org.opentcs.common.mybatis.core.domain.BusinessEntity;
 
 /**
  * 地图模型数据模型
+ * 业务主表，保留完整审计字段
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TableName("plant_model")
-public class PlantModelEntity extends BaseEntity {
+public class PlantModelEntity extends BusinessEntity {
 
     /**
      * 主键ID
@@ -23,7 +23,12 @@ public class PlantModelEntity extends BaseEntity {
     private Long id;
 
     /**
-     * 地图模型名称，唯一标识
+     * 地图模型唯一标识符
+     */
+    private String mapId;
+
+    /**
+     * 地图模型名称
      */
     private String name;
 
@@ -43,10 +48,7 @@ public class PlantModelEntity extends BaseEntity {
     private String properties;
 
     /**
-     * 增加描述字段，用于描述地图模型
+     * 描述
      */
     private String description;
-
-    @TableLogic
-    private String delFlag;
 }

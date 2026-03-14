@@ -5,15 +5,16 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.opentcs.common.mybatis.core.domain.BaseEntity;
+import org.opentcs.common.mybatis.core.domain.ConfigEntity;
 
 /**
  * 图层数据模型
+ * 配置表，简化审计字段
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TableName("layer")
-public class LayerEntity extends BaseEntity {
+public class LayerEntity extends ConfigEntity {
 
     /**
      * 主键ID

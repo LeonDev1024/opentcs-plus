@@ -4,7 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.opentcs.map.mapper.LayerGroupMapper">
 
-    <select id="selectPageLayerGroup" resultType="org.opentcs.map.domain.entity.LayerGroup">
+    <select id="selectPageLayerGroup" resultType="org.opentcs.kernel.persistence.entity.LayerGroupEntity">
         SELECT * FROM layer_group
         <where>
             <if test="layerGroup.plantModelId != null">AND plant_model_id = #{layerGroup.plantModelId}</if>

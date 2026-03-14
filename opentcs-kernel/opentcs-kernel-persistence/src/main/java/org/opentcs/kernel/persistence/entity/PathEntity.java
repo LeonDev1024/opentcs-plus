@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.opentcs.common.mybatis.core.domain.BaseEntity;
+import org.opentcs.common.mybatis.core.domain.DataEntity;
 import org.opentcs.kernel.persistence.to.PathLayoutControlPointTO;
 
 import java.math.BigDecimal;
@@ -14,11 +14,12 @@ import java.util.List;
 
 /**
  * 路径数据模型
+ * 地图数据表，简化审计字段
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TableName("path")
-public class PathEntity extends BaseEntity {
+public class PathEntity extends DataEntity {
 
     /**
      * 主键ID

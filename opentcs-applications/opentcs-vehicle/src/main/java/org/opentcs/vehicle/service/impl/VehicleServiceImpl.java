@@ -28,7 +28,11 @@ import org.opentcs.driver.protocol.InstantActionsMessage;
 @CacheConfig(cacheNames = "vehicle")
 public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, VehicleEntity> implements VehicleService {
 
-    private final DriverManager driverManager = DriverManager.getInstance();
+    private final DriverManager driverManager;
+
+    public VehicleServiceImpl(DriverManager driverManager) {
+        this.driverManager = driverManager;
+    }
 
     @Override
     public TableDataInfo<VehicleEntity> selectPageVehicle(VehicleEntity vehicle, PageQuery pageQuery) {

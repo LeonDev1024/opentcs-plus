@@ -6,16 +6,17 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
-import org.opentcs.common.mybatis.core.domain.BaseEntity;
+import org.opentcs.common.mybatis.core.domain.BusinessEntity;
 
 import java.time.LocalDateTime;
 
 /**
  * 运输订单数据模型
+ * 业务主表，保留完整审计字段
  */
 @Data
 @TableName("transport_order")
-public class TransportOrderEntity extends BaseEntity {
+public class TransportOrderEntity extends BusinessEntity {
 
     /**
      * 主键ID
