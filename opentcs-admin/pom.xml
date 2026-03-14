@@ -98,6 +98,18 @@
 
         <dependency>
             <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-log</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-tenant</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opentcs</groupId>
             <artifactId>opentcs-map-editor</artifactId>
             <version>${revision}</version>
         </dependency>
