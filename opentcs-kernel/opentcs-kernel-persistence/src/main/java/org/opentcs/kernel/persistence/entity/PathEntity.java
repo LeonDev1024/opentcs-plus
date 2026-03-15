@@ -33,19 +33,24 @@ public class PathEntity extends DataEntity {
     private Long plantModelId;
 
     /**
+     * 路径唯一标识
+     */
+    private String pathId;
+
+    /**
      * 路径名称
      */
     private String name;
 
     /**
-     * 起始点位ID
+     * 起始点位标识
      */
-    private Long sourcePointId;
+    private String sourcePointId;
 
     /**
-     * 目标点位ID
+     * 目标点位标识
      */
-    private Long destPointId;
+    private String destPointId;
 
     /**
      * 路径长度

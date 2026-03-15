@@ -42,9 +42,9 @@ CREATE TABLE point (
     point_id VARCHAR(255) NOT NULL COMMENT '点位唯一标识',
     name VARCHAR(255) NOT NULL COMMENT '点位名称',
     -- 坐标信息
-    position_x DECIMAL(12,4) NOT NULL COMMENT 'X坐标',
-    position_y DECIMAL(12,4) NOT NULL COMMENT 'Y坐标',
-    position_z DECIMAL(12,4) DEFAULT 0.0000 COMMENT 'Z坐标',
+    x_position DECIMAL(12,4) NOT NULL COMMENT 'X坐标',
+    y_position DECIMAL(12,4) NOT NULL COMMENT 'Y坐标',
+    z_position DECIMAL(12,4) DEFAULT 0.0000 COMMENT 'Z坐标',
     vehicle_orientation DECIMAL(8,4) DEFAULT 0.0000 COMMENT '车辆方向角度',
     -- 点位属性
     type VARCHAR(50) NOT NULL DEFAULT 'HALT_POSITION' COMMENT '点位类型：HALT_POSITION, PARK_POSITION, REPORT_POSITION',
@@ -187,6 +187,7 @@ CREATE TABLE visual_layout (
     -- 审计字段（简化）
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    del_flag CHAR(1) DEFAULT '0' COMMENT '删除标志',
     CONSTRAINT pk_visual_layout PRIMARY KEY (id),
     CONSTRAINT fk_visual_layout_plant_model FOREIGN KEY (plant_model_id) REFERENCES plant_model(id) ON DELETE CASCADE,
     CONSTRAINT uk_visual_layout_plant_model UNIQUE (plant_model_id)

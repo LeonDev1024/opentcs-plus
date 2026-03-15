@@ -41,8 +41,8 @@ public class PathAssembler {
         }
 
         entity.setName(domain.getPathName());
-        entity.setSourcePointId(domain.getSourcePointId() != null ? Long.parseLong(domain.getSourcePointId()) : null);
-        entity.setDestPointId(domain.getDestPointId() != null ? Long.parseLong(domain.getDestPointId()) : null);
+        entity.setSourcePointId(domain.getSourcePointId());
+        entity.setDestPointId(domain.getDestPointId());
         entity.setLength(domain.getLength() > 0 ? java.math.BigDecimal.valueOf(domain.getLength()) : null);
     }
 

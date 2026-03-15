@@ -97,7 +97,7 @@ public class PlantModelServiceImpl extends ServiceImpl<PlantModelMapper, PlantMo
     }
 
     @Override
-    @Cacheable(key = "#plantModel.name + '-' + #pageQuery.pageNum + '-' + #pageQuery.pageSize")
+    //@Cacheable(key = "#plantModel.name + '-' + #pageQuery.pageNum + '-' + #pageQuery.pageSize")
     public TableDataInfo<PlantModelEntity> selectPagePlantModel(PlantModelEntity plantModel, PageQuery pageQuery) {
         IPage<PlantModelEntity> page = this.getBaseMapper().selectPagePlantModel(pageQuery.build(), plantModel);
         return TableDataInfo.build(page);

@@ -9,6 +9,7 @@ import org.opentcs.common.core.domain.model.LoginUser;
 import org.opentcs.common.core.exception.ServiceException;
 import org.opentcs.common.core.utils.ObjectUtils;
 import org.opentcs.common.mybatis.core.domain.BaseEntity;
+import org.opentcs.common.mybatis.core.domain.BusinessEntity;
 import org.opentcs.common.satoken.utils.LoginHelper;
 
 import java.util.Date;
@@ -57,10 +58,35 @@ public class InjectionMetaObjectHandler implements MetaObjectHandler {
                         baseEntity.setCreateDept(ObjectUtils.notNull(baseEntity.getCreateDept(), DEFAULT_USER_ID));
                     }
                 }
+            } else if (ObjectUtil.isNotNull(metaObject) && metaObject.getOriginalObject() instanceof BusinessEntity businessEntity) {
+                // 单独处理 BusinessEntity（非 BaseEntity 子类的情况）
+                Date current = ObjectUtils.notNull(businessEntity.getCreateTime(), new Date());
+                businessEntity.setCreateTime(current);
+                businessEntity.setUpdateTime(current);
+
+                if (ObjectUtil.isNull(businessEntity.getCreateBy())) {
+                    LoginUser loginUser = getLoginUser();
+                    if (ObjectUtil.isNotNull(loginUser)) {
+                        Long userId = loginUser.getUserId();
+                        businessEntity.setCreateBy(userId);
+                        businessEntity.setUpdateBy(userId);
+                        businessEntity.setCreateDept(ObjectUtils.notNull(businessEntity.getCreateDept(), loginUser.getDeptId()));
+                    } else {
+                        businessEntity.setCreateBy(DEFAULT_USER_ID);
+                        businessEntity.setUpdateBy(DEFAULT_USER_ID);
+                        businessEntity.setCreateDept(ObjectUtils.notNull(businessEntity.getCreateDept(), DEFAULT_USER_ID));
+                    }
+                }
+
+                // 填充 delFlag
+                if (ObjectUtil.isNull(businessEntity.getDelFlag())) {
+                    businessEntity.setDelFlag("0");
+                }
             } else {
                 Date date = new Date();
                 this.strictInsertFill(metaObject, "createTime", Date.class, date);
                 this.strictInsertFill(metaObject, "updateTime", Date.class, date);
+                this.strictInsertFill(metaObject, "delFlag", String.class, "0");
             }
         } catch (Exception e) {
             throw new ServiceException("自动注入异常 => " + e.getMessage(), HttpStatus.HTTP_UNAUTHORIZED);
@@ -86,6 +112,17 @@ public class InjectionMetaObjectHandler implements MetaObjectHandler {
                     baseEntity.setUpdateBy(userId);
                 } else {
                     baseEntity.setUpdateBy(DEFAULT_USER_ID);
+                }
+            } else if (ObjectUtil.isNotNull(metaObject) && metaObject.getOriginalObject() instanceof BusinessEntity businessEntity) {
+                // 单独处理 BusinessEntity（非 BaseEntity 子类的情况）
+                Date current = new Date();
+                businessEntity.setUpdateTime(current);
+
+                Long userId = LoginHelper.getUserId();
+                if (ObjectUtil.isNotNull(userId)) {
+                    businessEntity.setUpdateBy(userId);
+                } else {
+                    businessEntity.setUpdateBy(DEFAULT_USER_ID);
                 }
             } else {
                 this.strictUpdateFill(metaObject, "updateTime", Date.class, new Date());

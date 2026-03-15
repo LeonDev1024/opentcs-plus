@@ -62,6 +62,18 @@
 
         <dependency>
             <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-translation</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-oss</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opentcs</groupId>
             <artifactId>opentcs-system</artifactId>
             <version>${revision}</version>
         </dependency>
@@ -82,17 +94,29 @@
             <groupId>org.opentcs</groupId>
             <artifactId>opentcs-common-job</artifactId>
             <version>${revision}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.xuxueli</groupId>
-                    <artifactId>xxl-job-core</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>org.opentcs</groupId>
             <artifactId>opentcs-common-web</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-log</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-tenant</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-mqtt</artifactId>
             <version>${revision}</version>
         </dependency>
 
@@ -139,6 +163,9 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <mainClass>org.opentcs.OpentcsApplication</mainClass>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
