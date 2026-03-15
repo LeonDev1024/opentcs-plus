@@ -4,6 +4,9 @@ server:
   servlet:
     # 应用的访问路径
     context-path: /
+    # 启用 throwsExceptionIfNoHandlerFound
+    throw-exception-if-no-handler-found: true
+    enabled: true
   # undertow 配置
   undertow:
     # HTTP post内容的最大大小。当值为-1时，默认值为大小是无限的
@@ -103,6 +106,10 @@ sa-token:
   is-share: false
   # jwt秘钥
   jwt-secret-key: abcdefghijklmnopqrstuvwxyz
+  # 启用Cookie
+  is-read-cookie: false
+  # 启用Header
+  is-read-header: true
 
 # security配置
 security:
@@ -116,6 +123,8 @@ security:
     - /error
     - /*/api-docs
     - /*/api-docs/**
+    - /auth/**
+    - /resource/**
 
 # 多租户配置
 tenant:

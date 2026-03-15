@@ -30,6 +30,11 @@ public class PointEntity extends DataEntity {
     private Long plantModelId;
 
     /**
+     * 点位唯一标识
+     */
+    private String pointId;
+
+    /**
      * 点位名称
      */
     private String name;

@@ -28,6 +28,11 @@ public class BlockEntity extends DataEntity {
     private Long plantModelId;
 
     /**
+     * 区块唯一标识
+     */
+    private String blockId;
+
+    /**
      * 区块名称
      */
     private String name;
