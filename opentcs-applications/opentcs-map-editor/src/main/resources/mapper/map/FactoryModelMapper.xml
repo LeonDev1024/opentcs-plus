@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.opentcs.map.mapper.FactoryModelMapper">
+
+    <select id="selectPageFactoryModel" resultType="org.opentcs.kernel.persistence.entity.FactoryModelEntity">
+        SELECT * FROM factory_model
+        WHERE del_flag = '0'
+        <if test="factoryModel.name != null and factoryModel.name != ''">
+            AND name LIKE CONCAT('%', #{factoryModel.name}, '%')
+        </if>
+    </select>
+
+</mapper>

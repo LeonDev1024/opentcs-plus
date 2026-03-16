@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.opentcs.map.mapper.CrossLayerConnectionMapper">
+
+    <select id="selectPageCrossLayerConnection" resultType="org.opentcs.kernel.persistence.entity.CrossLayerConnectionEntity">
+        SELECT * FROM cross_layer_connection
+        WHERE del_flag = '0'
+        <if test="connection.factoryModelId != null">
+            AND factory_model_id = #{connection.factoryModelId}
+        </if>
+        <if test="connection.name != null and connection.name != ''">
+            AND name LIKE CONCAT('%', #{connection.name}, '%')
+        </if>
+    </select>
+
+    <select id="selectByFactoryModelId" resultType="org.opentcs.kernel.persistence.entity.CrossLayerConnectionEntity">
+        SELECT * FROM cross_layer_connection
+        WHERE factory_model_id = #{factoryModelId}
+          AND del_flag = '0'
+        ORDER BY name ASC
+    </select>
+
+    <select id="selectBySourceAndDest" resultType="org.opentcs.kernel.persistence.entity.CrossLayerConnectionEntity">
+        SELECT * FROM cross_layer_connection
+        WHERE source_navigation_map_id = #{sourceMapId}
+          AND dest_navigation_map_id = #{destMapId}
+          AND del_flag = '0'
+          AND available = 1
+    </select>
+
+    <select id="selectAvailableConnections" resultType="org.opentcs.kernel.persistence.entity.CrossLayerConnectionEntity">
+        SELECT * FROM cross_layer_connection
+        WHERE factory_model_id = #{factoryModelId}
+          AND del_flag = '0'
+          AND available = 1
+        ORDER BY name ASC
+    </select>
+
+</mapper>

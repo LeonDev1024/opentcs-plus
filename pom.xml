@@ -9,8 +9,6 @@
     <version>${revision}</version>
     <packaging>pom</packaging>
     <modules>
-        <!-- 接口层 -->
-        <module>opentcs-admin</module>
         <!-- 公共模块 -->
         <module>opentcs-common</module>
         <!-- 应用层 - 基于 OpenTCS Kernel 重构 -->
@@ -21,6 +19,8 @@
         <module>opentcs-driver</module>
         <!-- 安全模块 -->
         <module>opentcs-security</module>
+        <!-- 接口层 (依赖于上面所有模块) -->
+        <module>opentcs-admin</module>
     </modules>
 
     <properties>

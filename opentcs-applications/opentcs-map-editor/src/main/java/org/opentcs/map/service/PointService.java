@@ -21,4 +21,11 @@ public interface PointService extends IService<PointEntity> {
     TableDataInfo<PointEntity> selectPagePoint(PointEntity point, PageQuery pageQuery);
 
     List<PointEntity> selectAllPointByPlantModelId(Long plantModelId);
+
+    /**
+     * 根据导航地图ID查询所有点位
+     * @param navigationMapId 导航地图ID
+     * @return 点位列表
+     */
+    List<PointEntity> listByMap(Long navigationMapId);
 }

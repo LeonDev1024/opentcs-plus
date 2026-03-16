@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 
 /**
  * 点位数据模型
- * 地图数据表，简化审计字段
+ * 前端显示和后端计算共用同一套坐标
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -25,9 +25,24 @@ public class PointEntity extends DataEntity {
     private Long id;
 
     /**
-     * 所属地图模型ID
+     * 所属地图模型ID（兼容旧版）
      */
     private Long plantModelId;
+
+    /**
+     * 归属导航地图ID（新版）
+     */
+    private Long navigationMapId;
+
+    /**
+     * 归属图层ID
+     */
+    private Long layerId;
+
+    /**
+     * 点位唯一标识
+     */
+    private String pointId;
 
     /**
      * 点位名称
@@ -35,17 +50,17 @@ public class PointEntity extends DataEntity {
     private String name;
 
     /**
-     * X坐标
+     * X坐标（前端显示和后端计算共用）
      */
     private BigDecimal xPosition;
 
     /**
-     * Y坐标
+     * Y坐标（前端显示和后端计算共用）
      */
     private BigDecimal yPosition;
 
     /**
-     * Z坐标
+     * Z坐标（楼层高度）
      */
     private BigDecimal zPosition;
 
@@ -55,7 +70,7 @@ public class PointEntity extends DataEntity {
     private BigDecimal vehicleOrientation;
 
     /**
-     * 点位类型：HALT_POSITION, PARK_POSITION, REPORT_POSITION
+     * 点位类型：HALT_POSITION, PARK_POSITION, REPORT_POSITION, CHARGE_POSITION, ELEVATOR_WAIT
      */
     private String type;
 

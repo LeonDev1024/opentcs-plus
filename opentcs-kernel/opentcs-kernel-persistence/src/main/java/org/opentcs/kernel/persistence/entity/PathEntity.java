@@ -28,9 +28,19 @@ public class PathEntity extends DataEntity {
     private Long id;
 
     /**
-     * 所属地图模型ID
+     * 所属地图模型ID（兼容旧版）
      */
     private Long plantModelId;
+
+    /**
+     * 归属导航地图ID（新版）
+     */
+    private Long navigationMapId;
+
+    /**
+     * 路径唯一标识
+     */
+    private String pathId;
 
     /**
      * 路径名称
@@ -38,14 +48,14 @@ public class PathEntity extends DataEntity {
     private String name;
 
     /**
-     * 起始点位ID
+     * 起始点位标识
      */
-    private Long sourcePointId;
+    private String sourcePointId;
 
     /**
-     * 目标点位ID
+     * 目标点位标识
      */
-    private Long destPointId;
+    private String destPointId;
 
     /**
      * 路径长度
