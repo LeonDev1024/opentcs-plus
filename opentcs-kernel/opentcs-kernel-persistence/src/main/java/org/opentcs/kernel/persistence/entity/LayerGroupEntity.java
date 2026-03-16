@@ -28,6 +28,11 @@ public class LayerGroupEntity extends ConfigEntity {
     private Long visualLayoutId;
 
     /**
+     * 所属导航地图ID（支持多楼层工厂）
+     */
+    private Long navigationMapId;
+
+    /**
      * 图层组名称
      */
     private String name;

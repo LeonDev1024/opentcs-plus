@@ -28,4 +28,12 @@ public class PointServiceImpl extends ServiceImpl<PointMapper, PointEntity> impl
                 .eq(PointEntity::getPlantModelId, plantModelId)
         );
     }
+
+    @Override
+    public List<PointEntity> listByMap(Long navigationMapId) {
+        return this.list(new LambdaQueryWrapper<PointEntity>()
+                .eq(PointEntity::getNavigationMapId, navigationMapId)
+                .eq(PointEntity::getDelFlag, "0")
+        );
+    }
 }

@@ -21,4 +21,11 @@ public interface PathService extends IService<PathEntity> {
     TableDataInfo<PathEntity> selectPagePath(PathEntity path, PageQuery pageQuery);
 
     List<PathEntity> selectAllPathByPlantModelId(Long plantModelId);
+
+    /**
+     * 根据导航地图ID查询所有路径
+     * @param navigationMapId 导航地图ID
+     * @return 路径列表
+     */
+    List<PathEntity> listByMap(Long navigationMapId);
 }
