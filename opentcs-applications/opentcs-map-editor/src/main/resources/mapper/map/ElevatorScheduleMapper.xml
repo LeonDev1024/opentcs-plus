@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.opentcs.map.mapper.ElevatorScheduleMapper">
+
+    <select id="selectPageElevatorSchedule" resultType="org.opentcs.kernel.persistence.entity.ElevatorScheduleEntity">
+        SELECT * FROM elevator_schedule
+        WHERE 1=1
+        <if test="schedule.connectionId != null and schedule.connectionId != ''">
+            AND connection_id = #{schedule.connectionId}
+        </if>
+        <if test="schedule.status != null and schedule.status != ''">
+            AND status = #{schedule.status}
+        </if>
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectByConnectionId" resultType="org.opentcs.kernel.persistence.entity.ElevatorScheduleEntity">
+        SELECT * FROM elevator_schedule
+        WHERE connection_id = #{connectionId}
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectByVehicleId" resultType="org.opentcs.kernel.persistence.entity.ElevatorScheduleEntity">
+        SELECT * FROM elevator_schedule
+        WHERE vehicle_id = #{vehicleId}
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectPendingSchedules" resultType="org.opentcs.kernel.persistence.entity.ElevatorScheduleEntity">
+        SELECT * FROM elevator_schedule
+        WHERE status IN ('PENDING', 'RUNNING')
+        ORDER BY pickup_time ASC
+    </select>
+
+</mapper>
