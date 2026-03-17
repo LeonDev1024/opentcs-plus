@@ -68,6 +68,16 @@ public class VehicleTypeEntity extends ConfigEntity {
     private String allowedPeripheralOperations;
 
     /**
+     * 创建者
+     */
+    private Long createBy;
+
+    /**
+     * 更新者
+     */
+    private Long updateBy;
+
+    /**
      * 扩展属性
      */
     private String properties;

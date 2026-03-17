@@ -15,7 +15,7 @@ import java.util.Map;
 /**
  * 配置Entity - 简化审计字段
  * 适用于配置表：location_type, vehicle_type, visual_layout, layer_group, layer
- * 只包含：createTime, updateTime, delFlag
+ * 包含：createBy, createTime, updateBy, updateTime, delFlag
  */
 @Data
 public class ConfigEntity implements Serializable {
@@ -31,10 +31,22 @@ public class ConfigEntity implements Serializable {
     private String searchValue;
 
     /**
+     * 创建者
+     */
+    @TableField(fill = FieldFill.INSERT)
+    private Long createBy;
+
+    /**
      * 创建时间
      */
     @TableField(fill = FieldFill.INSERT)
     private Date createTime;
+
+    /**
+     * 更新者
+     */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private Long updateBy;
 
     /**
      * 更新时间
