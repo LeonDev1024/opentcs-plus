@@ -14,14 +14,15 @@
         <result property="allowedOrders" column="allowed_orders"/>
         <result property="allowedPeripheralOperations" column="allowed_peripheral_operations"/>
         <result property="properties" column="properties"/>
-        <result property="createTime" column="create_time"/>
-        <result property="updateTime" column="update_time"/>
         <result property="createBy" column="create_by"/>
         <result property="updateBy" column="update_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="delFlag" column="del_flag"/>
     </resultMap>
 
     <sql id="selectVehicleTypeVo">
-        SELECT id, name, length, width, height, max_velocity, max_reverse_velocity, energy_level, allowed_orders, allowed_peripheral_operations, properties, create_time, update_time, create_by, update_by
+        SELECT id, name, length, width, height, max_velocity, max_reverse_velocity, energy_level, allowed_orders, allowed_peripheral_operations, properties, create_by, update_by, create_time, update_time, del_flag
         FROM vehicle_type
     </sql>
 

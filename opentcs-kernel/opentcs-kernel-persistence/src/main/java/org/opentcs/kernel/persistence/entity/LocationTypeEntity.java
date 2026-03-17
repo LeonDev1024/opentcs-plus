@@ -8,9 +8,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.opentcs.common.mybatis.core.domain.ConfigEntity;
 import org.opentcs.common.mybatis.handler.MySqlJsonTypeHandler;
-import org.opentcs.kernel.persistence.to.AllowedOperationTO;
-import org.opentcs.kernel.persistence.to.AllowedPeripheralOperationTO;
-import org.opentcs.kernel.persistence.to.PropertyTO;
+import org.opentcs.common.core.dto.AllowedOperationTO;
+import org.opentcs.common.core.dto.AllowedPeripheralOperationTO;
+import org.opentcs.common.core.dto.PropertyTO;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -3,6 +3,7 @@ package org.opentcs.vehicle.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
+import org.opentcs.kernel.api.dto.VehicleCrudDTO;
 import org.opentcs.kernel.persistence.entity.VehicleEntity;
 import java.util.Map;
 import java.util.List;
@@ -19,6 +20,21 @@ public interface VehicleService extends IService<VehicleEntity> {
      * @return 分页结果
      */
     TableDataInfo<VehicleEntity> selectPageVehicle(VehicleEntity vehicle, PageQuery pageQuery);
+
+    /**
+     * 分页查询车辆列表（DTO）
+     * @param vehicle 查询条件
+     * @param pageQuery 分页参数
+     * @return 分页结果
+     */
+    TableDataInfo<VehicleCrudDTO> selectPageVehicleDTO(VehicleEntity vehicle, PageQuery pageQuery);
+
+    /**
+     * 根据ID查询车辆（DTO）
+     * @param id 车辆ID
+     * @return 车辆信息
+     */
+    VehicleCrudDTO getVehicleDTOById(Long id);
 
     /**
      * 获取车辆实时状态

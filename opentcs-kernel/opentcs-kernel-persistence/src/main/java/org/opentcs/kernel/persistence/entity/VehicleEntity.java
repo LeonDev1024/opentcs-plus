@@ -1,6 +1,7 @@
 package org.opentcs.kernel.persistence.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -38,6 +39,12 @@ public class VehicleEntity extends BusinessEntity {
      * 车辆类型ID
      */
     private Long vehicleTypeId;
+
+    /**
+     * 车辆类型名称（非数据库字段，来自JOIN查询）
+     */
+    @TableField(exist = false)
+    private String vehicleTypeName;
 
     /**
      * 当前位置
