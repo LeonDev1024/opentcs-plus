@@ -5,6 +5,7 @@ import org.opentcs.common.core.domain.R;
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.common.web.core.BaseController;
+import org.opentcs.kernel.api.dto.VehicleCrudDTO;
 import org.opentcs.kernel.persistence.entity.VehicleEntity;
 import org.opentcs.vehicle.service.VehicleService;
 import org.opentcs.vehicle.application.VehicleApplicationService;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 车辆管理
@@ -32,24 +34,26 @@ public class VehicleController extends BaseController {
      * 分页查询车辆列表
      */
     @GetMapping("/list")
-    public TableDataInfo<VehicleEntity> listVehicles(VehicleEntity vehicle, PageQuery pageQuery) {
-        return vehicleService.selectPageVehicle(vehicle, pageQuery);
+    public TableDataInfo<VehicleCrudDTO> listVehicles(VehicleEntity vehicle, PageQuery pageQuery) {
+        return vehicleService.selectPageVehicleDTO(vehicle, pageQuery);
     }
 
     /**
      * 查询所有车辆
      */
     @GetMapping("/getAll")
-    public R<List<VehicleEntity>> getAllVehicles() {
-        return R.ok(vehicleService.list());
+    public R<List<VehicleCrudDTO>> getAllVehicles() {
+        return R.ok(vehicleService.list().stream()
+                .map(entity -> vehicleService.getVehicleDTOById(entity.getId()))
+                .collect(Collectors.toList()));
     }
 
     /**
      * 根据ID查询车辆
      */
     @GetMapping("/{id}")
-    public R<VehicleEntity> getVehicleById(@PathVariable Long id) {
-        return R.ok(vehicleService.getById(id));
+    public R<VehicleCrudDTO> getVehicleById(@PathVariable Long id) {
+        return R.ok(vehicleService.getVehicleDTOById(id));
     }
 
     /**

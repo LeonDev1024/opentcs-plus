@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
+import org.opentcs.kernel.api.dto.VehicleCrudDTO;
 import org.opentcs.kernel.persistence.entity.VehicleEntity;
 import org.opentcs.vehicle.mapper.VehicleMapper;
 import org.opentcs.vehicle.service.VehicleService;
@@ -16,6 +17,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.opentcs.driver.core.DriverManager;
 import org.opentcs.driver.adapter.VDA5050Driver;
@@ -39,6 +41,56 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, VehicleEntity
         Page<VehicleEntity> page = new Page<>(pageQuery.getPageNum(), pageQuery.getPageSize());
         IPage<VehicleEntity> result = this.getBaseMapper().selectPageVehicle(page, vehicle);
         return TableDataInfo.build(result);
+    }
+
+    @Override
+    public TableDataInfo<VehicleCrudDTO> selectPageVehicleDTO(VehicleEntity vehicle, PageQuery pageQuery) {
+        Page<VehicleEntity> page = new Page<>(pageQuery.getPageNum(), pageQuery.getPageSize());
+        IPage<VehicleEntity> result = this.getBaseMapper().selectPageVehicle(page, vehicle);
+
+        // Convert to DTO
+        List<VehicleCrudDTO> dtoList = result.getRecords().stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+
+        // Build table data info with DTO list
+        TableDataInfo<VehicleCrudDTO> tableDataInfo = new TableDataInfo<>();
+        tableDataInfo.setRows(dtoList);
+        tableDataInfo.setTotal(result.getTotal());
+        tableDataInfo.setCode(200);
+        tableDataInfo.setMsg("查询成功");
+        return tableDataInfo;
+    }
+
+    @Override
+    public VehicleCrudDTO getVehicleDTOById(Long id) {
+        VehicleEntity entity = this.getById(id);
+        return convertToDTO(entity);
+    }
+
+    /**
+     * Entity转DTO
+     */
+    private VehicleCrudDTO convertToDTO(VehicleEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+        VehicleCrudDTO dto = new VehicleCrudDTO();
+        dto.setId(entity.getId());
+        dto.setName(entity.getName());
+        dto.setVinCode(entity.getVinCode());
+        dto.setVehicleTypeId(entity.getVehicleTypeId());
+        dto.setVehicleTypeName(entity.getVehicleTypeName());
+        dto.setCurrentPosition(entity.getCurrentPosition());
+        dto.setNextPosition(entity.getNextPosition());
+        dto.setState(entity.getState());
+        dto.setIntegrationLevel(entity.getIntegrationLevel());
+        dto.setEnergyLevel(entity.getEnergyLevel());
+        dto.setCurrentTransportOrder(entity.getCurrentTransportOrder());
+        dto.setProperties(entity.getProperties());
+        dto.setCreateTime(entity.getCreateTime());
+        dto.setUpdateTime(entity.getUpdateTime());
+        return dto;
     }
 
     @Override
