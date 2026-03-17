@@ -1,19 +1,23 @@
 package org.opentcs.kernel.persistence.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import org.opentcs.common.mybatis.core.domain.ConfigEntity;
+import org.opentcs.common.mybatis.handler.MySqlJsonTypeHandler;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 车辆类型数据模型
- * 配置表，简化审计字段
+ * 配置表，完整审计字段
  */
 @Data
-@TableName("vehicle_type")
+@TableName(value = "vehicle_type", autoResultMap = true)
 public class VehicleTypeEntity extends ConfigEntity {
 
     /**
@@ -58,27 +62,20 @@ public class VehicleTypeEntity extends ConfigEntity {
     private BigDecimal energyLevel;
 
     /**
-     * 允许的订单
+     * 允许的订单操作
      */
-    private String allowedOrders;
+    @TableField(typeHandler = MySqlJsonTypeHandler.class)
+    private List<String> allowedOrders = new ArrayList<>();
 
     /**
      * 允许的外围设备操作
      */
-    private String allowedPeripheralOperations;
-
-    /**
-     * 创建者
-     */
-    private Long createBy;
-
-    /**
-     * 更新者
-     */
-    private Long updateBy;
+    @TableField(typeHandler = MySqlJsonTypeHandler.class)
+    private List<String> allowedPeripheralOperations = new ArrayList<>();
 
     /**
      * 扩展属性
      */
-    private String properties;
+    @TableField(typeHandler = MySqlJsonTypeHandler.class)
+    private List<String> properties = new ArrayList<>();
 }

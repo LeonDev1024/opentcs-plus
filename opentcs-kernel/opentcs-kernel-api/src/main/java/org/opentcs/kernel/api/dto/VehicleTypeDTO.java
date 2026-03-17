@@ -3,7 +3,9 @@ package org.opentcs.kernel.api.dto;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 车辆类型数据传输对象
@@ -27,11 +29,11 @@ public class VehicleTypeDTO {
 
     private BigDecimal energyLevel;
 
-    private String allowedOrders;
+    private List<String> allowedOrders = new ArrayList<>();
 
-    private String allowedPeripheralOperations;
+    private List<String> allowedPeripheralOperations = new ArrayList<>();
 
-    private String properties;
+    private List<String> properties = new ArrayList<>();
 
     private Date createTime;
 
