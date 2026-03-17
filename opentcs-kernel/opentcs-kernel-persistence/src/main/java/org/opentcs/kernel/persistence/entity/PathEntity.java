@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.opentcs.common.mybatis.core.domain.DataEntity;
-import org.opentcs.kernel.persistence.to.PathLayoutControlPointTO;
+import org.opentcs.common.core.dto.PathLayoutControlPointTO;
 
 import java.math.BigDecimal;
 import java.util.List;

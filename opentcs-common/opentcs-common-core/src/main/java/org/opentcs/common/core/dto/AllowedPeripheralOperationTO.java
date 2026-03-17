@@ -1,4 +1,4 @@
-package org.opentcs.kernel.persistence.to;
+package org.opentcs.common.core.dto;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

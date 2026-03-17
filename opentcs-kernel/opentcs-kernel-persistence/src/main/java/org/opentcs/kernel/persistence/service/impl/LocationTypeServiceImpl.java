@@ -78,7 +78,9 @@ public class LocationTypeServiceImpl extends ServiceImpl<LocationTypeMapper, Loc
         LocationTypeDTO dto = new LocationTypeDTO();
         dto.setId(entity.getId());
         dto.setName(entity.getName());
-        dto.setProperties(entity.getProperties() != null ? entity.getProperties().toString() : null);
+        dto.setAllowedOperations(entity.getAllowedOperations());
+        dto.setAllowedPeripheralOperations(entity.getAllowedPeripheralOperations());
+        dto.setProperties(entity.getProperties());
         dto.setCreateTime(entity.getCreateTime());
         dto.setUpdateTime(entity.getUpdateTime());
         return dto;

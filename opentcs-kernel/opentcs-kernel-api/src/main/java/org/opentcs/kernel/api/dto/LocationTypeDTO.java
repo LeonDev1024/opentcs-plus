@@ -1,8 +1,13 @@
 package org.opentcs.kernel.api.dto;
 
 import lombok.Data;
+import org.opentcs.common.core.dto.AllowedOperationTO;
+import org.opentcs.common.core.dto.AllowedPeripheralOperationTO;
+import org.opentcs.common.core.dto.PropertyTO;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 位置类型数据传输对象
@@ -14,11 +19,11 @@ public class LocationTypeDTO {
 
     private String name;
 
-    private String allowedOperations;
+    private List<AllowedOperationTO> allowedOperations;
 
-    private String allowedPeripheralOperations;
+    private List<AllowedPeripheralOperationTO> allowedPeripheralOperations;
 
-    private String properties;
+    private List<PropertyTO> properties = new ArrayList<>();
 
     private Date createTime;
 
