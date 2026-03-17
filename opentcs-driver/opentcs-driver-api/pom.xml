@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>opentcs-driver-api</artifactId>
-    <name>OpenTCS Driver API</name>
+    <name>opentcs-driver-api</name>
     <description>驱动适配 API 接口定义</description>
 
     <dependencies>

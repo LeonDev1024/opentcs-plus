@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>opentcs-security-core</artifactId>
-    <name>OpenTCS Security Core</name>
+    <name>opentcs-security-core</name>
     <description>安全认证核心实现</description>
 
     <dependencies>

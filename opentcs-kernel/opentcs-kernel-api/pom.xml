@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>opentcs-kernel-api</artifactId>
-    <name>OpenTCS Kernel API</name>
+    <name>opentcs-kernel-api</name>
     <description>调度核心 API 接口定义</description>
 
     <dependencies>

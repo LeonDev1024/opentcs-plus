@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="org.opentcs.map.mapper.NavigationMapMapper">
+<mapper namespace="org.opentcs.kernel.persistence.mapper.NavigationMapMapper">
 
     <select id="selectPageNavigationMap" resultType="org.opentcs.kernel.persistence.entity.NavigationMapEntity">
         SELECT * FROM navigation_map

@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="org.opentcs.map.mapper.PlantModelMapper">
+<mapper namespace="org.opentcs.kernel.persistence.mapper.PlantModelMapper">
 
     <select id="selectPagePlantModel" resultType="org.opentcs.kernel.persistence.entity.PlantModelEntity">
         SELECT * FROM plant_model

@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>opentcs-security-api</artifactId>
-    <name>OpenTCS Security API</name>
+    <name>opentcs-security-api</name>
     <description>安全认证 API 接口定义</description>
 
     <dependencies>

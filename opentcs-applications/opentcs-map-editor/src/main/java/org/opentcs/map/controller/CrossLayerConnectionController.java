@@ -6,7 +6,7 @@ import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.common.web.core.BaseController;
 import org.opentcs.kernel.persistence.entity.CrossLayerConnectionEntity;
-import org.opentcs.map.service.CrossLayerConnectionService;
+import org.opentcs.kernel.persistence.service.CrossLayerConnectionDomainService;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,14 +21,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CrossLayerConnectionController extends BaseController {
 
-    private final CrossLayerConnectionService crossLayerConnectionService;
+    private final CrossLayerConnectionDomainService crossLayerConnectionDomainService;
 
     /**
      * 查询跨层连接列表
      */
     @GetMapping("/list")
     public TableDataInfo<CrossLayerConnectionEntity> list(CrossLayerConnectionEntity connection, PageQuery pageQuery) {
-        return crossLayerConnectionService.selectPageConnection(connection, pageQuery);
+        return crossLayerConnectionDomainService.selectPageConnection(connection, pageQuery);
     }
 
     /**
@@ -36,7 +36,7 @@ public class CrossLayerConnectionController extends BaseController {
      */
     @GetMapping("/list/{factoryId}")
     public R<List<CrossLayerConnectionEntity>> listByFactory(@PathVariable Long factoryId) {
-        return R.ok(crossLayerConnectionService.selectByFactoryModelId(factoryId));
+        return R.ok(crossLayerConnectionDomainService.selectByFactoryModelId(factoryId));
     }
 
     /**
@@ -44,7 +44,7 @@ public class CrossLayerConnectionController extends BaseController {
      */
     @GetMapping("/available/{factoryId}")
     public R<List<CrossLayerConnectionEntity>> availableConnections(@PathVariable Long factoryId) {
-        return R.ok(crossLayerConnectionService.selectAvailableConnections(factoryId));
+        return R.ok(crossLayerConnectionDomainService.selectAvailableConnections(factoryId));
     }
 
     /**
@@ -52,7 +52,7 @@ public class CrossLayerConnectionController extends BaseController {
      */
     @GetMapping("/{id}")
     public R<CrossLayerConnectionEntity> getById(@PathVariable Long id) {
-        return R.ok(crossLayerConnectionService.getById(id));
+        return R.ok(crossLayerConnectionDomainService.getById(id));
     }
 
     /**
@@ -60,7 +60,7 @@ public class CrossLayerConnectionController extends BaseController {
      */
     @PostMapping("/create")
     public R<Boolean> create(@RequestBody CrossLayerConnectionEntity connection) {
-        return R.ok(crossLayerConnectionService.createConnection(connection));
+        return R.ok(crossLayerConnectionDomainService.createConnection(connection));
     }
 
     /**
@@ -68,7 +68,7 @@ public class CrossLayerConnectionController extends BaseController {
      */
     @PutMapping("/update")
     public R<Boolean> update(@RequestBody CrossLayerConnectionEntity connection) {
-        return R.ok(crossLayerConnectionService.updateConnection(connection));
+        return R.ok(crossLayerConnectionDomainService.updateConnection(connection));
     }
 
     /**
@@ -76,7 +76,7 @@ public class CrossLayerConnectionController extends BaseController {
      */
     @DeleteMapping("/{id}")
     public R<Boolean> delete(@PathVariable Long id) {
-        return R.ok(crossLayerConnectionService.deleteConnection(id));
+        return R.ok(crossLayerConnectionDomainService.deleteConnection(id));
     }
 
     /**
@@ -84,7 +84,7 @@ public class CrossLayerConnectionController extends BaseController {
      */
     @PostMapping("/{connectionId}/reserve")
     public R<Boolean> reserveElevator(@PathVariable String connectionId, @RequestParam Long vehicleId) {
-        return R.ok(crossLayerConnectionService.reserveElevator(connectionId, vehicleId));
+        return R.ok(crossLayerConnectionDomainService.reserveElevator(connectionId, vehicleId));
     }
 
     /**
@@ -92,6 +92,6 @@ public class CrossLayerConnectionController extends BaseController {
      */
     @PostMapping("/{connectionId}/release")
     public R<Boolean> releaseElevator(@PathVariable String connectionId, @RequestParam Long vehicleId) {
-        return R.ok(crossLayerConnectionService.releaseElevator(connectionId, vehicleId));
+        return R.ok(crossLayerConnectionDomainService.releaseElevator(connectionId, vehicleId));
     }
 }

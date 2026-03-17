@@ -6,9 +6,9 @@ import org.opentcs.kernel.application.RoutePlannerImpl;
 import org.opentcs.kernel.persistence.entity.PathEntity;
 import org.opentcs.kernel.persistence.entity.PlantModelEntity;
 import org.opentcs.kernel.persistence.entity.PointEntity;
-import org.opentcs.map.service.PathService;
-import org.opentcs.map.service.PlantModelService;
-import org.opentcs.map.service.PointService;
+import org.opentcs.kernel.persistence.service.PathDomainService;
+import org.opentcs.kernel.persistence.service.PlantModelDomainService;
+import org.opentcs.kernel.persistence.service.PointDomainService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,9 +23,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MapApplicationService {
 
-    private final PlantModelService plantModelService;
-    private final PointService pointService;
-    private final PathService pathService;
+    private final PlantModelDomainService plantModelDomainService;
+    private final PointDomainService pointDomainService;
+    private final PathDomainService pathDomainService;
     private final RoutePlannerImpl routePlanner;
 
     /**
@@ -34,7 +34,7 @@ public class MapApplicationService {
      */
     @Transactional(readOnly = true)
     public void loadMapToKernel(Long plantModelId) {
-        PlantModelEntity plantModel = plantModelService.getById(plantModelId);
+        PlantModelEntity plantModel = plantModelDomainService.selectById(plantModelId);
         if (plantModel == null) {
             throw new RuntimeException("地图模型不存在: " + plantModelId);
         }
@@ -43,7 +43,7 @@ public class MapApplicationService {
         routePlanner.clear();
 
         // 加载点位
-        List<PointEntity> points = pointService.selectAllPointByPlantModelId(plantModelId);
+        List<PointEntity> points = pointDomainService.selectAllPointByPlantModelId(plantModelId);
         for (PointEntity pointEntity : points) {
             org.opentcs.kernel.domain.routing.Point point =
                 new org.opentcs.kernel.domain.routing.Point(
@@ -57,7 +57,7 @@ public class MapApplicationService {
         }
 
         // 加载路径
-        List<PathEntity> paths = pathService.selectAllPathByPlantModelId(plantModelId);
+        List<PathEntity> paths = pathDomainService.selectAllPathByPlantModelId(plantModelId);
         for (PathEntity pathEntity : paths) {
             org.opentcs.kernel.domain.routing.Path path =
                 new org.opentcs.kernel.domain.routing.Path(

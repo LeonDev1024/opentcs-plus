@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="org.opentcs.map.mapper.LayerGroupMapper">
+<mapper namespace="org.opentcs.kernel.persistence.mapper.LayerGroupMapper">
 
     <select id="selectPageLayerGroup" resultType="org.opentcs.kernel.persistence.entity.LayerGroupEntity">
         SELECT * FROM layer_group

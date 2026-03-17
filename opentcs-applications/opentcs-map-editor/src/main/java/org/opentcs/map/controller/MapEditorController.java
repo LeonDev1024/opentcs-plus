@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.opentcs.common.core.domain.R;
 import org.opentcs.map.domain.bo.PlantModelBO;
 import org.opentcs.map.domain.vo.LoadModelVO;
-import org.opentcs.map.service.IMapEditorService;
+import org.opentcs.map.application.IMapEditorService;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
