@@ -1,6 +1,7 @@
 package org.opentcs.map.routing;
 
 import lombok.extern.slf4j.Slf4j;
+import org.opentcs.kernel.api.dto.NavigationMapDTO;
 import org.opentcs.kernel.persistence.entity.*;
 import org.opentcs.kernel.persistence.service.NavigationMapDomainService;
 import org.opentcs.kernel.persistence.service.PointDomainService;
@@ -39,10 +40,10 @@ public class GlobalRoutingGraphBuilder {
         GlobalRoutingGraph globalGraph = new GlobalRoutingGraph();
 
         // 1. 获取工厂下所有导航地图
-        List<NavigationMapEntity> maps = navigationMapDomainService.selectByFactoryModelId(factoryModelId);
+        List<NavigationMapDTO> maps = navigationMapDomainService.selectByFactoryModelId(factoryModelId);
 
         // 2. 为每个地图构建局部路由图
-        for (NavigationMapEntity map : maps) {
+        for (NavigationMapDTO map : maps) {
             LocalRoutingGraph localGraph = buildLocalGraph(map.getId(), map.getMapId());
             globalGraph.addLocalGraph(map.getMapId(), localGraph);
         }
@@ -52,7 +53,7 @@ public class GlobalRoutingGraphBuilder {
         globalGraph.addCrossLayerConnections(connections);
 
         // 4. 添加点位和地图关联
-        for (NavigationMapEntity map : maps) {
+        for (NavigationMapDTO map : maps) {
             List<PointEntity> points = pointDomainService.listByMap(map.getId());
             for (PointEntity point : points) {
                 globalGraph.addPoint(point);

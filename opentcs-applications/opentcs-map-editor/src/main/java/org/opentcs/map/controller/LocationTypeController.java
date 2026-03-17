@@ -1,10 +1,13 @@
 package org.opentcs.map.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.opentcs.common.core.domain.R;
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.common.web.core.BaseController;
+import org.opentcs.kernel.api.dto.LocationTypeDTO;
 import org.opentcs.kernel.persistence.entity.LocationTypeEntity;
 import org.opentcs.kernel.persistence.service.LocationTypeDomainService;
 import org.springframework.validation.annotation.Validated;
@@ -23,29 +26,30 @@ import java.util.List;
 public class LocationTypeController extends BaseController {
 
     private final LocationTypeDomainService locationTypeDomainService;
+    private final ObjectMapper objectMapper;
 
     /**
      * 查询所有位置类型
      */
     @GetMapping("/list")
-    public TableDataInfo<LocationTypeEntity> list(LocationTypeEntity locationType, PageQuery pageQuery) {
-        return locationTypeDomainService.selectPage(locationType, pageQuery);
+    public TableDataInfo<LocationTypeDTO> list(LocationTypeEntity locationType, PageQuery pageQuery) {
+        return locationTypeDomainService.selectPageDTO(locationType, pageQuery);
     }
 
     /**
      * 根据ID查询位置类型
      */
     @GetMapping("/{id}")
-    public R<LocationTypeEntity> getLocationTypeById(@PathVariable Long id) {
-        return R.ok(locationTypeDomainService.getById(id));
+    public R<LocationTypeDTO> getLocationTypeById(@PathVariable Long id) {
+        return R.ok(locationTypeDomainService.getByIdDTO(id));
     }
 
     /**
      * 获取所有位置类型（不分页）
      */
     @GetMapping("/all")
-    public R<List<LocationTypeEntity>> getAllLocationTypes() {
-        return R.ok(locationTypeDomainService.list());
+    public R<List<LocationTypeDTO>> getAllLocationTypes() {
+        return R.ok(locationTypeDomainService.listDTO());
     }
 
     /**

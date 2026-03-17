@@ -5,9 +5,9 @@
 <mapper namespace="org.opentcs.kernel.persistence.mapper.LayerGroupMapper">
 
     <select id="selectPageLayerGroup" resultType="org.opentcs.kernel.persistence.entity.LayerGroupEntity">
-        SELECT * FROM layer_group
+        SELECT * FROM factory_layer_group
         <where>
-            <if test="layerGroup.plantModelId != null">AND plant_model_id = #{layerGroup.plantModelId}</if>
+            <if test="layerGroup.navigationMapId != null">AND navigation_map_id = #{layerGroup.navigationMapId}</if>
             <if test="layerGroup.name != null and layerGroup.name != ''">AND name LIKE CONCAT('%', #{layerGroup.name}, '%')</if>
             <if test="layerGroup.visible != null">AND visible = #{layerGroup.visible}</if>
         </where>

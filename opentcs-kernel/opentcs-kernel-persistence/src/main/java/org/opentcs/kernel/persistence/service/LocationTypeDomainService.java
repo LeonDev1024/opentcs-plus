@@ -3,6 +3,7 @@ package org.opentcs.kernel.persistence.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
+import org.opentcs.kernel.api.dto.LocationTypeDTO;
 import org.opentcs.kernel.persistence.entity.LocationTypeEntity;
 
 import java.util.List;
@@ -21,10 +22,24 @@ public interface LocationTypeDomainService extends IService<LocationTypeEntity> 
     TableDataInfo<LocationTypeEntity> selectPage(LocationTypeEntity locationType, PageQuery pageQuery);
 
     /**
+     * 分页查询位置类型列表（DTO）
+     * @param locationType 查询条件
+     * @param pageQuery 分页参数
+     * @return 分页结果
+     */
+    TableDataInfo<LocationTypeDTO> selectPageDTO(LocationTypeEntity locationType, PageQuery pageQuery);
+
+    /**
      * 查询所有位置类型
      * @return 位置类型列表
      */
     List<LocationTypeEntity> selectAll();
+
+    /**
+     * 查询所有位置类型（DTO）
+     * @return 位置类型列表
+     */
+    List<LocationTypeDTO> listDTO();
 
     /**
      * 根据ID查询位置类型
@@ -32,4 +47,11 @@ public interface LocationTypeDomainService extends IService<LocationTypeEntity> 
      * @return 位置类型
      */
     LocationTypeEntity selectById(Long id);
+
+    /**
+     * 根据ID查询位置类型（DTO）
+     * @param id 位置类型ID
+     * @return 位置类型
+     */
+    LocationTypeDTO getByIdDTO(Long id);
 }

@@ -1,7 +1,7 @@
 package org.opentcs.map.application;
 
 import jakarta.servlet.http.HttpServletResponse;
-import org.opentcs.map.domain.bo.PlantModelBO;
+import org.opentcs.map.domain.bo.MapEditorBO;
 import org.opentcs.map.domain.vo.LoadModelVO;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,21 +15,21 @@ public interface IMapEditorService {
      * @param loadModelVO 加载模型参数
      * @return 地图模型BO
      */
-    PlantModelBO load(LoadModelVO loadModelVO);
+    MapEditorBO load(LoadModelVO loadModelVO);
 
     /**
      * 保存地图模型
-     * @param plantModelBO 地图模型BO
+     * @param mapEditorBO 地图模型BO
      * @return 是否保存成功
      */
-    Boolean save(PlantModelBO plantModelBO);
+    Boolean save(MapEditorBO mapEditorBO);
 
     /**
      * 导入地图
      * @param file 地图文件
      * @return 导入结果
      */
-    PlantModelBO importMap(MultipartFile file);
+    MapEditorBO importMap(MultipartFile file);
 
     /**
      * 导出地图

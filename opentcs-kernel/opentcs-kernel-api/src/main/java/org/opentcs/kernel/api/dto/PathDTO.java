@@ -1,78 +1,45 @@
 package org.opentcs.kernel.api.dto;
 
+import lombok.Data;
+
+import java.math.BigDecimal;
+import java.util.Date;
+
 /**
- * 路径段数据传输对象
+ * 路径数据传输对象
  */
+@Data
 public class PathDTO {
+
+    private Long id;
+
+    private Long plantModelId;
+
+    private Long navigationMapId;
 
     private String pathId;
 
-    private String pathName;
+    private String name;
 
     private String sourcePointId;
 
     private String destPointId;
 
-    private Double length;
+    private BigDecimal length;
 
-    private Double maxVelocity;
+    private BigDecimal maxVelocity;
 
-    private Double maxReverseVelocity;
+    private BigDecimal maxReverseVelocity;
 
-    // Getters and Setters
-    public String getPathId() {
-        return pathId;
-    }
+    private String routingType;
 
-    public void setPathId(String pathId) {
-        this.pathId = pathId;
-    }
+    private Boolean locked;
 
-    public String getPathName() {
-        return pathName;
-    }
+    private Boolean isBlocked;
 
-    public void setPathName(String pathName) {
-        this.pathName = pathName;
-    }
+    private String properties;
 
-    public String getSourcePointId() {
-        return sourcePointId;
-    }
+    private Date createTime;
 
-    public void setSourcePointId(String sourcePointId) {
-        this.sourcePointId = sourcePointId;
-    }
-
-    public String getDestPointId() {
-        return destPointId;
-    }
-
-    public void setDestPointId(String destPointId) {
-        this.destPointId = destPointId;
-    }
-
-    public Double getLength() {
-        return length;
-    }
-
-    public void setLength(Double length) {
-        this.length = length;
-    }
-
-    public Double getMaxVelocity() {
-        return maxVelocity;
-    }
-
-    public void setMaxVelocity(Double maxVelocity) {
-        this.maxVelocity = maxVelocity;
-    }
-
-    public Double getMaxReverseVelocity() {
-        return maxReverseVelocity;
-    }
-
-    public void setMaxReverseVelocity(Double maxReverseVelocity) {
-        this.maxReverseVelocity = maxReverseVelocity;
-    }
+    private Date updateTime;
 }

@@ -6,14 +6,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.opentcs.kernel.persistence.entity.*;
 import org.opentcs.kernel.persistence.service.*;
 import org.opentcs.map.application.IMapEditorService;
-import org.opentcs.map.domain.bo.PlantModelBO;
+import org.opentcs.map.domain.bo.MapEditorBO;
 import org.opentcs.map.domain.vo.LoadModelVO;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
 
 /**
  * 地图编辑器应用服务实现
@@ -23,7 +21,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MapEditorServiceImpl implements IMapEditorService {
 
-    private final PlantModelDomainService plantModelDomainService;
+    private final FactoryModelDomainService factoryModelDomainService;
+    private final NavigationMapDomainService navigationMapDomainService;
     private final PointDomainService pointDomainService;
     private final PathDomainService pathDomainService;
     private final LocationDomainService locationDomainService;
@@ -31,55 +30,33 @@ public class MapEditorServiceImpl implements IMapEditorService {
     private final BlockDomainService blockDomainService;
 
     @Override
-    public PlantModelBO load(LoadModelVO loadModelVO) {
-        Long modelId = loadModelVO.getModelId();
+    public MapEditorBO load(LoadModelVO loadModelVO) {
+        Long factoryModelId = loadModelVO.getModelId();
 
-        // 获取地图模型基本信息
-        PlantModelEntity plantModel = plantModelDomainService.selectById(modelId);
-        if (plantModel == null) {
+        // 获取工厂模型基本信息
+        FactoryModelEntity factoryModel = factoryModelDomainService.selectById(factoryModelId);
+        if (factoryModel == null) {
             return null;
         }
 
-        PlantModelBO bo = new PlantModelBO();
-        bo.setPlantModelId(plantModel.getId());
-        bo.setName(plantModel.getName());
-        bo.setModelVersion(plantModel.getModelVersion());
+        MapEditorBO bo = new MapEditorBO();
+        bo.setId(factoryModel.getId());
+        bo.setName(factoryModel.getName());
 
-        // 加载点位
-        List<PointEntity> points = pointDomainService.selectAllPointByPlantModelId(modelId);
-        bo.setPoints(new HashSet<>(points));
-
-        // 加载路径
-        List<PathEntity> paths = pathDomainService.selectAllPathByPlantModelId(modelId);
-        bo.setPaths(new HashSet<>(paths));
-
-        // 加载位置类型
-        List<LocationTypeEntity> locationTypes = locationTypeDomainService.selectAll();
-        bo.setLocationTypes(new HashSet<>(locationTypes));
-
-        // 加载位置
-        List<LocationEntity> locations = locationDomainService.selectAllLocationByPlantModelId(modelId);
-        bo.setLocations(new HashSet<>(locations));
-
-        // 加载区域
-        List<BlockEntity> blocks = blockDomainService.selectByFactoryModelId(modelId);
-        bo.setBlocks(new HashSet<>(blocks));
-
-        log.info("加载地图模型完成: {} - {} 点, {} 路径",
-                plantModel.getName(), points.size(), paths.size());
+        log.info("加载工厂模型完成: {}", factoryModel.getName());
 
         return bo;
     }
 
     @Override
-    public Boolean save(PlantModelBO plantModelBO) {
+    public Boolean save(MapEditorBO mapEditorBO) {
         // TODO: 实现保存逻辑
-        log.info("保存地图模型: {}", plantModelBO.getName());
+        log.info("保存地图模型: {}", mapEditorBO.getName());
         return true;
     }
 
     @Override
-    public PlantModelBO importMap(MultipartFile file) {
+    public MapEditorBO importMap(MultipartFile file) {
         // TODO: 实现地图导入逻辑
         log.info("导入地图: {}", file.getOriginalFilename());
         throw new UnsupportedOperationException("地图导入功能待实现");
@@ -102,7 +79,7 @@ public class MapEditorServiceImpl implements IMapEditorService {
     public Boolean uploadEditorData(Long id, MultipartFile file) {
         // TODO: 实现编辑器数据上传
         log.info("上传编辑器数据: {}, file: {}", id, file.getOriginalFilename());
-        PlantModelEntity entity = plantModelDomainService.selectById(id);
+        FactoryModelEntity entity = factoryModelDomainService.selectById(id);
         if (entity == null) {
             throw new RuntimeException("地图模型不存在");
         }

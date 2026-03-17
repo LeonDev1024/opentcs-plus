@@ -3,6 +3,7 @@ package org.opentcs.kernel.persistence.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
+import org.opentcs.kernel.api.dto.NavigationMapDTO;
 import org.opentcs.kernel.persistence.entity.NavigationMapEntity;
 
 import java.util.List;
@@ -26,14 +27,14 @@ public interface NavigationMapDomainService extends IService<NavigationMapEntity
      * @param pageQuery 分页参数
      * @return 分页结果
      */
-    TableDataInfo<NavigationMapEntity> selectPageNavigationMap(NavigationMapEntity navigationMap, PageQuery pageQuery);
+    TableDataInfo<NavigationMapDTO> selectPageNavigationMap(NavigationMapEntity navigationMap, PageQuery pageQuery);
 
     /**
      * 根据工厂模型ID获取所有导航地图
      * @param factoryModelId 工厂模型ID
      * @return 导航地图列表
      */
-    List<NavigationMapEntity> selectByFactoryModelId(Long factoryModelId);
+    List<NavigationMapDTO> selectByFactoryModelId(Long factoryModelId);
 
     /**
      * 根据工厂模型ID和楼层号获取导航地图
@@ -41,7 +42,7 @@ public interface NavigationMapDomainService extends IService<NavigationMapEntity
      * @param floorNumber 楼层号
      * @return 导航地图
      */
-    NavigationMapEntity selectByFactoryModelIdAndFloor(Long factoryModelId, Integer floorNumber);
+    NavigationMapDTO selectByFactoryModelIdAndFloor(Long factoryModelId, Integer floorNumber);
 
     /**
      * 获取导航地图详情（含点、路径）

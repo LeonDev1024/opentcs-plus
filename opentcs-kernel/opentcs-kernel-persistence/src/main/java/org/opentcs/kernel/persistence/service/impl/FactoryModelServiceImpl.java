@@ -7,6 +7,9 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
+import org.opentcs.kernel.api.dto.FactoryModelDTO;
+import org.opentcs.kernel.persistence.service.DTOConverter;
+import org.opentcs.kernel.api.dto.NavigationMapDTO;
 import org.opentcs.kernel.persistence.entity.FactoryModelEntity;
 import org.opentcs.kernel.persistence.entity.NavigationMapEntity;
 import org.opentcs.kernel.persistence.mapper.FactoryModelMapper;
@@ -63,6 +66,18 @@ public class FactoryModelServiceImpl extends ServiceImpl<FactoryModelMapper, Fac
     }
 
     @Override
+    public TableDataInfo<FactoryModelDTO> selectPageFactoryModelDTO(FactoryModelEntity factoryModel, PageQuery pageQuery) {
+        IPage<FactoryModelEntity> page = this.getBaseMapper().selectPageFactoryModel(
+                pageQuery.build(), factoryModel);
+
+        List<FactoryModelDTO> dtoList = DTOConverter.toFactoryModelDTOList(page.getRecords());
+        TableDataInfo<FactoryModelDTO> result = TableDataInfo.build();
+        result.setRows(dtoList);
+        result.setTotal(page.getTotal());
+        return result;
+    }
+
+    @Override
     public List<FactoryModelEntity> selectAll() {
         return this.list();
     }
@@ -84,10 +99,20 @@ public class FactoryModelServiceImpl extends ServiceImpl<FactoryModelMapper, Fac
     public FactoryModelEntity getFactoryModelDetail(Long id) {
         FactoryModelEntity factoryModel = this.getById(id);
         if (factoryModel != null) {
-            List<NavigationMapEntity> maps = navigationMapDomainService.selectByFactoryModelId(id);
+            List<NavigationMapDTO> maps = navigationMapDomainService.selectByFactoryModelId(id);
             factoryModel.setParams(java.util.Map.of("maps", maps));
         }
         return factoryModel;
+    }
+
+    @Override
+    public FactoryModelDTO getFactoryModelDetailDTO(Long id) {
+        FactoryModelDTO dto = DTOConverter.toFactoryModelDTO(this.getById(id));
+        if (dto != null) {
+            List<NavigationMapDTO> maps = navigationMapDomainService.selectByFactoryModelId(id);
+            dto.setProperties(maps != null ? maps.toString() : null);
+        }
+        return dto;
     }
 
     @Override
