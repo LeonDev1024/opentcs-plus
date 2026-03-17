@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.opentcs.common.mybatis.core.domain.ConfigEntity;
-import org.opentcs.common.mybatis.handler.JsonbTypeHandler;
+import org.opentcs.common.mybatis.handler.MySqlJsonTypeHandler;
 import org.opentcs.kernel.persistence.to.AllowedOperationTO;
 import org.opentcs.kernel.persistence.to.AllowedPeripheralOperationTO;
 import org.opentcs.kernel.persistence.to.PropertyTO;
@@ -18,6 +18,7 @@ import java.util.List;
 /**
  * 位置类型数据模型
  * 配置表，简化审计字段
+ * 注意：位置类型全局共享，不按工厂隔离（适用于私有化部署场景）
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -31,11 +32,6 @@ public class LocationTypeEntity extends ConfigEntity {
     private Long id;
 
     /**
-     * 所属工厂ID
-     */
-    private Long factoryModelId;
-
-    /**
      * 位置类型名称
      */
     private String name;
@@ -43,18 +39,18 @@ public class LocationTypeEntity extends ConfigEntity {
     /**
      * 允许的操作列表：LOAD, UNLOAD, NOP等
      */
-    @TableField(typeHandler = JsonbTypeHandler.class)
+    @TableField(typeHandler = MySqlJsonTypeHandler.class)
     private List<AllowedOperationTO> allowedOperations = new ArrayList<>();
 
     /**
      * 允许的外围设备操作
      */
-    @TableField(typeHandler = JsonbTypeHandler.class)
+    @TableField(typeHandler = MySqlJsonTypeHandler.class)
     private List<AllowedPeripheralOperationTO> allowedPeripheralOperations = new ArrayList<>();
 
     /**
      * 扩展属性
      */
-    @TableField(typeHandler = JsonbTypeHandler.class)
+    @TableField(typeHandler = MySqlJsonTypeHandler.class)
     private List<PropertyTO> properties = new ArrayList<>();
 }
