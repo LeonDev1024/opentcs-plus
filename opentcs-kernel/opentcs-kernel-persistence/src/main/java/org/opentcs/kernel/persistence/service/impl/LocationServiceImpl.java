@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
+import org.opentcs.kernel.api.dto.LocationDTO;
+import org.opentcs.kernel.persistence.service.DTOConverter;
 import org.opentcs.kernel.persistence.entity.LocationEntity;
 import org.opentcs.kernel.persistence.mapper.LocationMapper;
 import org.opentcs.kernel.persistence.service.LocationDomainService;
@@ -46,10 +48,46 @@ public class LocationServiceImpl extends ServiceImpl<LocationMapper, LocationEnt
     }
 
     @Override
+    public TableDataInfo<LocationDTO> selectPageDTO(LocationEntity location, PageQuery pageQuery) {
+        LambdaQueryWrapper<LocationEntity> wrapper = new LambdaQueryWrapper<>();
+
+        if (location != null) {
+            if (StringUtils.hasText(location.getName())) {
+                wrapper.like(LocationEntity::getName, location.getName());
+            }
+            if (location.getLocationTypeId() != null) {
+                wrapper.eq(LocationEntity::getLocationTypeId, location.getLocationTypeId());
+            }
+            if (location.getNavigationMapId() != null) {
+                wrapper.eq(LocationEntity::getNavigationMapId, location.getNavigationMapId());
+            }
+        }
+
+        wrapper.orderByDesc(LocationEntity::getCreateTime);
+
+        Page<LocationEntity> page = this.page(
+            new Page<>(pageQuery.getPageNum(), pageQuery.getPageSize()),
+            wrapper
+        );
+
+        // Convert to DTO
+        List<LocationDTO> dtoList = DTOConverter.toLocationDTOList(page.getRecords());
+        TableDataInfo<LocationDTO> result = TableDataInfo.build();
+        result.setRows(dtoList);
+        result.setTotal(page.getTotal());
+        return result;
+    }
+
+    @Override
     public List<LocationEntity> selectByNavigationMapId(Long navigationMapId) {
         return this.list(new LambdaQueryWrapper<LocationEntity>()
                 .eq(LocationEntity::getNavigationMapId, navigationMapId)
                 .orderByAsc(LocationEntity::getName));
+    }
+
+    @Override
+    public List<LocationDTO> selectByNavigationMapIdDTO(Long navigationMapId) {
+        return DTOConverter.toLocationDTOList(this.selectByNavigationMapId(navigationMapId));
     }
 
     @Override
@@ -63,8 +101,18 @@ public class LocationServiceImpl extends ServiceImpl<LocationMapper, LocationEnt
     }
 
     @Override
+    public List<LocationDTO> selectByMapIdsDTO(List<Long> mapIds) {
+        return DTOConverter.toLocationDTOList(this.selectByMapIds(mapIds));
+    }
+
+    @Override
     public LocationEntity selectById(Long id) {
         return this.getById(id);
+    }
+
+    @Override
+    public LocationDTO selectByIdDTO(Long id) {
+        return DTOConverter.toLocationDTO(this.getById(id));
     }
 
     @Override

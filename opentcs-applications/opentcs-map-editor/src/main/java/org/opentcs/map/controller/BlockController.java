@@ -5,6 +5,7 @@ import org.opentcs.common.core.domain.R;
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.common.web.core.BaseController;
+import org.opentcs.kernel.api.dto.BlockDTO;
 import org.opentcs.kernel.persistence.entity.BlockEntity;
 import org.opentcs.kernel.persistence.service.BlockDomainService;
 import org.springframework.validation.annotation.Validated;
@@ -29,34 +30,34 @@ public class BlockController extends BaseController {
      * 支持按工厂ID和类型筛选
      */
     @GetMapping("/list")
-    public TableDataInfo<BlockEntity> list(BlockEntity block, PageQuery pageQuery) {
-        return blockDomainService.selectPage(block, pageQuery);
+    public TableDataInfo<BlockDTO> list(BlockEntity block, PageQuery pageQuery) {
+        return blockDomainService.selectPageDTO(block, pageQuery);
     }
 
     /**
      * 根据工厂ID查询区域列表
      */
     @GetMapping("/listByFactory/{factoryId}")
-    public R<List<BlockEntity>> listByFactory(@PathVariable Long factoryId) {
-        return R.ok(blockDomainService.selectByFactoryModelId(factoryId));
+    public R<List<BlockDTO>> listByFactory(@PathVariable Long factoryId) {
+        return R.ok(blockDomainService.selectByFactoryModelIdDTO(factoryId));
     }
 
     /**
      * 根据工厂ID和类型查询区域列表
      */
     @GetMapping("/listByFactoryAndType/{factoryId}/{type}")
-    public R<List<BlockEntity>> listByFactoryAndType(
+    public R<List<BlockDTO>> listByFactoryAndType(
             @PathVariable Long factoryId,
             @PathVariable String type) {
-        return R.ok(blockDomainService.selectByFactoryModelIdAndType(factoryId, type));
+        return R.ok(blockDomainService.selectByFactoryModelIdAndTypeDTO(factoryId, type));
     }
 
     /**
      * 根据ID查询区域详情
      */
     @GetMapping("/{id}")
-    public R<BlockEntity> getById(@PathVariable Long id) {
-        return R.ok(blockDomainService.selectById(id));
+    public R<BlockDTO> getById(@PathVariable Long id) {
+        return R.ok(blockDomainService.selectByIdDTO(id));
     }
 
     /**

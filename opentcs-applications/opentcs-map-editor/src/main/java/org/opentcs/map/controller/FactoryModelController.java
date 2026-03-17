@@ -5,6 +5,7 @@ import org.opentcs.common.core.domain.R;
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.common.web.core.BaseController;
+import org.opentcs.kernel.api.dto.FactoryModelDTO;
 import org.opentcs.kernel.persistence.entity.FactoryModelEntity;
 import org.opentcs.kernel.persistence.service.FactoryModelDomainService;
 import org.springframework.validation.annotation.Validated;
@@ -25,16 +26,16 @@ public class FactoryModelController extends BaseController {
      * 查询所有工厂模型
      */
     @GetMapping("/list")
-    public TableDataInfo<FactoryModelEntity> list(FactoryModelEntity factoryModel, PageQuery pageQuery) {
-        return factoryModelDomainService.selectPageFactoryModel(factoryModel, pageQuery);
+    public TableDataInfo<FactoryModelDTO> list(FactoryModelEntity factoryModel, PageQuery pageQuery) {
+        return factoryModelDomainService.selectPageFactoryModelDTO(factoryModel, pageQuery);
     }
 
     /**
      * 根据ID查询工厂模型详情
      */
     @GetMapping("/{id}")
-    public R<FactoryModelEntity> getById(@PathVariable Long id) {
-        return R.ok(factoryModelDomainService.getFactoryModelDetail(id));
+    public R<FactoryModelDTO> getById(@PathVariable Long id) {
+        return R.ok(factoryModelDomainService.getFactoryModelDetailDTO(id));
     }
 
     /**

@@ -5,6 +5,7 @@ import org.opentcs.common.core.domain.R;
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.common.web.core.BaseController;
+import org.opentcs.kernel.api.dto.NavigationMapDTO;
 import org.opentcs.kernel.persistence.entity.NavigationMapEntity;
 import org.opentcs.kernel.persistence.service.NavigationMapDomainService;
 import org.springframework.validation.annotation.Validated;
@@ -27,7 +28,7 @@ public class NavigationMapController extends BaseController {
      * 查询导航地图列表
      */
     @GetMapping("/list")
-    public TableDataInfo<NavigationMapEntity> list(NavigationMapEntity navigationMap, PageQuery pageQuery) {
+    public TableDataInfo<NavigationMapDTO> list(NavigationMapEntity navigationMap, PageQuery pageQuery) {
         return navigationMapDomainService.selectPageNavigationMap(navigationMap, pageQuery);
     }
 
@@ -35,7 +36,7 @@ public class NavigationMapController extends BaseController {
      * 根据工厂ID查询所有导航地图
      */
     @GetMapping("/list/{factoryId}")
-    public R<List<NavigationMapEntity>> listByFactory(@PathVariable Long factoryId) {
+    public R<List<NavigationMapDTO>> listByFactory(@PathVariable Long factoryId) {
         return R.ok(navigationMapDomainService.selectByFactoryModelId(factoryId));
     }
 
@@ -51,7 +52,7 @@ public class NavigationMapController extends BaseController {
      * 根据工厂ID和楼层号查询导航地图
      */
     @GetMapping("/floor/{factoryId}/{floorNumber}")
-    public R<NavigationMapEntity> getByFloor(@PathVariable Long factoryId, @PathVariable Integer floorNumber) {
+    public R<NavigationMapDTO> getByFloor(@PathVariable Long factoryId, @PathVariable Integer floorNumber) {
         return R.ok(navigationMapDomainService.selectByFactoryModelIdAndFloor(factoryId, floorNumber));
     }
 

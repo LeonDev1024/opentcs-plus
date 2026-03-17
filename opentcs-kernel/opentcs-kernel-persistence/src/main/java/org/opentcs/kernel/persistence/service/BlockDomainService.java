@@ -3,6 +3,7 @@ package org.opentcs.kernel.persistence.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
+import org.opentcs.kernel.api.dto.BlockDTO;
 import org.opentcs.kernel.persistence.entity.BlockEntity;
 
 import java.util.List;
@@ -20,6 +21,14 @@ public interface BlockDomainService extends IService<BlockEntity> {
      * @return 分页结果
      */
     TableDataInfo<BlockEntity> selectPage(BlockEntity block, PageQuery pageQuery);
+
+    /**
+     * 分页查询区域列表（DTO）
+     * @param block 查询条件
+     * @param pageQuery 分页参数
+     * @return 分页结果
+     */
+    TableDataInfo<BlockDTO> selectPageDTO(BlockEntity block, PageQuery pageQuery);
 
     /**
      * 根据工厂模型ID查询区域列表
@@ -49,6 +58,28 @@ public interface BlockDomainService extends IService<BlockEntity> {
      * @return 区域详情
      */
     BlockEntity selectById(Long id);
+
+    /**
+     * 根据ID查询区域详情（DTO）
+     * @param id 区域ID
+     * @return 区域详情
+     */
+    BlockDTO selectByIdDTO(Long id);
+
+    /**
+     * 根据工厂模型ID查询区域列表（DTO）
+     * @param factoryModelId 工厂模型ID
+     * @return 区域列表
+     */
+    List<BlockDTO> selectByFactoryModelIdDTO(Long factoryModelId);
+
+    /**
+     * 根据工厂模型ID和类型查询区域列表（DTO）
+     * @param factoryModelId 工厂模型ID
+     * @param type 区域类型
+     * @return 区域列表
+     */
+    List<BlockDTO> selectByFactoryModelIdAndTypeDTO(Long factoryModelId, String type);
 
     /**
      * 创建区域

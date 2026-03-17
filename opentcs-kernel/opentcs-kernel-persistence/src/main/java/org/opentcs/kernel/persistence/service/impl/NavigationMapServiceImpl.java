@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
+import org.opentcs.kernel.api.dto.NavigationMapDTO;
 import org.opentcs.kernel.persistence.entity.*;
 import org.opentcs.kernel.persistence.mapper.*;
 import org.opentcs.kernel.persistence.service.NavigationMapDomainService;
@@ -66,19 +67,19 @@ public class NavigationMapServiceImpl extends ServiceImpl<NavigationMapMapper, N
     }
 
     @Override
-    public TableDataInfo<NavigationMapEntity> selectPageNavigationMap(NavigationMapEntity navigationMap, PageQuery pageQuery) {
-        IPage<NavigationMapEntity> page = this.getBaseMapper().selectPageNavigationMap(
+    public TableDataInfo<NavigationMapDTO> selectPageNavigationMap(NavigationMapEntity navigationMap, PageQuery pageQuery) {
+        IPage<NavigationMapDTO> page = this.getBaseMapper().selectPageNavigationMap(
                 pageQuery.build(), navigationMap);
         return TableDataInfo.build(page);
     }
 
     @Override
-    public List<NavigationMapEntity> selectByFactoryModelId(Long factoryModelId) {
+    public List<NavigationMapDTO> selectByFactoryModelId(Long factoryModelId) {
         return this.getBaseMapper().selectByFactoryModelId(factoryModelId);
     }
 
     @Override
-    public NavigationMapEntity selectByFactoryModelIdAndFloor(Long factoryModelId, Integer floorNumber) {
+    public NavigationMapDTO selectByFactoryModelIdAndFloor(Long factoryModelId, Integer floorNumber) {
         return this.getBaseMapper().selectByFactoryModelIdAndFloor(factoryModelId, floorNumber);
     }
 

@@ -72,11 +72,10 @@ CREATE TABLE navigation_map (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='导航地图表';
 
 -- ============================================================
--- 位置类型表 (LocationType) - 放在 navigation_map 之前，因为 location 依赖它
+-- 位置类型表 (LocationType) - 全局共享，不按工厂隔离
 -- ============================================================
 CREATE TABLE location_type (
     id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-    factory_model_id BIGINT NOT NULL COMMENT '所属工厂ID',
     name VARCHAR(255) NOT NULL COMMENT '位置类型名称',
     allowed_operations JSON COMMENT '允许的操作列表',
     allowed_peripheral_operations JSON COMMENT '允许的外围设备操作',
@@ -84,8 +83,7 @@ CREATE TABLE location_type (
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     del_flag CHAR(1) DEFAULT '0',
-    CONSTRAINT pk_location_type PRIMARY KEY (id),
-    CONSTRAINT fk_location_type_factory FOREIGN KEY (factory_model_id) REFERENCES factory_model(id) ON DELETE CASCADE
+    CONSTRAINT pk_location_type PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='位置类型表';
 
 -- ============================================================
@@ -276,7 +274,6 @@ CREATE INDEX idx_point_navigation_map ON point(navigation_map_id);
 CREATE INDEX idx_point_layer ON point(layer_id);
 CREATE INDEX idx_path_navigation_map ON path(navigation_map_id);
 CREATE INDEX idx_location_navigation_map ON location(navigation_map_id);
-CREATE INDEX idx_location_type_factory ON location_type(factory_model_id);
 CREATE INDEX idx_block_factory ON block(factory_model_id);
 CREATE INDEX idx_block_navigation_map ON block(navigation_map_id);
 CREATE INDEX idx_clc_factory ON cross_layer_connection(factory_model_id);

@@ -2,7 +2,7 @@ package org.opentcs.map.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.opentcs.common.core.domain.R;
-import org.opentcs.map.domain.bo.PlantModelBO;
+import org.opentcs.map.domain.bo.MapEditorBO;
 import org.opentcs.map.domain.vo.LoadModelVO;
 import org.opentcs.map.application.IMapEditorService;
 import org.springframework.http.HttpStatus;
@@ -30,8 +30,8 @@ public class MapEditorController {
      * 加载地图模型
      */
     @PostMapping("/load")
-    public R<PlantModelBO> load(@RequestBody LoadModelVO loadModelVO) {
-        PlantModelBO result = mapEditorService.load(loadModelVO);
+    public R<MapEditorBO> load(@RequestBody LoadModelVO loadModelVO) {
+        MapEditorBO result = mapEditorService.load(loadModelVO);
         if (result == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "地图模型不存在");
         }
@@ -40,7 +40,7 @@ public class MapEditorController {
 
 
     @PostMapping("/save")
-    public R<Boolean> save(@RequestBody PlantModelBO plantModelBO) {
-        return R.ok(mapEditorService.save(plantModelBO));
+    public R<Boolean> save(@RequestBody MapEditorBO mapEditorBO) {
+        return R.ok(mapEditorService.save(mapEditorBO));
     }
 }

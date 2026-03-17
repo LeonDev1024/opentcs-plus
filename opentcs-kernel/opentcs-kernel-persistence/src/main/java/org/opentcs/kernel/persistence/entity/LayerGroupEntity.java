@@ -13,7 +13,7 @@ import org.opentcs.common.mybatis.core.domain.ConfigEntity;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@TableName("layer_group")
+@TableName("factory_layer_group")
 public class LayerGroupEntity extends ConfigEntity {
 
     /**
@@ -23,12 +23,7 @@ public class LayerGroupEntity extends ConfigEntity {
     private Long id;
 
     /**
-     * 所属可视化布局
-     */
-    private Long visualLayoutId;
-
-    /**
-     * 所属导航地图ID（支持多楼层工厂）
+     * 所属导航地图ID
      */
     private Long navigationMapId;
 
