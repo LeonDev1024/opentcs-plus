@@ -31,9 +31,9 @@ public class LocationTypeEntity extends ConfigEntity {
     private Long id;
 
     /**
-     * 所属地图模型ID
+     * 所属工厂ID
      */
-    private Long plantModelId;
+    private Long factoryModelId;
 
     /**
      * 位置类型名称

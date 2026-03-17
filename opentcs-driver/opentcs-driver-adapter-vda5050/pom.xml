@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>opentcs-driver-adapter-vda5050</artifactId>
-    <name>OpenTCS VDA5050 Adapter</name>
+    <name>opentcs-driver-adapter</name>
     <description>VDA5050 协议适配器实现</description>
 
     <dependencies>

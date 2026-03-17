@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>opentcs-kernel-persistence</artifactId>
-    <name>OpenTCS Kernel Persistence</name>
+    <name>opentcs-kernel-persistence</name>
     <description>调度核心持久化</description>
 
     <dependencies>

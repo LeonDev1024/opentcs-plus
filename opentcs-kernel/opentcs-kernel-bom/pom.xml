@@ -12,7 +12,7 @@
 
     <artifactId>opentcs-kernel-bom</artifactId>
     <packaging>pom</packaging>
-    <name>OpenTCS Kernel BOM</name>
+    <name>opentcs-kernel-bom</name>
     <description>OpenTCS Kernel Bill of Materials</description>
 
     <dependencyManagement>

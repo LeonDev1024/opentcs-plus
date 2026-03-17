@@ -6,7 +6,7 @@ import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.common.web.core.BaseController;
 import org.opentcs.kernel.persistence.entity.NavigationMapEntity;
-import org.opentcs.map.service.NavigationMapService;
+import org.opentcs.kernel.persistence.service.NavigationMapDomainService;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,14 +21,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class NavigationMapController extends BaseController {
 
-    private final NavigationMapService navigationMapService;
+    private final NavigationMapDomainService navigationMapDomainService;
 
     /**
      * 查询导航地图列表
      */
     @GetMapping("/list")
     public TableDataInfo<NavigationMapEntity> list(NavigationMapEntity navigationMap, PageQuery pageQuery) {
-        return navigationMapService.selectPageNavigationMap(navigationMap, pageQuery);
+        return navigationMapDomainService.selectPageNavigationMap(navigationMap, pageQuery);
     }
 
     /**
@@ -36,7 +36,7 @@ public class NavigationMapController extends BaseController {
      */
     @GetMapping("/list/{factoryId}")
     public R<List<NavigationMapEntity>> listByFactory(@PathVariable Long factoryId) {
-        return R.ok(navigationMapService.selectByFactoryModelId(factoryId));
+        return R.ok(navigationMapDomainService.selectByFactoryModelId(factoryId));
     }
 
     /**
@@ -44,7 +44,7 @@ public class NavigationMapController extends BaseController {
      */
     @GetMapping("/{id}")
     public R<NavigationMapEntity> getById(@PathVariable Long id) {
-        return R.ok(navigationMapService.getNavigationMapDetail(id));
+        return R.ok(navigationMapDomainService.getNavigationMapDetail(id));
     }
 
     /**
@@ -52,7 +52,7 @@ public class NavigationMapController extends BaseController {
      */
     @GetMapping("/floor/{factoryId}/{floorNumber}")
     public R<NavigationMapEntity> getByFloor(@PathVariable Long factoryId, @PathVariable Integer floorNumber) {
-        return R.ok(navigationMapService.selectByFactoryModelIdAndFloor(factoryId, floorNumber));
+        return R.ok(navigationMapDomainService.selectByFactoryModelIdAndFloor(factoryId, floorNumber));
     }
 
     /**
@@ -60,7 +60,7 @@ public class NavigationMapController extends BaseController {
      */
     @PostMapping("/create")
     public R<Boolean> create(@RequestBody NavigationMapEntity navigationMap) {
-        return R.ok(navigationMapService.createNavigationMap(navigationMap));
+        return R.ok(navigationMapDomainService.createNavigationMap(navigationMap));
     }
 
     /**
@@ -68,7 +68,7 @@ public class NavigationMapController extends BaseController {
      */
     @PutMapping("/update")
     public R<Boolean> update(@RequestBody NavigationMapEntity navigationMap) {
-        return R.ok(navigationMapService.updateNavigationMap(navigationMap));
+        return R.ok(navigationMapDomainService.updateNavigationMap(navigationMap));
     }
 
     /**
@@ -76,6 +76,6 @@ public class NavigationMapController extends BaseController {
      */
     @DeleteMapping("/{id}")
     public R<Boolean> delete(@PathVariable Long id) {
-        return R.ok(navigationMapService.deleteNavigationMap(id));
+        return R.ok(navigationMapDomainService.deleteNavigationMap(id));
     }
 }

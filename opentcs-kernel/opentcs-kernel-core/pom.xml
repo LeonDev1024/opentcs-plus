@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>opentcs-kernel-core</artifactId>
-    <name>OpenTCS Kernel Core</name>
+    <name>opentcs-kernel-core</name>
     <description>调度核心领域模型</description>
 
     <dependencies>

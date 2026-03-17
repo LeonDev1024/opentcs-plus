@@ -35,24 +35,9 @@ public class FactoryModelEntity extends BusinessEntity {
     private String name;
 
     /**
-     * 模型版本
-     */
-    private String modelVersion;
-
-    /**
-     * 比例尺 (px/m)：像素/米，默认50像素=1米
+     * 比例尺 (mm/px)：毫米/像素，默认1毫米=1像素
      */
     private BigDecimal scale;
-
-    /**
-     * 坐标系：RIGHT_HAND右手系/LEFT_HAND左手系
-     */
-    private String coordinateSystem;
-
-    /**
-     * 长度单位：METER/CENTIMETER/MILLIMETER
-     */
-    private String lengthUnit;
 
     /**
      * 扩展属性

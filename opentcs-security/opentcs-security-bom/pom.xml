@@ -12,7 +12,7 @@
 
     <artifactId>opentcs-security-bom</artifactId>
     <packaging>pom</packaging>
-    <name>OpenTCS Security BOM</name>
+    <name>opentcs-security-bom</name>
     <description>OpenTCS Security Bill of Materials</description>
 
     <dependencyManagement>

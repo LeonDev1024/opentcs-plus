@@ -6,7 +6,7 @@ import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.common.web.core.BaseController;
 import org.opentcs.kernel.persistence.entity.FactoryModelEntity;
-import org.opentcs.map.service.FactoryModelService;
+import org.opentcs.kernel.persistence.service.FactoryModelDomainService;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,14 +19,14 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class FactoryModelController extends BaseController {
 
-    private final FactoryModelService factoryModelService;
+    private final FactoryModelDomainService factoryModelDomainService;
 
     /**
      * 查询所有工厂模型
      */
     @GetMapping("/list")
     public TableDataInfo<FactoryModelEntity> list(FactoryModelEntity factoryModel, PageQuery pageQuery) {
-        return factoryModelService.selectPageFactoryModel(factoryModel, pageQuery);
+        return factoryModelDomainService.selectPageFactoryModel(factoryModel, pageQuery);
     }
 
     /**
@@ -34,7 +34,7 @@ public class FactoryModelController extends BaseController {
      */
     @GetMapping("/{id}")
     public R<FactoryModelEntity> getById(@PathVariable Long id) {
-        return R.ok(factoryModelService.getFactoryModelDetail(id));
+        return R.ok(factoryModelDomainService.getFactoryModelDetail(id));
     }
 
     /**
@@ -42,7 +42,7 @@ public class FactoryModelController extends BaseController {
      */
     @PostMapping("/create")
     public R<Boolean> create(@RequestBody FactoryModelEntity factoryModel) {
-        return R.ok(factoryModelService.createFactoryModel(factoryModel));
+        return R.ok(factoryModelDomainService.createFactoryModel(factoryModel));
     }
 
     /**
@@ -50,7 +50,7 @@ public class FactoryModelController extends BaseController {
      */
     @PutMapping("/update")
     public R<Boolean> update(@RequestBody FactoryModelEntity factoryModel) {
-        return R.ok(factoryModelService.updateFactoryModel(factoryModel));
+        return R.ok(factoryModelDomainService.updateFactoryModel(factoryModel));
     }
 
     /**
@@ -58,6 +58,6 @@ public class FactoryModelController extends BaseController {
      */
     @DeleteMapping("/{id}")
     public R<Boolean> delete(@PathVariable Long id) {
-        return R.ok(factoryModelService.deleteFactoryModel(id));
+        return R.ok(factoryModelDomainService.deleteFactoryModel(id));
     }
 }

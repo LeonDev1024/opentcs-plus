@@ -7,7 +7,9 @@ import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.common.web.core.BaseController;
 import org.opentcs.kernel.persistence.entity.PlantModelEntity;
-import org.opentcs.map.service.PlantModelService;
+import org.opentcs.kernel.persistence.service.PlantModelDomainService;
+import org.opentcs.map.application.IMapEditorService;
+import org.opentcs.map.domain.bo.PlantModelBO;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,14 +24,15 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class PlantModelController extends BaseController {
 
-    private final PlantModelService plantModelService;
+    private final PlantModelDomainService plantModelDomainService;
+    private final IMapEditorService mapEditorService;
 
     /**
      * 查询所有地图模型
      */
     @GetMapping("/list")
     public TableDataInfo<PlantModelEntity> list(PlantModelEntity plantModel, PageQuery pageQuery) {
-        return plantModelService.selectPagePlantModel(plantModel, pageQuery);
+        return plantModelDomainService.selectPagePlantModel(plantModel, pageQuery);
     }
 
     /**
@@ -37,7 +40,7 @@ public class PlantModelController extends BaseController {
      */
     @GetMapping("/{id}")
     public R<PlantModelEntity> getPlantModelById(@PathVariable Long id) {
-        return R.ok(plantModelService.getById(id));
+        return R.ok(plantModelDomainService.selectById(id));
     }
 
     /**
@@ -45,7 +48,7 @@ public class PlantModelController extends BaseController {
      */
     @PostMapping("/create")
     public R<Boolean> createPlantModel(@RequestBody PlantModelEntity plantModel) {
-        return R.ok(plantModelService.createPlantModel(plantModel));
+        return R.ok(plantModelDomainService.createPlantModel(plantModel));
     }
 
     /**
@@ -53,7 +56,7 @@ public class PlantModelController extends BaseController {
      */
     @PutMapping("/update")
     public R<Boolean> updatePlantModel(@RequestBody PlantModelEntity plantModel) {
-        return R.ok(plantModelService.updateById(plantModel));
+        return R.ok(plantModelDomainService.updateById(plantModel));
     }
 
     /**
@@ -61,15 +64,15 @@ public class PlantModelController extends BaseController {
      */
     @DeleteMapping("/{id}")
     public R<Boolean> deletePlantModel(@PathVariable Long id) {
-        return R.ok(plantModelService.removeById(id));
+        return R.ok(plantModelDomainService.removeById(id));
     }
 
     /**
      * 导入地图
      */
     @PostMapping("/import")
-    public R<org.opentcs.map.domain.bo.PlantModelBO> importMap(@RequestParam("file") MultipartFile file) {
-        return R.ok(plantModelService.importMap(file));
+    public R<PlantModelBO> importMap(@RequestParam("file") MultipartFile file) {
+        return R.ok(mapEditorService.importMap(file));
     }
 
     /**
@@ -77,7 +80,7 @@ public class PlantModelController extends BaseController {
      */
     @GetMapping("/export/{id}")
     public void exportMap(@PathVariable Long id, HttpServletResponse response) {
-        plantModelService.exportMap(id, response);
+        mapEditorService.exportMap(id, response);
     }
 
     /**
@@ -86,7 +89,7 @@ public class PlantModelController extends BaseController {
      */
     @PostMapping("/{id}/editor-data/upload")
     public R<Boolean> uploadEditorData(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
-        return R.ok(plantModelService.uploadEditorData(id, file));
+        return R.ok(mapEditorService.uploadEditorData(id, file));
     }
 
     /**
@@ -94,7 +97,7 @@ public class PlantModelController extends BaseController {
      */
     @PostMapping("/version/create")
     public R<Long> createVersion(@RequestParam Long modelId, @RequestParam String versionName) {
-        return R.ok(plantModelService.createVersion(modelId, versionName));
+        return R.ok(plantModelDomainService.createVersion(modelId, versionName));
     }
 
     /**
@@ -102,7 +105,7 @@ public class PlantModelController extends BaseController {
      */
     @GetMapping("/version/history/{id}")
     public TableDataInfo<PlantModelEntity> getVersionHistory(@PathVariable Long id, PageQuery pageQuery) {
-        return plantModelService.getVersionHistory(id, pageQuery);
+        return plantModelDomainService.getVersionHistory(id, pageQuery);
     }
 
     /**
@@ -110,7 +113,7 @@ public class PlantModelController extends BaseController {
      */
     @GetMapping("/validate/{id}")
     public R<String> validateTopology(@PathVariable Long id) {
-        return R.ok(plantModelService.validateTopology(id));
+        return R.ok(plantModelDomainService.validateTopology(id));
     }
 
     /**
@@ -118,6 +121,6 @@ public class PlantModelController extends BaseController {
      */
     @PostMapping("/copy")
     public R<Long> copyMap(@RequestParam Long modelId, @RequestParam String newName) {
-        return R.ok(plantModelService.copyMap(modelId, newName));
+        return R.ok(plantModelDomainService.copyMap(modelId, newName));
     }
 }

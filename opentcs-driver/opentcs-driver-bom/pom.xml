@@ -12,7 +12,7 @@
 
     <artifactId>opentcs-driver-bom</artifactId>
     <packaging>pom</packaging>
-    <name>OpenTCS Driver BOM</name>
+    <name>opentcs-driver-bom</name>
     <description>OpenTCS Driver Bill of Materials</description>
 
     <dependencyManagement>

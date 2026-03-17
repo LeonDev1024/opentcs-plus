@@ -6,7 +6,7 @@ import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.common.web.core.BaseController;
 import org.opentcs.kernel.persistence.entity.LocationTypeEntity;
-import org.opentcs.map.service.LocationTypeService;
+import org.opentcs.kernel.persistence.service.LocationTypeDomainService;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,14 +22,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LocationTypeController extends BaseController {
 
-    private final LocationTypeService locationTypeService;
+    private final LocationTypeDomainService locationTypeDomainService;
 
     /**
      * 查询所有位置类型
      */
     @GetMapping("/list")
     public TableDataInfo<LocationTypeEntity> list(LocationTypeEntity locationType, PageQuery pageQuery) {
-        return locationTypeService.selectPage(locationType, pageQuery);
+        return locationTypeDomainService.selectPage(locationType, pageQuery);
     }
 
     /**
@@ -37,7 +37,7 @@ public class LocationTypeController extends BaseController {
      */
     @GetMapping("/{id}")
     public R<LocationTypeEntity> getLocationTypeById(@PathVariable Long id) {
-        return R.ok(locationTypeService.getById(id));
+        return R.ok(locationTypeDomainService.getById(id));
     }
 
     /**
@@ -45,7 +45,7 @@ public class LocationTypeController extends BaseController {
      */
     @GetMapping("/all")
     public R<List<LocationTypeEntity>> getAllLocationTypes() {
-        return R.ok(locationTypeService.list());
+        return R.ok(locationTypeDomainService.list());
     }
 
     /**
@@ -53,7 +53,7 @@ public class LocationTypeController extends BaseController {
      */
     @PostMapping("/create")
     public R<Boolean> createLocationType(@RequestBody LocationTypeEntity locationType) {
-        return R.ok(locationTypeService.save(locationType));
+        return R.ok(locationTypeDomainService.save(locationType));
     }
 
     /**
@@ -61,7 +61,7 @@ public class LocationTypeController extends BaseController {
      */
     @PutMapping("/update")
     public R<Boolean> updateLocationType(@RequestBody LocationTypeEntity locationType) {
-        return R.ok(locationTypeService.updateById(locationType));
+        return R.ok(locationTypeDomainService.updateById(locationType));
     }
 
     /**
@@ -69,6 +69,6 @@ public class LocationTypeController extends BaseController {
      */
     @DeleteMapping("/{id}")
     public R<Boolean> deleteLocationType(@PathVariable Long id) {
-        return R.ok(locationTypeService.removeById(id));
+        return R.ok(locationTypeDomainService.removeById(id));
     }
 }
