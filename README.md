@@ -19,7 +19,6 @@ opentcsplus/
 ├── opentcs-plus/            # 后端核心系统
 ├── opentcs-plus-web/        # 前端Web界面
 ├── opentcs-plus-docs/       # 项目文档
-└── logs/                    # 日志文件
 ```
 
 ### 后端系统结构
