@@ -71,6 +71,21 @@ opentcs-plus-web/
 ├── dist/                              # 构建输出
 └── package.json                       # 项目配置
 ```
+## 核心技术栈
+### 后端
+技术选型说明：后端整体框架是基于ruoyi-vue-plus构建的，因为这个框架菜单权限管理已经非常完善了，防止重复造轮子，系统管理的部分保持一致，但是去掉了多租户的部分，因为考虑到工业机器人实际落地场景，一般都是私有化部署。
+整体调度的核心采用DDD驱动的模式进行的扩展。
+
+- 框架：Spring Boot 3.5.7, JDK 21
+- 数据库：MyBatis Plus 3.5.14 + MySQL 8.0
+- 缓存：Redisson 3.51.0 (Redis 7.0)
+- 认证：Sa-Token 1.44.0 (JWT)
+- 消息：MQTT, SSE
+- 存储：MINIO
+- AI 集成：Spring AI 1.0.0-M4
+
+### 前端技术栈
+- 框架：Vue3 + TypeScript + Element Plus + Vue Router + Pinia + Axios + Vite
 
 ## 功能清单列表
 
