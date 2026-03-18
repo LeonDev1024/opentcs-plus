@@ -19,7 +19,6 @@ opentcsplus/
 ├── opentcs-plus/            # 后端核心系统
 ├── opentcs-plus-web/        # 前端Web界面
 ├── opentcs-plus-docs/       # 项目文档
-└── logs/                    # 日志文件
 ```
 
 ### 后端系统结构
@@ -68,9 +67,23 @@ opentcs-plus-web/
 │   ├── App.vue                        # 应用入口
 │   └── main.ts                        # 主入口
 ├── public/                            # 公共资源
-├── dist/                              # 构建输出
 └── package.json                       # 项目配置
 ```
+## 核心技术栈
+### 后端
+项目后端基于 [RuoYi-Vue-Plus](https://github.com/dromara/RuoYi-Vue-Plus) 构建。RuoYi-Vue-Plus 提供了完善的菜单权限管理功能，避免重复造轮子，使我们能够专注于业务逻辑的实现。系统管理模块保持了原有设计，但根据工业机器人实际落地场景（通常为私有化部署），移除了多租户功能。
+调度核心采用**领域驱动设计（DDD）** 思想进行扩展，以应对复杂业务逻辑和模块划分的需求，确保系统的可维护性和可扩展性。
+
+- 框架：Spring Boot 3.5.7, JDK 21
+- 数据库：MyBatis Plus 3.5.14 + MySQL 8.0
+- 缓存：Redisson 3.51.0 (Redis 7.0)
+- 认证：Sa-Token 1.44.0 (JWT)
+- 消息：MQTT, SSE
+- 存储：MINIO
+- AI 集成：Spring AI 1.0.0-M4
+
+### 前端技术栈
+- 框架：Vue3 + TypeScript + Element Plus + Vue Router + Pinia + Axios + Vite
 
 ## 功能清单列表
 
