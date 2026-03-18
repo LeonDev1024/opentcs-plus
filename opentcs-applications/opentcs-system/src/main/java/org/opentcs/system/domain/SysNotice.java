@@ -2,7 +2,7 @@ package org.opentcs.system.domain;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import org.opentcs.common.tenant.core.TenantEntity;
+import org.opentcs.common.mybatis.core.domain.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -15,7 +15,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @TableName("sys_notice")
-public class SysNotice extends TenantEntity {
+public class SysNotice extends BaseEntity {
 
     /**
      * 公告ID

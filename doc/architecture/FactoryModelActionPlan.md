@@ -9,7 +9,7 @@
 ## 一、数据库准备
 
 ### 1.1 执行 SQL 脚本
-- **文件**: `script/mysql/opentcs_factory_model_v1.0.sql`
+- **文件**: `script/mysql/opentcs_factory_model_ddl_v2.0.sql`
 - **操作**: 在 MySQL 数据库中执行该脚本
 
 ---

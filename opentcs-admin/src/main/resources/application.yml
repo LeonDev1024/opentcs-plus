@@ -126,23 +126,6 @@ security:
     - /auth/**
     - /resource/**
 
-# 多租户配置
-tenant:
-  # 是否开启
-  enable: false
-  # 排除表
-  excludes:
-    - sys_menu
-    - sys_tenant
-    - sys_tenant_package
-    - sys_role_dept
-    - sys_role_menu
-    - sys_user_post
-    - sys_user_role
-    - sys_client
-    - sys_oss_config
-    - flow_spel
-
 # MyBatisPlus配置
 # https://baomidou.com/config/
 mybatis-plus:
@@ -210,14 +193,10 @@ springdoc:
       url: https://gitee.com/dromara/RuoYi-Vue-Plus
   #这里定义了两个分组，可定义多个，也可以不定义
   group-configs:
-    - group: 1.演示模块
-      packages-to-scan: org.dromara.demo
-    - group: 2.通用模块
+    - group: 1.通用模块
       packages-to-scan: org.dromara.web
-    - group: 3.系统模块
+    - group: 2.系统模块
       packages-to-scan: org.dromara.system
-    - group: 4.代码生成模块
-      packages-to-scan: org.dromara.generator
 
 # 防止XSS攻击
 xss:

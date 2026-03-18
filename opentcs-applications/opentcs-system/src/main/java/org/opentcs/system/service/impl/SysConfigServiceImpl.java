@@ -17,7 +17,6 @@ import org.opentcs.common.core.utils.StringUtils;
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.common.redis.utils.CacheUtils;
-import org.opentcs.common.tenant.helper.TenantHelper;
 import org.opentcs.system.domain.SysConfig;
 import org.opentcs.system.domain.bo.SysConfigBo;
 import org.opentcs.system.domain.vo.SysConfigVo;
@@ -82,14 +81,11 @@ public class SysConfigServiceImpl implements ISysConfigService, ConfigService {
 
     /**
      * 获取注册开关
-     * @param tenantId 租户id
      * @return true开启，false关闭
      */
     @Override
-    public boolean selectRegisterEnabled(String tenantId) {
-        String configValue = TenantHelper.dynamic(tenantId, () ->
-            this.selectConfigByKey("sys.account.registerUser")
-        );
+    public boolean selectRegisterEnabled() {
+        String configValue = this.selectConfigByKey("sys.account.registerUser");
         return Convert.toBool(configValue);
     }
 

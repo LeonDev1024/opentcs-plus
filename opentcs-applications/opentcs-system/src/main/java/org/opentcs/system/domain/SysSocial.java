@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.opentcs.common.tenant.core.TenantEntity;
+import org.opentcs.common.mybatis.core.domain.BaseEntity;
 
 import java.io.Serial;
 
@@ -16,7 +16,7 @@ import java.io.Serial;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @TableName("sys_social")
-public class SysSocial extends TenantEntity {
+public class SysSocial extends BaseEntity {
 
     @Serial
     private static final long serialVersionUID = 1L;

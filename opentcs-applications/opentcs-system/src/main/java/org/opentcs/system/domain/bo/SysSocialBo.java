@@ -8,8 +8,11 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.opentcs.common.core.validate.AddGroup;
 import org.opentcs.common.core.validate.EditGroup;
-import org.opentcs.common.tenant.core.TenantEntity;
+import org.opentcs.common.mybatis.core.domain.BaseEntity;
 import org.opentcs.system.domain.SysSocial;
+
+import java.io.Serial;
+import java.util.Date;
 
 /**
  * 社会化关系业务对象 sys_social
@@ -20,7 +23,10 @@ import org.opentcs.system.domain.SysSocial;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @AutoMapper(target = SysSocial.class, reverseConvertGenerate = false)
-public class SysSocialBo extends TenantEntity {
+public class SysSocialBo extends BaseEntity {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     /**
      * 主键
