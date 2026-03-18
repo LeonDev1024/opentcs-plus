@@ -5,6 +5,7 @@ target/
 .kotlin
 
 ### IntelliJ IDEA ###
+.idea/
 .idea/modules.xml
 .idea/jarRepositories.xml
 .idea/compiler.xml
@@ -41,3 +42,7 @@ build/
 **/.flattened-pom.xml
 **/*.log
 **/*.log.gz
+
+### Logs ###
+logs/
+opentcs-admin/logs/
