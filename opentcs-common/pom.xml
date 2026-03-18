@@ -29,7 +29,6 @@
         <module>opentcs-common-oss</module>
         <module>opentcs-common-excel</module>
         <module>opentcs-common-sms</module>
-        <module>opentcs-common-tenant</module>
         <module>opentcs-common-security</module>
         <module>opentcs-common-sensitive</module>
         <module>opentcs-common-sse</module>

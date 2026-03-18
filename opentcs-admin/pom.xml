@@ -110,12 +110,6 @@
 
         <dependency>
             <groupId>org.opentcs</groupId>
-            <artifactId>opentcs-common-tenant</artifactId>
-            <version>${revision}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.opentcs</groupId>
             <artifactId>opentcs-common-mqtt</artifactId>
             <version>${revision}</version>
         </dependency>

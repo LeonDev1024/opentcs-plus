@@ -13,7 +13,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.opentcs.common.core.constant.CacheNames;
 import org.opentcs.common.core.constant.SystemConstants;
-import org.opentcs.common.core.constant.TenantConstants;
+import org.opentcs.common.core.constant.SystemConstants;
 import org.opentcs.common.core.domain.model.LoginUser;
 import org.opentcs.common.core.exception.ServiceException;
 import org.opentcs.common.core.service.RoleService;
@@ -224,10 +224,9 @@ public class SysRoleServiceImpl implements ISysRoleService, RoleService {
         if (ObjectUtil.isNotNull(role.getRoleId()) && LoginHelper.isSuperAdmin(role.getRoleId())) {
             throw new ServiceException("不允许操作超级管理员角色");
         }
-        String[] keys = new String[]{TenantConstants.SUPER_ADMIN_ROLE_KEY, TenantConstants.TENANT_ADMIN_ROLE_KEY};
         // 新增不允许使用 管理员标识符
         if (ObjectUtil.isNull(role.getRoleId())
-            && StringUtils.equalsAny(role.getRoleKey(), keys)) {
+            && StringUtils.equals(role.getRoleKey(), SystemConstants.SUPER_ADMIN_ROLE_KEY)) {
             throw new ServiceException("不允许使用系统内置管理员角色标识符!");
         }
         // 修改不允许修改 管理员标识符
@@ -235,10 +234,9 @@ public class SysRoleServiceImpl implements ISysRoleService, RoleService {
             SysRole sysRole = baseMapper.selectById(role.getRoleId());
             // 如果标识符不相等 判断为修改了管理员标识符
             if (!StringUtils.equals(sysRole.getRoleKey(), role.getRoleKey())) {
-                if (StringUtils.equalsAny(sysRole.getRoleKey(), keys)) {
+                if (StringUtils.equals(sysRole.getRoleKey(), SystemConstants.SUPER_ADMIN_ROLE_KEY)
+                    || StringUtils.equals(role.getRoleKey(), SystemConstants.SUPER_ADMIN_ROLE_KEY)) {
                     throw new ServiceException("不允许修改系统内置管理员角色标识符!");
-                } else if (StringUtils.equalsAny(role.getRoleKey(), keys)) {
-                    throw new ServiceException("不允许使用系统内置管理员角色标识符!");
                 }
             }
         }

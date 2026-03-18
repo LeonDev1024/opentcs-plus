@@ -4,8 +4,8 @@ import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.opentcs.common.core.constant .SystemConstants;
-import org.opentcs.common.tenant.core.TenantEntity;
+import org.opentcs.common.core.constant.SystemConstants;
+import org.opentcs.common.mybatis.core.domain.BaseEntity;
 
 import java.util.Date;
 
@@ -19,7 +19,7 @@ import java.util.Date;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @TableName("sys_user")
-public class SysUser extends TenantEntity {
+public class SysUser extends BaseEntity {
 
     /**
      * 用户ID

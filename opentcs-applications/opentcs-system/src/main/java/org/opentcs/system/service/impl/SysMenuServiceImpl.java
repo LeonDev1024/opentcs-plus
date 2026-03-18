@@ -16,7 +16,6 @@ import org.opentcs.common.satoken.utils.LoginHelper;
 import org.opentcs.system.domain.SysMenu;
 import org.opentcs.system.domain.SysRole;
 import org.opentcs.system.domain.SysRoleMenu;
-import org.opentcs.system.domain.SysTenantPackage;
 import org.opentcs.system.domain.bo.SysMenuBo;
 import org.opentcs.system.domain.vo.MetaVo;
 import org.opentcs.system.domain.vo.RouterVo;
@@ -24,7 +23,6 @@ import org.opentcs.system.domain.vo.SysMenuVo;
 import org.opentcs.system.mapper.SysMenuMapper;
 import org.opentcs.system.mapper.SysRoleMapper;
 import org.opentcs.system.mapper.SysRoleMenuMapper;
-import org.opentcs.system.mapper.SysTenantPackageMapper;
 import org.opentcs.system.service.ISysMenuService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,7 +41,6 @@ public class SysMenuServiceImpl implements ISysMenuService {
     private final SysMenuMapper baseMapper;
     private final SysRoleMapper roleMapper;
     private final SysRoleMenuMapper roleMenuMapper;
-    private final SysTenantPackageMapper tenantPackageMapper;
 
     /**
      * 根据用户查询系统菜单列表
@@ -147,25 +144,8 @@ public class SysMenuServiceImpl implements ISysMenuService {
      */
     @Override
     public List<Long> selectMenuListByPackageId(Long packageId) {
-        SysTenantPackage tenantPackage = tenantPackageMapper.selectById(packageId);
-        List<Long> menuIds = StringUtils.splitTo(tenantPackage.getMenuIds(), Convert::toLong);
-        if (CollUtil.isEmpty(menuIds)) {
-            return List.of();
-        }
-        List<Long> parentIds = null;
-        if (tenantPackage.getMenuCheckStrictly()) {
-            parentIds = baseMapper.selectObjs(new LambdaQueryWrapper<SysMenu>()
-                .select(SysMenu::getParentId)
-                .in(SysMenu::getMenuId, menuIds), x -> {
-                return Convert.toLong(x);
-            });
-        }
-        return baseMapper.selectObjs(new LambdaQueryWrapper<SysMenu>()
-            .select(SysMenu::getMenuId)
-            .in(SysMenu::getMenuId, menuIds)
-            .notIn(CollUtil.isNotEmpty(parentIds), SysMenu::getMenuId, parentIds), x -> {
-            return Convert.toLong(x);
-        });
+        // 租户功能已移除，返回空列表
+        return List.of();
     }
 
     /**

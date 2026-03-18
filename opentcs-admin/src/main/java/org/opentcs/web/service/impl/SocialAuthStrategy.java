@@ -13,13 +13,11 @@ import org.opentcs.common.core.domain.model.LoginUser;
 import org.opentcs.common.core.domain.model.SocialLoginBody;
 import org.opentcs.common.core.exception.ServiceException;
 import org.opentcs.common.core.exception.user.UserException;
-import org.opentcs.common.core.utils.StreamUtils;
 import org.opentcs.common.core.utils.ValidatorUtils;
 import org.opentcs.common.json.utils.JsonUtils;
 import org.opentcs.common.satoken.utils.LoginHelper;
 import org.opentcs.common.social.config.properties.SocialProperties;
 import org.opentcs.common.social.utils.SocialUtils;
-import org.opentcs.common.tenant.helper.TenantHelper;
 import org.opentcs.system.domain.vo.SysClientVo;
 import org.opentcs.system.domain.vo.SysSocialVo;
 import org.opentcs.system.domain.vo.SysUserVo;
@@ -31,7 +29,6 @@ import org.opentcs.web.service.SysLoginService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * 第三方授权策略
@@ -70,21 +67,10 @@ public class SocialAuthStrategy implements IAuthStrategy {
         if (CollUtil.isEmpty(list)) {
             throw new ServiceException("你还没有绑定第三方账号，绑定后才可以登录！");
         }
-        SysSocialVo social;
-        if (TenantHelper.isEnable()) {
-            Optional<SysSocialVo> opt = StreamUtils.findAny(list, x -> x.getTenantId().equals(loginBody.getTenantId()));
-            if (opt.isEmpty()) {
-                throw new ServiceException("对不起，你没有权限登录当前租户！");
-            }
-            social = opt.get();
-        } else {
-            social = list.get(0);
-        }
-        LoginUser loginUser = TenantHelper.dynamic(social.getTenantId(), () -> {
-            SysUserVo user = loadUser(social.getUserId());
-            // 此处可根据登录用户的数据不同 自行创建 loginUser 属性不够用继承扩展就行了
-            return loginService.buildLoginUser(user);
-        });
+        SysSocialVo social = list.get(0);
+        SysUserVo user = loadUser(social.getUserId());
+        // 此处可根据登录用户的数据不同 自行创建 loginUser 属性不够用继承扩展就行了
+        LoginUser loginUser = loginService.buildLoginUser(user);
         loginUser.setClientKey(client.getClientKey());
         loginUser.setDeviceType(client.getDeviceType());
         SaLoginParameter model = new SaLoginParameter();
