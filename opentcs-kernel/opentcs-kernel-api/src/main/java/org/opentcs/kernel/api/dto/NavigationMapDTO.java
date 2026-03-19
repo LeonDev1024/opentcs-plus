@@ -38,19 +38,24 @@ public class NavigationMapDTO {
     private Integer floorNumber;
 
     /**
-     * 地图类型：INDOOR/OUTDOOR/MIXED
+     * AMR 型号（必填，对应 vehicle_type.name）
      */
-    private String mapType;
+    private String amrModel;
 
     /**
-     * PGM地图原点的全局X坐标
+     * 地图原点X坐标（毫米，相对于场景原点）
      */
     private BigDecimal originX;
 
     /**
-     * PGM地图原点的全局Y坐标
+     * 地图原点Y坐标（毫米，相对于场景原点）
      */
     private BigDecimal originY;
+
+    /**
+     * 地图旋转角度（度，相对于场景方向）
+     */
+    private BigDecimal rotation;
 
     /**
      * 扩展属性
@@ -81,4 +86,31 @@ public class NavigationMapDTO {
      * 关联的工厂编号
      */
     private String factoryId;
+
+    // ==================== 栅格底图相关字段 ====================
+
+    /**
+     * 栅格地图OSS存储路径
+     */
+    private String rasterUrl;
+
+    /**
+     * 栅格地图版本号
+     */
+    private Integer rasterVersion;
+
+    /**
+     * 栅格地图宽度（像素）
+     */
+    private Integer rasterWidth;
+
+    /**
+     * 栅格地图高度（像素）
+     */
+    private Integer rasterHeight;
+
+    /**
+     * 栅格地图分辨率（米/像素）
+     */
+    private BigDecimal rasterResolution;
 }
