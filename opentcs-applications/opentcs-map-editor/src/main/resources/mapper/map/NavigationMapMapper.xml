@@ -36,4 +36,13 @@
         LIMIT 1
     </select>
 
+    <select id="selectByMapId" resultType="org.opentcs.kernel.api.dto.NavigationMapDTO">
+        SELECT m.*, f.name as factoryName, f.factory_id as factoryId
+        FROM navigation_map m
+        LEFT JOIN factory_model f ON m.factory_model_id = f.id
+        WHERE m.map_id = #{mapId}
+          AND m.del_flag = '0'
+        LIMIT 1
+    </select>
+
 </mapper>

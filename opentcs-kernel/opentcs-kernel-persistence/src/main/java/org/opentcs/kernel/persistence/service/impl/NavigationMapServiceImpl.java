@@ -86,6 +86,11 @@ public class NavigationMapServiceImpl extends ServiceImpl<NavigationMapMapper, N
     }
 
     @Override
+    public NavigationMapDTO selectByMapId(String mapId) {
+        return this.getBaseMapper().selectByMapId(mapId);
+    }
+
+    @Override
     @Cacheable(key = "#id")
     public NavigationMapEntity getNavigationMapDetail(Long id) {
         return this.getById(id);
