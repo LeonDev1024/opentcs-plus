@@ -30,9 +30,9 @@ public class VisualLayoutEntity extends ConfigEntity {
     private String name;
 
     /**
-     * 关联的地图模型ID
+     * 关联的导航地图ID
      */
-    private Long plantModelId;
+    private Long navigationMapId;
 
     /**
      * X轴缩放比例

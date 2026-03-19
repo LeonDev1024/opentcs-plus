@@ -17,6 +17,7 @@ import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -34,6 +35,7 @@ public class NavigationMapServiceImpl extends ServiceImpl<NavigationMapMapper, N
 
     @Override
     @CacheEvict(allEntries = true)
+    @Transactional(rollbackFor = Exception.class)
     public boolean createNavigationMap(NavigationMapEntity navigationMap) {
         long count = this.count(new LambdaQueryWrapper<NavigationMapEntity>()
                 .eq(NavigationMapEntity::getFactoryModelId, navigationMap.getFactoryModelId())

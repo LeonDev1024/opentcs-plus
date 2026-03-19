@@ -35,12 +35,6 @@ public class PathServiceImpl extends ServiceImpl<PathMapper, PathEntity> impleme
         return result;
     }
 
-    @Override
-    public List<PathEntity> selectAllPathByPlantModelId(Long plantModelId) {
-        return this.list(new LambdaQueryWrapper<>(PathEntity.class)
-                .eq(PathEntity::getPlantModelId, plantModelId)
-        );
-    }
 
     @Override
     public List<PathEntity> listByMap(Long navigationMapId) {

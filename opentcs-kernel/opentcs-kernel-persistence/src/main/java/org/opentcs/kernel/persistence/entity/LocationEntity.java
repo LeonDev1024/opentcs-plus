@@ -26,12 +26,7 @@ public class LocationEntity extends DataEntity {
     private Long id;
 
     /**
-     * 所属地图模型ID（兼容旧版）
-     */
-    private Long plantModelId;
-
-    /**
-     * 归属导航地图ID（新版）
+     * 归属导航地图ID
      */
     private Long navigationMapId;
 
@@ -69,11 +64,6 @@ public class LocationEntity extends DataEntity {
     private BigDecimal zPosition;
 
     /**
-     * 车辆方向
-     */
-    private BigDecimal vehicleOrientation;
-
-    /**
      * 是否被锁定
      */
     private Boolean locked;
@@ -82,11 +72,6 @@ public class LocationEntity extends DataEntity {
      * 是否被占用
      */
     private Boolean isOccupied;
-
-    /**
-     * 标签
-     */
-    private String label;
 
     /**
      * 扩展属性

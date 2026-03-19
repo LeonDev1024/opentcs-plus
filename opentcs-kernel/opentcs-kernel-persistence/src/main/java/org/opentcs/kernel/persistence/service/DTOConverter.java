@@ -18,7 +18,6 @@ public class DTOConverter {
         if (entity == null) return null;
         BlockDTO dto = new BlockDTO();
         dto.setId(entity.getId());
-        dto.setPlantModelId(entity.getPlantModelId());
         dto.setFactoryModelId(entity.getFactoryModelId());
         dto.setNavigationMapId(entity.getNavigationMapId());
         dto.setBlockId(entity.getBlockId());
@@ -43,7 +42,6 @@ public class DTOConverter {
         if (entity == null) return null;
         LocationDTO dto = new LocationDTO();
         dto.setId(entity.getId());
-        dto.setPlantModelId(entity.getPlantModelId());
         dto.setNavigationMapId(entity.getNavigationMapId());
         dto.setLocationTypeId(entity.getLocationTypeId());
         dto.setLocationId(entity.getLocationId());
@@ -51,10 +49,8 @@ public class DTOConverter {
         dto.setXPosition(entity.getXPosition());
         dto.setYPosition(entity.getYPosition());
         dto.setZPosition(entity.getZPosition());
-        dto.setVehicleOrientation(entity.getVehicleOrientation());
         dto.setLocked(entity.getLocked());
         dto.setIsOccupied(entity.getIsOccupied());
-        dto.setLabel(entity.getLabel());
         dto.setProperties(entity.getProperties());
         dto.setCreateTime(entity.getCreateTime());
         dto.setUpdateTime(entity.getUpdateTime());
@@ -72,7 +68,6 @@ public class DTOConverter {
         if (entity == null) return null;
         PathDTO dto = new PathDTO();
         dto.setId(entity.getId());
-        dto.setPlantModelId(entity.getPlantModelId());
         dto.setNavigationMapId(entity.getNavigationMapId());
         dto.setPathId(entity.getPathId());
         dto.setName(entity.getName());

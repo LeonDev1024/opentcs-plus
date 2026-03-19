@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * 地图编辑器应用服务实现
@@ -28,22 +29,46 @@ public class MapEditorServiceImpl implements IMapEditorService {
     private final LocationDomainService locationDomainService;
     private final LocationTypeDomainService locationTypeDomainService;
     private final BlockDomainService blockDomainService;
+    private final LayerGroupDomainService layerGroupDomainService;
+    private final LayerDomainService layerDomainService;
 
     @Override
     public MapEditorBO load(LoadModelVO loadModelVO) {
-        Long factoryModelId = loadModelVO.getModelId();
+        Long navMapId = loadModelVO.getNavMapId();
 
-        // 获取工厂模型基本信息
-        FactoryModelEntity factoryModel = factoryModelDomainService.selectById(factoryModelId);
+        // 获取导航地图基本信息
+        NavigationMapEntity navMap = navigationMapDomainService.getById(navMapId);
+        if (navMap == null) {
+            return null;
+        }
+
+        // 获取工厂模型信息
+        FactoryModelEntity factoryModel = factoryModelDomainService.selectById(navMap.getFactoryModelId());
         if (factoryModel == null) {
             return null;
         }
 
-        MapEditorBO bo = new MapEditorBO();
-        bo.setId(factoryModel.getId());
-        bo.setName(factoryModel.getName());
+        // 查询地图元素
+        List<PointEntity> points = pointDomainService.listByMap(navMapId);
+        List<PathEntity> paths = pathDomainService.listByMap(navMapId);
+        List<LocationEntity> locations = locationDomainService.selectByNavigationMapId(navMapId);
+        List<LayerGroupEntity> layerGroups = layerGroupDomainService.selectByNavigationMapId(navMapId);
+        List<LayerEntity> layers = layerDomainService.selectByNavigationMapId(navMapId);
 
-        log.info("加载工厂模型完成: {}", factoryModel.getName());
+        MapEditorBO bo = new MapEditorBO();
+        bo.setId(navMap.getId());
+        bo.setName(navMap.getName());
+        bo.setMapId(navMap.getMapId());
+        bo.setFactoryModelId(navMap.getFactoryModelId());
+        bo.setFactoryName(factoryModel.getName());
+        bo.setPoints(points);
+        bo.setPaths(paths);
+        bo.setLocations(locations);
+        bo.setLayerGroups(layerGroups);
+        bo.setLayers(layers);
+
+        log.info("加载导航地图完成: {}, 点位: {}, 路径: {}, 位置: {}",
+                navMap.getName(), points.size(), paths.size(), locations.size());
 
         return bo;
     }

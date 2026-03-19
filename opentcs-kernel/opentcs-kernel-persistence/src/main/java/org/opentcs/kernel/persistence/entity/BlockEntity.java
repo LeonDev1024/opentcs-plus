@@ -23,11 +23,6 @@ public class BlockEntity extends DataEntity {
     private Long id;
 
     /**
-     * 所属地图模型ID（兼容旧版）
-     */
-    private Long plantModelId;
-
-    /**
      * 所属工厂ID
      */
     private Long factoryModelId;
