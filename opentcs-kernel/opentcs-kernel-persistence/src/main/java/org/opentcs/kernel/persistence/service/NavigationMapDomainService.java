@@ -45,6 +45,13 @@ public interface NavigationMapDomainService extends IService<NavigationMapEntity
     NavigationMapDTO selectByFactoryModelIdAndFloor(Long factoryModelId, Integer floorNumber);
 
     /**
+     * 根据地图编号获取导航地图
+     * @param mapId 地图编号（如 map_001）
+     * @return 导航地图
+     */
+    NavigationMapDTO selectByMapId(String mapId);
+
+    /**
      * 获取导航地图详情（含点、路径）
      * @param id 导航地图ID
      * @return 导航地图详情

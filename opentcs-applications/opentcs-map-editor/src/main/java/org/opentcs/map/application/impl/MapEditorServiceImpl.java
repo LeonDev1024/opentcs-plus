@@ -3,6 +3,7 @@ package org.opentcs.map.application.impl;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.opentcs.kernel.api.dto.NavigationMapDTO;
 import org.opentcs.kernel.persistence.entity.*;
 import org.opentcs.kernel.persistence.service.*;
 import org.opentcs.map.application.IMapEditorService;
@@ -34,16 +35,17 @@ public class MapEditorServiceImpl implements IMapEditorService {
 
     @Override
     public MapEditorBO load(LoadModelVO loadModelVO) {
-        Long navMapId = loadModelVO.getNavMapId();
+        String mapId = loadModelVO.getMapId();
 
-        // 获取导航地图基本信息
-        NavigationMapEntity navMap = navigationMapDomainService.getById(navMapId);
-        if (navMap == null) {
+        // 获取导航地图基本信息（根据地图编号查询）
+        NavigationMapDTO navMapDTO = navigationMapDomainService.selectByMapId(mapId);
+        if (navMapDTO == null) {
             return null;
         }
+        Long navMapId = navMapDTO.getId();
 
         // 获取工厂模型信息
-        FactoryModelEntity factoryModel = factoryModelDomainService.selectById(navMap.getFactoryModelId());
+        FactoryModelEntity factoryModel = factoryModelDomainService.selectById(navMapDTO.getFactoryModelId());
         if (factoryModel == null) {
             return null;
         }
@@ -56,10 +58,10 @@ public class MapEditorServiceImpl implements IMapEditorService {
         List<LayerEntity> layers = layerDomainService.selectByNavigationMapId(navMapId);
 
         MapEditorBO bo = new MapEditorBO();
-        bo.setId(navMap.getId());
-        bo.setName(navMap.getName());
-        bo.setMapId(navMap.getMapId());
-        bo.setFactoryModelId(navMap.getFactoryModelId());
+        bo.setId(navMapDTO.getId());
+        bo.setName(navMapDTO.getName());
+        bo.setMapId(navMapDTO.getMapId());
+        bo.setFactoryModelId(navMapDTO.getFactoryModelId());
         bo.setFactoryName(factoryModel.getName());
         bo.setPoints(points);
         bo.setPaths(paths);
@@ -68,7 +70,7 @@ public class MapEditorServiceImpl implements IMapEditorService {
         bo.setLayers(layers);
 
         log.info("加载导航地图完成: {}, 点位: {}, 路径: {}, 位置: {}",
-                navMap.getName(), points.size(), paths.size(), locations.size());
+                navMapDTO.getName(), points.size(), paths.size(), locations.size());
 
         return bo;
     }

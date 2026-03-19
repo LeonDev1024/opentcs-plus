@@ -7,7 +7,7 @@ import java.io.Serializable;
 @Data
 public class LoadModelVO implements Serializable {
     /**
-     * 导航地图ID
+     * 地图编号（业务标识，如 map_001）
      */
-    private Long navMapId;
+    private String mapId;
 }

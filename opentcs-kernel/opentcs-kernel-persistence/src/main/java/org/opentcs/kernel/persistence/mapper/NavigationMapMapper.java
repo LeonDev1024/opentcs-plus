@@ -36,4 +36,11 @@ public interface NavigationMapMapper extends BaseMapper<NavigationMapEntity> {
      */
     NavigationMapDTO selectByFactoryModelIdAndFloor(@Param("factoryModelId") Long factoryModelId,
                                                    @Param("floorNumber") Integer floorNumber);
+
+    /**
+     * 根据地图编号查询导航地图
+     * @param mapId 地图编号（如 map_001）
+     * @return 导航地图
+     */
+    NavigationMapDTO selectByMapId(@Param("mapId") String mapId);
 }
