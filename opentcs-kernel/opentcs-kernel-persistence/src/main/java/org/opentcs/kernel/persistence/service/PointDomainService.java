@@ -21,12 +21,6 @@ public interface PointDomainService extends IService<PointEntity> {
      */
     TableDataInfo<PointEntity> selectPagePoint(PointEntity point, PageQuery pageQuery);
 
-    /**
-     * 根据工厂模型ID查询所有点位
-     * @param plantModelId 工厂模型ID
-     * @return 点位列表
-     */
-    List<PointEntity> selectAllPointByPlantModelId(Long plantModelId);
 
     /**
      * 根据导航地图ID查询所有点位

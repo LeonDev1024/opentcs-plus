@@ -31,13 +31,6 @@ public interface PathDomainService extends IService<PathEntity> {
     TableDataInfo<PathDTO> selectPageDTO(PathEntity path, PageQuery pageQuery);
 
     /**
-     * 根据工厂模型ID查询所有路径
-     * @param plantModelId 工厂模型ID
-     * @return 路径列表
-     */
-    List<PathEntity> selectAllPathByPlantModelId(Long plantModelId);
-
-    /**
      * 根据导航地图ID查询所有路径
      * @param navigationMapId 导航地图ID
      * @return 路径列表

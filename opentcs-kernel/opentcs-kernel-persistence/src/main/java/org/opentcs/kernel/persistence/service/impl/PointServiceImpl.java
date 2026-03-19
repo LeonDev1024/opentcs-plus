@@ -22,12 +22,6 @@ public class PointServiceImpl extends ServiceImpl<PointMapper, PointEntity> impl
         return this.getBaseMapper().selectPagePoint(point, pageQuery);
     }
 
-    @Override
-    public List<PointEntity> selectAllPointByPlantModelId(Long plantModelId) {
-        return this.list(new LambdaQueryWrapper<PointEntity>()
-                .eq(PointEntity::getPlantModelId, plantModelId)
-        );
-    }
 
     @Override
     public List<PointEntity> listByMap(Long navigationMapId) {

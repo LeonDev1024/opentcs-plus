@@ -14,7 +14,6 @@ import java.util.List;
 
 /**
  * 路径数据模型
- * 地图数据表，简化审计字段
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -28,12 +27,7 @@ public class PathEntity extends DataEntity {
     private Long id;
 
     /**
-     * 所属地图模型ID（兼容旧版）
-     */
-    private Long plantModelId;
-
-    /**
-     * 归属导航地图ID（新版）
+     * 归属导航地图ID
      */
     private Long navigationMapId;
 
