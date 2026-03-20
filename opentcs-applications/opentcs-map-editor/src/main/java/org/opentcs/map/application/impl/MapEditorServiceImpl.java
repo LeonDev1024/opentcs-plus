@@ -58,7 +58,6 @@ public class MapEditorServiceImpl implements IMapEditorService {
         List<LayerEntity> layers = layerDomainService.selectByNavigationMapId(navMapId);
 
         MapEditorBO bo = new MapEditorBO();
-        bo.setId(navMapDTO.getId());
         bo.setName(navMapDTO.getName());
         bo.setMapId(navMapDTO.getMapId());
         bo.setFactoryModelId(navMapDTO.getFactoryModelId());

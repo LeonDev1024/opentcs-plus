@@ -13,8 +13,10 @@ import java.util.List;
 @Data
 public class MapEditorBO {
 
-    private Long id;
 
+    /**
+     * 地图名称
+     */
     private String name;
 
     /**
