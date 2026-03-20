@@ -63,6 +63,9 @@ public class MapEditorServiceImpl implements IMapEditorService {
         bo.setMapId(navMapDTO.getMapId());
         bo.setFactoryModelId(navMapDTO.getFactoryModelId());
         bo.setFactoryName(factoryModel.getName());
+        bo.setOriginX(navMapDTO.getOriginX());
+        bo.setOriginY(navMapDTO.getOriginY());
+        bo.setRotation(navMapDTO.getRotation());
         bo.setPoints(points);
         bo.setPaths(paths);
         bo.setLocations(locations);
