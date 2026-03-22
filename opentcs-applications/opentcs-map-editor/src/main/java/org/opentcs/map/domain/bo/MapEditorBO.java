@@ -3,6 +3,7 @@ package org.opentcs.map.domain.bo;
 import lombok.Data;
 import org.opentcs.kernel.persistence.entity.*;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -12,8 +13,10 @@ import java.util.List;
 @Data
 public class MapEditorBO {
 
-    private Long id;
 
+    /**
+     * 地图名称
+     */
     private String name;
 
     /**
@@ -30,6 +33,21 @@ public class MapEditorBO {
      * 工厂名称
      */
     private String factoryName;
+
+    /**
+     * 地图原点X坐标（毫米，相对于场景原点）
+     */
+    private BigDecimal originX;
+
+    /**
+     * 地图原点Y坐标（毫米，相对于场景原点）
+     */
+    private BigDecimal originY;
+
+    /**
+     * 地图旋转角度（度）
+     */
+    private BigDecimal rotation;
 
     /**
      * 点位列表

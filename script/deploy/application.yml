@@ -1,0 +1,52 @@
+# 生产环境配置文件
+# 此文件作为 application-prod.yml 的替代，与 application.yml 基础配置合并使用
+spring:
+  datasource:
+    dynamic:
+      datasource:
+        master:
+          # 使用容器名称 mysql 访问 MySQL
+          url: jdbc:mysql://mysql:3306/opentcs?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true
+          username: opentcs
+          password: Opentcs@2024!DB
+          driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+      # 使用容器名称 redis 访问 Redis
+      host: redis
+      port: 6379
+      password: Redis@2024!Cache
+      database: 0
+
+server:
+  port: 8088
+
+# 安全配置 (必须保留，否则登录接口会被拦截)
+security:
+  # 排除路径
+  excludes:
+    - /*.html
+    - /**/*.html
+    - /**/*.css
+    - /**/*.js
+    - /favicon.ico
+    - /error
+    - /*/api-docs
+    - /*/api-docs/**
+    - /auth/**
+    - /resource/**
+
+# 禁用 XXL-Job (如需启用请配置相应参数)
+xxl:
+  job:
+    enabled: false
+
+# 禁用 MQTT (如需启用请配置相应参数)
+mqtt:
+  enabled: false
+
+# 文件上传配置
+file:
+  domain: http://localhost:9000
+  path: /usr/share/nginx/html
+  prefix: /statics

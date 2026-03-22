@@ -1,0 +1,146 @@
+version: '3.8'
+
+services:
+  # ==================== 基础设施 ====================
+
+  # MySQL 数据库
+  mysql:
+    image: mysql:8.0
+    container_name: opentcs-mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root123}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-opentcs}
+      MYSQL_USER: ${MYSQL_USER:-opentcs}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-opentcs123}
+      TZ: Asia/Shanghai
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./config/mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+    networks:
+      - opentcs-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+
+  # Redis 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: opentcs-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass ${REDIS_PASSWORD:-redis123}
+    volumes:
+      - redis-data:/data
+      - ./config/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    networks:
+      - opentcs-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-redis123}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MinIO 对象存储
+  minio:
+    image: minio/minio:latest
+    container_name: opentcs-minio
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD:-minioadmin123}
+    volumes:
+      - minio-data:/data
+    networks:
+      - opentcs-network
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # ==================== 应用服务 ====================
+
+  # 后端服务
+  backend:
+    build:
+      context: ../..
+      dockerfile: opentcs-plus/script/deploy/backend/Dockerfile
+    container_name: opentcs-admin
+    restart: unless-stopped
+    ports:
+      - "8088:8088"
+    environment:
+      # Spring 配置
+      SPRING_PROFILES_ACTIVE: prod
+      TZ: Asia/Shanghai
+      # 数据库配置
+      SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-opentcs}?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_USERNAME: ${MYSQL_USER:-opentcs}
+      SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_PASSWORD: ${MYSQL_PASSWORD:-opentcs123}
+      # Redis 配置
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATA_REDIS_PASSWORD: ${REDIS_PASSWORD:-redis123}
+      # MinIO 配置
+      SPRING_DATA_REDIS_DATABASE: 0
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - opentcs-network
+    volumes:
+      - backend-logs:/app/logs
+      - backend-uploads:/app/upload
+
+  # 前端服务 (Nginx)
+  frontend:
+    build:
+      context: ../../opentcs-plus-web
+      dockerfile: ../script/deploy/frontend/Dockerfile
+    container_name: opentcs-web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+    networks:
+      - opentcs-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+# ==================== 网络和存储 ====================
+
+networks:
+  opentcs-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+    driver: local
+  redis-data:
+    driver: local
+  minio-data:
+    driver: local
+  backend-logs:
+    driver: local
+  backend-uploads:
+    driver: local
