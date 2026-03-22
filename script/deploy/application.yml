@@ -1,6 +1,5 @@
 # 生产环境配置文件
-# 复制此文件为 application.yml 并根据实际情况修改
-
+# 此文件作为 application-prod.yml 的替代，与 application.yml 基础配置合并使用
 spring:
   datasource:
     dynamic:
@@ -21,6 +20,21 @@ spring:
 
 server:
   port: 8088
+
+# 安全配置 (必须保留，否则登录接口会被拦截)
+security:
+  # 排除路径
+  excludes:
+    - /*.html
+    - /**/*.html
+    - /**/*.css
+    - /**/*.js
+    - /favicon.ico
+    - /error
+    - /*/api-docs
+    - /*/api-docs/**
+    - /auth/**
+    - /resource/**
 
 # 禁用 XXL-Job (如需启用请配置相应参数)
 xxl:
