@@ -7,10 +7,10 @@
 ALTER TABLE navigation_map
 DROP COLUMN IF EXISTS map_type;
 
--- Step 2: 添加 AMR 型号和地图定位参数字段
+-- Step 2: 添加车辆类型ID和地图定位参数字段
 ALTER TABLE navigation_map
-ADD COLUMN amr_model VARCHAR(100) COMMENT 'AMR型号（必填，对应vehicle_type.name)' AFTER floor_number,
-ADD COLUMN origin_x DECIMAL(12,4) DEFAULT 0 COMMENT '地图原点X坐标(毫米)' AFTER amr_model,
+ADD COLUMN vehicle_type_id BIGINT COMMENT '车辆类型ID（必填，对应vehicle_type.id)' AFTER floor_number,
+ADD COLUMN origin_x DECIMAL(12,4) DEFAULT 0 COMMENT '地图原点X坐标(毫米)' AFTER vehicle_type_id,
 ADD COLUMN origin_y DECIMAL(12,4) DEFAULT 0 COMMENT '地图原点Y坐标(毫米)' AFTER origin_x,
 ADD COLUMN rotation DECIMAL(10,4) DEFAULT 0 COMMENT '地图旋转角度(度)' AFTER origin_y;
 

@@ -1,6 +1,7 @@
 package org.opentcs.kernel.persistence.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -45,9 +46,10 @@ public class NavigationMapEntity extends BusinessEntity {
     private Integer floorNumber;
 
     /**
-     * AMR 型号（必填，对应 vehicle_type.name）
+     * 车辆类型ID（必填，对应 vehicle_type.id）
      */
-    private String amrModel;
+    @TableField("vehicle_type_id")
+    private Long vehicleTypeId;
 
     /**
      * 地图原点X坐标（毫米，相对于场景原点，用于多地图统一显示）

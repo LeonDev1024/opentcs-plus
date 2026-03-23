@@ -129,7 +129,7 @@ CREATE TABLE navigation_map (
     map_id VARCHAR(64) NOT NULL COMMENT '地图唯一标识',
     name VARCHAR(255) NOT NULL COMMENT '地图名称（如：一楼车间、室外道路）',
     floor_number INT COMMENT '楼层号（负数表示地下，0表示1楼）',
-    amr_model VARCHAR(100) COMMENT 'AMR型号（必填，对应vehicle_type.name）',
+    vehicle_type_id BIGINT COMMENT '车辆类型ID（必填，对应vehicle_type.id）',
     -- 地图定位参数（相对于场景原点，用于多地图统一显示）
     origin_x DECIMAL(12,4) DEFAULT 0 COMMENT '地图原点X坐标（毫米，相对于场景原点）',
     origin_y DECIMAL(12,4) DEFAULT 0 COMMENT '地图原点Y坐标（毫米，相对于场景原点）',
