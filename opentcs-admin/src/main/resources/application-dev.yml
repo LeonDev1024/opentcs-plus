@@ -33,7 +33,7 @@ spring:
         master:
           type: ${spring.datasource.type}
           driverClassName: com.mysql.cj.jdbc.Driver
-          url: jdbc:mysql://106.54.43.41:3309/opentcs?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true
+          url: jdbc:mysql://106.54.43.41:3309/opentcs?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&connectionCollation=utf8mb4_unicode_ci
           username: root
           password: 123456
       hikari:
@@ -51,6 +51,8 @@ spring:
         maxLifetime: 1800000
         # 多久检查一次连接的活性
         keepaliveTime: 30000
+        # 会话与结果集统一 utf8mb4，避免菜单/字典等 VARCHAR 中文乱码
+        connection-init-sql: SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci
 
 # redis 单机配置(单机与集群只能开启一个另一个需要注释掉)
 spring.data:

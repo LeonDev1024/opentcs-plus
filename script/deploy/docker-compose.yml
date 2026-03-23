@@ -88,7 +88,7 @@ services:
       SPRING_PROFILES_ACTIVE: prod
       TZ: Asia/Shanghai
       # 数据库配置
-      SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-opentcs}?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-opentcs}?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true&connectionCollation=utf8mb4_unicode_ci
       SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_USERNAME: ${MYSQL_USER:-opentcs}
       SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_PASSWORD: ${MYSQL_PASSWORD:-opentcs123}
       # Redis 配置
