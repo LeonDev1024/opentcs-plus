@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: Build and Deploy
 
 on:
   push:
@@ -8,55 +8,14 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  # 后端仓库
-  BACKEND_REPO: LeonDev1024/opentcs-plus
-  # 前端仓库
-  FRONTEND_REPO: LeonDev1024/opentcs-plus-web
-  NODE_VERSION: '20'
   JAVA_VERSION: '21'
 
 jobs:
-  #=================== 代码检查 ===================
-  lint:
+  #=================== 测试 ===================
+  test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ env.FRONTEND_REPO }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: pnpm-lock.yaml
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 9
-
-      - name: Install dependencies
-        run: |
-          pnpm install --frozen-lockfile --registry=https://registry.npmmirror.com
-
-      - name: ESLint check
-        run: |
-          pnpm lint:eslint
-
-      - name: Check Vue build
-        run: |
-          pnpm build:prod
-
-  #=================== 后端测试 ===================
-  test-backend:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ env.BACKEND_REPO }}
+      - uses: actions/checkout@v4
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -74,12 +33,11 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Run tests
-        run: |
-          mvn test -Pdev -B
+        run: mvn test -Pdev -B
 
   #=================== 构建镜像 ===================
-  build-backend:
-    needs: test-backend
+  build:
+    needs: test
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
@@ -87,10 +45,7 @@ jobs:
       packages: write
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ env.BACKEND_REPO }}
+      - uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -106,73 +61,25 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.BACKEND_REPO }}
+          images: ${{ env.REGISTRY }}/${{ github.repository }}
           tags: |
             type=ref,event=branch
             type=sha,prefix=
             type=raw,value=latest,enable={{is_default_branch}}
 
-      - name: Build and push Backend Image
+      - name: Build and push Image
         uses: docker/build-push-action@v5
         with:
           context: ./opentcs-plus
           file: opentcs-plus/script/deploy/backend/Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.BACKEND_REPO }}/backend:${{ steps.meta.outputs.tags }}
-            ${{ env.REGISTRY }}/${{ env.BACKEND_REPO }}/backend:${{ github.sha }}
-          cache-from: type=gha
-
-  #=================== 构建前端镜像 ===================
-  build-frontend:
-    needs: test-backend
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    permissions:
-      contents: read
-      packages: write
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ env.FRONTEND_REPO }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.FRONTEND_REPO }}
-          tags: |
-            type=ref,event=branch
-            type=sha,prefix=
-            type=raw,value=latest,enable={{is_default_branch}}
-
-      - name: Build and push Frontend Image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: script/deploy/frontend/Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.FRONTEND_REPO }}/frontend:${{ steps.meta.outputs.tags }}
-            ${{ env.REGISTRY }}/${{ env.FRONTEND_REPO }}/frontend:${{ github.sha }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
   #=================== 部署到服务器 ===================
   deploy:
-    needs: [build-backend, build-frontend]
+    needs: build
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
@@ -184,28 +91,14 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
           port: ${{ secrets.DEPLOY_PORT || '22' }}
-          command_timeout: 20m
           script: |
-            # 登录 GitHub Container Registry
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-            # 拉取最新后端镜像
-            docker pull ghcr.io/LeonDev1024/opentcs-plus/backend:latest
+            docker pull ${{ env.REGISTRY }}/${{ github.repository }}:latest
 
-            # 拉取最新前端镜像
-            docker pull ghcr.io/LeonDev1024/opentcs-plus-web/frontend:latest
+            cd /opt/opentcs-deploy
+            docker compose up -d --build backend
 
-            # 部署前端静态文件
-            docker create --name temp-frontend ghcr.io/LeonDev1024/opentcs-plus-web/frontend:latest
-            docker cp temp-frontend:/usr/share/nginx/html/. /var/www/opentcs/
-            docker rm temp-frontend
-
-            # 部署后端容器
-            docker stop opentcs-admin 2>/dev/null || true
-            docker rm opentcs-admin 2>/dev/null || true
-            docker run -d --name opentcs-admin --network host ghcr.io/LeonDev1024/opentcs-plus/backend:latest
-
-            # 重载 Nginx
-            sudo nginx -t && sudo systemctl reload nginx || sudo nginx
-
+            sleep 30
+            curl -sf http://localhost:8088/actuator/health || echo "Backend may not be ready"
             echo "Deployment completed!"
