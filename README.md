@@ -98,7 +98,7 @@ opentcs-plus-web/
 
 ## 在线体验
 
-- **演示地址**: http://localhost:8088
+- **演示地址**: http://106.54.43.41/   （腾讯云vps演示环境）
 - **默认账号**: admin
 - **默认密码**: admin123
 
