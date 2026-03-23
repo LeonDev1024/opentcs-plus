@@ -31,6 +31,20 @@ snail-job:
   # 客户端ip指定
   host:
 
+--- # 安全配置
+security:
+  excludes:
+    - /*.html
+    - /**/*.html
+    - /**/*.css
+    - /**/*.js
+    - /favicon.ico
+    - /error
+    - /*/api-docs
+    - /*/api-docs/**
+    - /auth/**
+    - /resource/**
+
 --- # 数据源配置
 spring:
   datasource:
