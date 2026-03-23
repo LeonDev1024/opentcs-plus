@@ -6,7 +6,7 @@ spring:
       datasource:
         master:
           # 使用容器名称 mysql 访问 MySQL
-          url: jdbc:mysql://mysql:3306/opentcs?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true
+          url: jdbc:mysql://mysql:3306/opentcs?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true&connectionCollation=utf8mb4_unicode_ci
           username: opentcs
           password: Opentcs@2024!DB
           driver-class-name: com.mysql.cj.jdbc.Driver

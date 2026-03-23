@@ -7,6 +7,11 @@ server:
     # 启用 throwsExceptionIfNoHandlerFound
     throw-exception-if-no-handler-found: true
     enabled: true
+    # 请求/响应统一 UTF-8，避免中文乱码
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
   # undertow 配置
   undertow:
     # HTTP post内容的最大大小。当值为-1时，默认值为大小是无限的
