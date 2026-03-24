@@ -84,22 +84,19 @@ jobs:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
 
     steps:
-      - name: Deploy to Server
-        uses: appleboy/ssh-action@v1
+      - name: Setup SSH key
+        uses: webfactory/ssh-agent@v0.9.0
         with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_KEY }}
-          port: ${{ secrets.DEPLOY_PORT || '22' }}
-          command_timeout: 20m
-          script: |
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          ssh-private-key: ${{ secrets.DEPLOY_KEY }}
 
+      - name: Deploy to Server
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
+            echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker pull ${{ env.REGISTRY }}/${{ github.repository }}:latest
-
             cd /opt/opentcs-deploy
             docker compose up -d --build backend
-
             sleep 30
-            curl -sf http://localhost:8088/actuator/health || echo "Backend may not be ready"
-            echo "Deployment completed!"
+            curl -sf http://localhost:8088/actuator/health || echo 'Backend may not be ready'
+            echo 'Deployment completed!'
+          "
