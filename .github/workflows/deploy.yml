@@ -57,7 +57,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ secrets.ACR_HOST }}/opentcs/backend
+          images: ${{ secrets.ACR_HOST }}/backend
           tags: |
             type=ref,event=branch
             type=sha,prefix=
@@ -92,9 +92,9 @@ jobs:
             # 登录阿里云 ACR
             docker login --username=${{ secrets.ACR_USERNAME }} --password=${{ secrets.ACR_PASSWORD }} ${{ secrets.ACR_HOST }}
             # 拉取最新镜像
-            docker pull ${{ secrets.ACR_HOST }}/opentcs/backend:latest
+            docker pull ${{ secrets.ACR_HOST }}/backend:latest
             # 打标签为 compose 使用的名称
-            docker tag ${{ secrets.ACR_HOST }}/opentcs/backend:latest opentcs-admin:latest
+            docker tag ${{ secrets.ACR_HOST }}/backend:latest opentcs-admin:latest
             cd /opt/opentcs-deploy
             docker compose up -d --force-recreate backend
             sleep 30
