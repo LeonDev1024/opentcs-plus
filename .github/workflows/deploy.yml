@@ -95,7 +95,7 @@ jobs:
             echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker pull ${{ env.REGISTRY }}/${{ github.repository }}:latest
             cd /opt/opentcs-deploy
-            docker compose up -d --build backend
+            docker compose up -d backend
             sleep 30
             curl -sf http://localhost:8088/actuator/health || echo 'Backend may not be ready'
             echo 'Deployment completed!'
