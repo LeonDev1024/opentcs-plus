@@ -8,7 +8,6 @@ on:
 
 env:
   JAVA_VERSION: '21'
-  DOCKER_REGISTRY: docker.io
 
 jobs:
   #=================== 测试 ===================
@@ -35,7 +34,7 @@ jobs:
       - name: Run tests
         run: mvn test -Pdev -B
 
-  #=================== 构建镜像 ===================
+  #=================== 构建 JAR ===================
   build:
     needs: test
     runs-on: ubuntu-latest
@@ -44,34 +43,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
+      - name: Set up JDK
+        uses: actions/setup-java@v4
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: 'maven'
 
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ secrets.DOCKER_USERNAME }}/opentcs-backend
-          tags: |
-            type=ref,event=branch
-            type=sha,prefix=
-            type=raw,value=latest,enable={{is_default_branch}}
+      - name: Build JAR
+        run: mvn clean package -DskipTests -Pprod
 
-      - name: Build and push Image
-        uses: docker/build-push-action@v5
+      - name: Upload JAR to Server
+        uses: appleboy/scp-action@v0.1.4
         with:
-          context: .
-          file: opentcs-plus/script/deploy/backend/Dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          source: opentcs-admin/target/opentcs-admin.jar
+          target: /tmp/opentcs/
+          strip_components: 3
 
   #=================== 部署到服务器 ===================
   deploy:
@@ -86,18 +76,35 @@ jobs:
           ssh-private-key: ${{ secrets.DEPLOY_KEY }}
 
       - name: Deploy to Server
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          port: 22
+          command_timeout: 20m
+          script: |
             set -e
-            # 登录 Docker Hub
-            docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
-            # 拉取最新镜像
-            docker pull ${{ secrets.DOCKER_USERNAME }}/opentcs-backend:latest
-            # 打标签为 compose 使用的名称
-            docker tag ${{ secrets.DOCKER_USERNAME }}/opentcs-backend:latest opentcs-admin:latest
+            cd /tmp/opentcs
+
+            # 构建 Docker 镜像
+            cat > Dockerfile << 'EOF'
+            FROM eclipse-temurin:21-jre-alpine
+            RUN apk add --no-cache tzdata
+            ENV TZ=Asia/Shanghai
+            RUN mkdir -p /app /app/logs /app/temp /app/upload
+            WORKDIR /app
+            COPY opentcs-admin.jar ./app.jar
+            RUN chown -R 1000:1000 /app
+            USER 1000
+            EXPOSE 8088
+            HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 CMD wget --no-verbose --tries=1 --spider http://localhost:8088/actuator/health || exit 1
+            ENTRYPOINT ["java", "-jar", "-Xms512m", "-Xmx1024m", "/app/app.jar", "--spring.profiles.active=prod"]
+            EOF
+
+            docker build -t opentcs-admin:latest .
             cd /opt/opentcs-deploy
             docker compose up -d --force-recreate backend
             sleep 30
             curl -sf http://localhost:8088/actuator/health || echo 'Backend may not be ready'
             echo 'Deployment completed!'
-          "
