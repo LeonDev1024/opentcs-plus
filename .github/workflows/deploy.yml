@@ -8,6 +8,9 @@ on:
 
 env:
   JAVA_VERSION: '21'
+  # 阿里云ACR配置 (使用Secrets)
+  IMAGE_NAME: opentcs-admin
+  IMAGE_TAG: latest
 
 jobs:
   #=================== 测试 ===================
@@ -21,7 +24,14 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
-          cache: 'maven'
+
+      # 显式Maven缓存
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2-
 
       - name: Run tests
         run: mvn test -Pdev -B
@@ -40,50 +50,69 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
-          cache: 'maven'
+
+      # 显式Maven缓存
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2-
 
       - name: Build JAR
         run: mvn clean package -DskipTests -Pprod
 
-      - name: Setup SSH key
-        uses: webfactory/ssh-agent@v0.9.0
+      # 构建Docker镜像
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} -f opentcs-plus/script/deploy/backend/Dockerfile opentcs-plus/
+
+      # 登录阿里云ACR
+      - name: Login to Aliyun ACR
+        uses: docker/login-action@v3
         with:
-          ssh-private-key: ${{ secrets.DEPLOY_KEY }}
+          registry: ${{ secrets.ACR_HOST }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
 
-      - name: Upload to Server
+      # 推送到阿里云ACR
+      - name: Push to Aliyun ACR
         run: |
-          # 创建部署目录
-          ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "mkdir -p /tmp/opentcs-deploy"
+          docker tag ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} ${{ secrets.ACR_HOST }}/opentcs/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          docker push ${{ secrets.ACR_HOST }}/opentcs/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
 
-          # 上传 JAR
-          scp -o StrictHostKeyChecking=no opentcs-admin/target/opentcs-admin.jar ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/tmp/opentcs-deploy/app.jar
+      # 在服务器上部署
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          script: |
+            # 登录阿里云ACR
+            docker login --username=${{ secrets.ACR_USERNAME }} --password=${{ secrets.ACR_PASSWORD }} ${{ secrets.ACR_HOST }}
 
-          # 上传 Dockerfile
-          scp -o StrictHostKeyChecking=no opentcs-plus/script/deploy/backend/Dockerfile ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/tmp/opentcs-deploy/Dockerfile
+            # 拉取最新镜像
+            docker pull ${{ secrets.ACR_HOST }}/opentcs/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
 
-      - name: Build and Deploy on Server
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
-            set -e
-            cd /tmp/opentcs-deploy
-
-            # 构建 Docker 镜像
-            docker build -t opentcs-admin:local .
-
-            # 重启服务
+            # 停止并删除旧容器
             cd /opt/opentcs-deploy
             docker rm -f opentcs-admin 2>/dev/null || true
-            docker run -d --name opentcs-admin --network opentcs-network -p 8088:8088 \\
-              -e SPRING_PROFILES_ACTIVE=prod \\
-              -e TZ=Asia/Shanghai \\
-              -e SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_URL='jdbc:mysql://opentcs-mysql:3306/opentcs?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true' \\
-              -e SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_USERNAME=opentcs \\
-              -e SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_PASSWORD='Opentcs@2024!DB' \\
-              -e SPRING_DATA_REDIS_HOST=opentcs-redis \\
-              -e SPRING_DATA_REDIS_PORT=6379 \\
-              -e SPRING_DATA_REDIS_PASSWORD='Redis@2024!Cache' \\
-              opentcs-admin:local
+
+            # 启动新容器
+            docker run -d --name opentcs-admin --network opentcs-network -p 8088:8088 \
+              -e SPRING_PROFILES_ACTIVE=prod \
+              -e TZ=Asia/Shanghai \
+              -e SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_URL='jdbc:mysql://opentcs-mysql:3306/opentcs?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true' \
+              -e SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_USERNAME=opentcs \
+              -e SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_PASSWORD='Opentcs@2024!DB' \
+              -e SPRING_DATA_REDIS_HOST=opentcs-redis \
+              -e SPRING_DATA_REDIS_PORT=6379 \
+              -e SPRING_DATA_REDIS_PASSWORD='Redis@2024!Cache' \
+              ${{ secrets.ACR_HOST }}/opentcs/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
 
             sleep 20
             curl -sf http://localhost:8088/actuator/health && echo 'Deployment SUCCESS!' || echo 'Deployment FAILED!'
-          "
