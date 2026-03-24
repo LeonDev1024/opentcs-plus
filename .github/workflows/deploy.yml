@@ -7,7 +7,6 @@ on:
     branches: [main, master]
 
 env:
-  REGISTRY: ghcr.io
   JAVA_VERSION: '21'
 
 jobs:
@@ -40,34 +39,25 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-    permissions:
-      contents: read
-      packages: write
 
     steps:
       - uses: actions/checkout@v4
 
-      # Docker/GHCR 镜像路径须全小写
-      - name: Lowercase repository for image name
-        id: image_repo
-        run: echo "repository=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to Container Registry
+      - name: Log in to Alibaba Cloud ACR
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ${{ secrets.ACR_HOST }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
 
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          # 与部署脚本 docker pull 路径一致；docker-compose-prod.yml 使用 opentcs-admin:latest，部署时再 tag
-          images: ${{ env.REGISTRY }}/${{ steps.image_repo.outputs.repository }}/backend
+          images: ${{ secrets.ACR_HOST }}/opentcs/backend
           tags: |
             type=ref,event=branch
             type=sha,prefix=
@@ -97,15 +87,15 @@ jobs:
 
       - name: Deploy to Server
         run: |
-          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
             set -e
-            echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            docker pull ${{ env.REGISTRY }}/${REPO_LOWER}/backend:latest
-            # compose 里写的是 opentcs-admin:latest，必须把刚拉取的 GHCR 镜像打同名标签，否则 compose 永远用旧本地镜像
-            docker tag ${{ env.REGISTRY }}/${REPO_LOWER}/backend:latest opentcs-admin:latest
+            # 登录阿里云 ACR
+            docker login --username=${{ secrets.ACR_USERNAME }} --password=${{ secrets.ACR_PASSWORD }} ${{ secrets.ACR_HOST }}
+            # 拉取最新镜像
+            docker pull ${{ secrets.ACR_HOST }}/opentcs/backend:latest
+            # 打标签为 compose 使用的名称
+            docker tag ${{ secrets.ACR_HOST }}/opentcs/backend:latest opentcs-admin:latest
             cd /opt/opentcs-deploy
-            docker compose pull backend || true
             docker compose up -d --force-recreate backend
             sleep 30
             curl -sf http://localhost:8088/actuator/health || echo 'Backend may not be ready'
