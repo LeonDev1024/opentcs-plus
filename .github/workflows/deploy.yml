@@ -70,7 +70,7 @@ jobs:
       - name: Build and push Image
         uses: docker/build-push-action@v5
         with:
-          context: ./opentcs-plus
+          context: .
           file: opentcs-plus/script/deploy/backend/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
