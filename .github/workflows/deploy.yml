@@ -26,8 +26,8 @@ jobs:
       - name: Run tests
         run: mvn test -Pdev -B
 
-  #=================== 构建镜像 ===================
-  build:
+  #=================== 构建并部署 ===================
+  build-deploy:
     needs: test
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
@@ -45,53 +45,45 @@ jobs:
       - name: Build JAR
         run: mvn clean package -DskipTests -Pprod
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to Alibaba Cloud ACR
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ secrets.ACR_HOST }}
-          username: ${{ secrets.ACR_USERNAME }}
-          password: ${{ secrets.ACR_PASSWORD }}
-
-      - name: Build and push Image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: opentcs-plus/script/deploy/backend/Dockerfile
-          push: true
-          tags: |
-            ${{ secrets.ACR_HOST }}/opentcs-backend:latest
-            ${{ secrets.ACR_HOST }}/opentcs-backend:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-  #=================== 部署到服务器 ===================
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-
-    steps:
       - name: Setup SSH key
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.DEPLOY_KEY }}
 
-      - name: Deploy to Server
+      - name: Upload to Server
+        run: |
+          # 创建部署目录
+          ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "mkdir -p /tmp/opentcs-deploy"
+
+          # 上传 JAR
+          scp -o StrictHostKeyChecking=no opentcs-admin/target/opentcs-admin.jar ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/tmp/opentcs-deploy/app.jar
+
+          # 上传 Dockerfile
+          scp -o StrictHostKeyChecking=no opentcs-plus/script/deploy/backend/Dockerfile ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/tmp/opentcs-deploy/Dockerfile
+
+      - name: Build and Deploy on Server
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
             set -e
-            # 登录阿里云 ACR
-            docker login --username=${{ secrets.ACR_USERNAME }} --password=${{ secrets.ACR_PASSWORD }} ${{ secrets.ACR_HOST }}
-            # 拉取最新镜像
-            docker pull ${{ secrets.ACR_HOST }}/opentcs-backend:latest
-            # 打标签
-            docker tag ${{ secrets.ACR_HOST }}/opentcs-backend:latest opentcs-admin:latest
+            cd /tmp/opentcs-deploy
+
+            # 构建 Docker 镜像
+            docker build -t opentcs-admin:local .
+
+            # 重启服务
             cd /opt/opentcs-deploy
-            docker compose -f docker-compose.prod.yml up -d --force-recreate backend
-            sleep 30
-            curl -sf http://localhost:8088/actuator/health || echo 'Backend may not be ready'
-            echo 'Deployment completed!'
+            docker rm -f opentcs-admin 2>/dev/null || true
+            docker run -d --name opentcs-admin --network opentcs-network -p 8088:8088 \\
+              -e SPRING_PROFILES_ACTIVE=prod \\
+              -e TZ=Asia/Shanghai \\
+              -e SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_URL='jdbc:mysql://opentcs-mysql:3306/opentcs?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true' \\
+              -e SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_USERNAME=opentcs \\
+              -e SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_PASSWORD='Opentcs@2024!DB' \\
+              -e SPRING_DATA_REDIS_HOST=opentcs-redis \\
+              -e SPRING_DATA_REDIS_PORT=6379 \\
+              -e SPRING_DATA_REDIS_PASSWORD='Redis@2024!Cache' \\
+              opentcs-admin:local
+
+            sleep 20
+            curl -sf http://localhost:8088/actuator/health && echo 'Deployment SUCCESS!' || echo 'Deployment FAILED!'
           "
