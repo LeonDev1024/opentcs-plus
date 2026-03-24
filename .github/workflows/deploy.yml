@@ -26,8 +26,8 @@ jobs:
       - name: Run tests
         run: mvn test -Pdev -B
 
-  #=================== 构建并部署 ===================
-  build-deploy:
+  #=================== 构建镜像 ===================
+  build:
     needs: test
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
@@ -45,38 +45,52 @@ jobs:
       - name: Build JAR
         run: mvn clean package -DskipTests -Pprod
 
-      - name: Deploy to Server
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Alibaba Cloud ACR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.ACR_HOST }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and push Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: opentcs-plus/script/deploy/backend/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.ACR_HOST }}/opentcs-backend:latest
+            ${{ secrets.ACR_HOST }}/opentcs-backend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  #=================== 部署到服务器 ===================
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+
+    steps:
+      - name: Setup SSH key
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.DEPLOY_KEY }}
 
-      - name: Upload and Deploy
+      - name: Deploy to Server
         run: |
-          # 上传 JAR 文件
-          scp -o StrictHostKeyChecking=no opentcs-admin/target/opentcs-admin.jar ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/tmp/opentcs-admin.jar
-
-          # 在服务器上构建镜像并部署
           ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
             set -e
-            cd /tmp
-
-            # 构建 Docker 镜像
-            docker build -t opentcs-admin:latest -f - . << EOF
-            FROM eclipse-temurin:21-jre-alpine
-            RUN apk add --no-cache tzdata
-            ENV TZ=Asia/Shanghai
-            RUN mkdir -p /app /app/logs /app/temp /app/upload
-            WORKDIR /app
-            COPY opentcs-admin.jar ./app.jar
-            RUN chown -R 1000:1000 /app
-            USER 1000
-            EXPOSE 8088
-            HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 CMD wget --no-verbose --tries=1 --spider http://localhost:8088/actuator/health || exit 1
-            ENTRYPOINT [\"java\", \"-jar\", \"-Xms512m\", \"-Xmx1024m\", \"/app/app.jar\", \"--spring.profiles.active=prod\"]
-            EOF
-
+            # 登录阿里云 ACR
+            docker login --username=${{ secrets.ACR_USERNAME }} --password=${{ secrets.ACR_PASSWORD }} ${{ secrets.ACR_HOST }}
+            # 拉取最新镜像
+            docker pull ${{ secrets.ACR_HOST }}/opentcs-backend:latest
+            # 打标签
+            docker tag ${{ secrets.ACR_HOST }}/opentcs-backend:latest opentcs-admin:latest
             cd /opt/opentcs-deploy
-            docker compose up -d --force-recreate backend
+            docker compose -f docker-compose.prod.yml up -d --force-recreate backend
             sleep 30
             curl -sf http://localhost:8088/actuator/health || echo 'Backend may not be ready'
             echo 'Deployment completed!'
