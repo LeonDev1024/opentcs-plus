@@ -8,6 +8,7 @@ on:
 
 env:
   JAVA_VERSION: '21'
+  DOCKER_REGISTRY: docker.io
 
 jobs:
   #=================== 测试 ===================
@@ -46,18 +47,17 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to Alibaba Cloud ACR
+      - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
-          registry: ${{ secrets.ACR_HOST }}
-          username: ${{ secrets.ACR_USERNAME }}
-          password: ${{ secrets.ACR_PASSWORD }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ secrets.ACR_HOST }}:backend
+          images: ${{ secrets.DOCKER_USERNAME }}/opentcs-backend
           tags: |
             type=ref,event=branch
             type=sha,prefix=
@@ -89,12 +89,12 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
             set -e
-            # 登录阿里云 ACR
-            docker login --username=${{ secrets.ACR_USERNAME }} --password=${{ secrets.ACR_PASSWORD }} ${{ secrets.ACR_HOST }}
+            # 登录 Docker Hub
+            docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
             # 拉取最新镜像
-            docker pull ${{ secrets.ACR_HOST }}:backend:latest
+            docker pull ${{ secrets.DOCKER_USERNAME }}/opentcs-backend:latest
             # 打标签为 compose 使用的名称
-            docker tag ${{ secrets.ACR_HOST }}:backend:latest opentcs-admin:latest
+            docker tag ${{ secrets.DOCKER_USERNAME }}/opentcs-backend:latest opentcs-admin:latest
             cd /opt/opentcs-deploy
             docker compose up -d --force-recreate backend
             sleep 30
