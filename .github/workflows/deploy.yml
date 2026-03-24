@@ -53,7 +53,7 @@ jobs:
       - name: Upload to Server
         run: |
           # 创建部署目录
-          ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "mkdir -p /tmp/opentcs-deploy"
+          ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "mkdir -p /tmp/opentcs-deploy"
 
           # 上传 JAR
           scp -o StrictHostKeyChecking=no opentcs-admin/target/opentcs-admin.jar ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/tmp/opentcs-deploy/app.jar
