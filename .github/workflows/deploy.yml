@@ -68,7 +68,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} -f opentcs-plus/script/deploy/backend/Dockerfile opentcs-plus/
+          docker build -t ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} -f opentcs-plus/script/deploy/backend/Dockerfile .
 
       # 登录阿里云ACR
       - name: Login to Aliyun ACR
