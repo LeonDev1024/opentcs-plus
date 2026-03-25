@@ -50,6 +50,11 @@ public class TransportOrderEntity extends BusinessEntity {
     private String processingVehicle;
 
     /**
+     * 车辆VIN（用于前端展示）
+     */
+    private String vehicleVin;
+
+    /**
      * 目的地序列
      */
     private String destinations;
