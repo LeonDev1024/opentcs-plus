@@ -80,7 +80,7 @@ opentcs-plus-web/
 - 认证：Sa-Token 1.44.0 (JWT)
 - 消息：MQTT, SSE
 - 存储：MINIO
-- AI 集成：Spring AI 1.0.0-M4（暂时还没有想好要如何做工业场景的AI Agent，后面的运维和算法模块肯定是要要基于llm大模型来构建闭环的场景，欢迎感兴趣的同学一起讨论）
+- AI 集成：Spring AI 1.0.0-M4（暂时还没有想好要如何做工业场景的AI Agent，后面的运维和算法模块肯定是要基于llm大模型来构建闭环的场景，欢迎感兴趣的同学一起讨论）
 
 ### 前端技术栈
 - 框架：Vue3 + TypeScript + Element Plus + Vue Router + Pinia + Axios + Vite
