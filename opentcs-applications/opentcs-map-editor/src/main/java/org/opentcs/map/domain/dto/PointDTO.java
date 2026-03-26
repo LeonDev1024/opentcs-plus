@@ -1,6 +1,7 @@
 package org.opentcs.map.domain.dto;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.io.Serial;
@@ -44,19 +45,22 @@ public class PointDTO implements Serializable {
     /**
      * X坐标
      */
-    @JsonAlias({"xPosition", "x_position"})
+    @JsonProperty("xPosition")
+    @JsonAlias({"x_position"})
     private BigDecimal xPosition;
 
     /**
      * Y坐标
      */
-    @JsonAlias({"yPosition", "y_position"})
+    @JsonProperty("yPosition")
+    @JsonAlias({"y_position"})
     private BigDecimal yPosition;
 
     /**
      * Z坐标（楼层高度）
      */
-    @JsonAlias({"zPosition", "z_position"})
+    @JsonProperty("zPosition")
+    @JsonAlias({"z_position"})
     private BigDecimal zPosition;
 
     /**

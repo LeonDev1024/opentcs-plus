@@ -35,4 +35,11 @@ public interface PointDomainService extends IService<PointEntity> {
      * @return 点位列表
      */
     List<PointEntity> listByMapIds(List<Long> mapIds);
+
+    /**
+     * 根据导航地图ID删除所有点位
+     * @param navigationMapId 导航地图ID
+     * @return 删除数量
+     */
+    int removeByMap(Long navigationMapId);
 }

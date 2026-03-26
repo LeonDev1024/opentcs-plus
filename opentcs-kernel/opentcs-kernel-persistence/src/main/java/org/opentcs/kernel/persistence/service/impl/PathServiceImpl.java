@@ -69,4 +69,10 @@ public class PathServiceImpl extends ServiceImpl<PathMapper, PathEntity> impleme
     public PathDTO getByIdDTO(Long id) {
         return DTOConverter.toPathDTO(this.getById(id));
     }
+
+    @Override
+    public int removeByMap(Long navigationMapId) {
+        return this.baseMapper.delete(new LambdaQueryWrapper<PathEntity>()
+                .eq(PathEntity::getNavigationMapId, navigationMapId));
+    }
 }

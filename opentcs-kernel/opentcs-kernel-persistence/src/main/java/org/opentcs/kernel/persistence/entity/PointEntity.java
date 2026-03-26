@@ -1,8 +1,11 @@
 package org.opentcs.kernel.persistence.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.opentcs.common.mybatis.core.domain.DataEntity;
@@ -47,16 +50,25 @@ public class PointEntity extends DataEntity {
     /**
      * X坐标（前端显示和后端计算共用）
      */
+    @TableField("x_position")
+    @JsonProperty("xPosition")
+    @JsonAlias({"x_position"})
     private BigDecimal xPosition;
 
     /**
      * Y坐标（前端显示和后端计算共用）
      */
+    @TableField("y_position")
+    @JsonProperty("yPosition")
+    @JsonAlias({"y_position"})
     private BigDecimal yPosition;
 
     /**
      * Z坐标（楼层高度）
      */
+    @TableField("z_position")
+    @JsonProperty("zPosition")
+    @JsonAlias({"z_position"})
     private BigDecimal zPosition;
 
     /**

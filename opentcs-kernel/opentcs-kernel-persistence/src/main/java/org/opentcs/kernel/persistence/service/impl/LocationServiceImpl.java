@@ -121,4 +121,10 @@ public class LocationServiceImpl extends ServiceImpl<LocationMapper, LocationEnt
                 .eq(LocationEntity::getNavigationMapId, plantModelId)
         );
     }
+
+    @Override
+    public int removeByMap(Long navigationMapId) {
+        return this.baseMapper.delete(new LambdaQueryWrapper<LocationEntity>()
+                .eq(LocationEntity::getNavigationMapId, navigationMapId));
+    }
 }

@@ -68,6 +68,11 @@ public class NavigationMapDTO {
     private String status;
 
     /**
+     * 地图版本号（如：1.0, 1.1, 2.0）
+     */
+    private String mapVersion;
+
+    /**
      * 创建时间
      */
     private Date createTime;

@@ -41,4 +41,10 @@ public class PointServiceImpl extends ServiceImpl<PointMapper, PointEntity> impl
                 .eq(PointEntity::getDelFlag, "0")
                 .orderByAsc(PointEntity::getName));
     }
+
+    @Override
+    public int removeByMap(Long navigationMapId) {
+        return this.baseMapper.delete(new LambdaQueryWrapper<PointEntity>()
+                .eq(PointEntity::getNavigationMapId, navigationMapId));
+    }
 }
