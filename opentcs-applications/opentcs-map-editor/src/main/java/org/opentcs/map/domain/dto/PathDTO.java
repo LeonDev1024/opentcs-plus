@@ -82,6 +82,12 @@ public class PathDTO implements Serializable {
     private String properties;
 
     /**
+     * 几何连接类型（仅导入 openTCS XML 时使用）：
+     * DIRECT / ELBOW / SLANTED / POLYPATH / BEZIER / BEZIER_3
+     */
+    private String connectionType;
+
+    /**
      * 布局控制点（用于前端重建几何形状）
      */
     private List<LayoutControlPointDTO> layoutControlPoints;

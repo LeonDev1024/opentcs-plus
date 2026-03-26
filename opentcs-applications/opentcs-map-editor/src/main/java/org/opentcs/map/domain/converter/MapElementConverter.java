@@ -103,6 +103,7 @@ public class MapElementConverter {
         dto.setLocked(entity.getLocked());
         dto.setIsBlocked(entity.getIsBlocked());
         dto.setProperties(entity.getProperties());
+        dto.setConnectionType(entity.getConnectionType());
 
         // 转换布局控制点
         if (entity.getLayoutControlPoints() != null) {
@@ -141,6 +142,7 @@ public class MapElementConverter {
         entity.setLocked(dto.getLocked());
         entity.setIsBlocked(dto.getIsBlocked());
         entity.setProperties(dto.getProperties());
+        entity.setConnectionType(dto.getConnectionType());
 
         // 转换布局控制点
         if (dto.getLayoutControlPoints() != null) {

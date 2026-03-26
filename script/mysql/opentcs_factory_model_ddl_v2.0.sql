@@ -170,6 +170,7 @@ CREATE TABLE path (
     routing_type VARCHAR(50) DEFAULT 'BIDIRECTIONAL' COMMENT '路径方向类型',
     locked TINYINT(1) DEFAULT 0 COMMENT '是否被锁定',
     is_blocked TINYINT(1) DEFAULT 0 COMMENT '是否被阻塞',
+    layout JSON COMMENT '路径布局（connectionType + controlPoints）',
     properties JSON COMMENT '扩展属性',
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
