@@ -1,18 +1,21 @@
-package org.opentcs.map.domain.bo;
+package org.opentcs.map.domain.dto;
 
 import lombok.Data;
-import org.opentcs.kernel.persistence.entity.*;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
 /**
- * 地图编辑器业务对象
+ * 地图编辑器响应 DTO（用于加载地图返回给前端）
  */
 @Data
-public class MapEditorBO {
+public class MapEditorDTO implements Serializable {
 
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     /**
      * 地图名称
@@ -35,58 +38,57 @@ public class MapEditorBO {
     private String factoryName;
 
     /**
-     * 地图原点X坐标（毫米，相对于场景原点）
+     * 地图原点X坐标
      */
     private BigDecimal originX;
 
     /**
-     * 地图原点Y坐标（毫米，相对于场景原点）
+     * 地图原点Y坐标
      */
     private BigDecimal originY;
 
     /**
-     * 地图旋转角度（度）
+     * 地图旋转角度
      */
     private BigDecimal rotation;
 
     /**
      * 点位列表
      */
-    private List<PointEntity> points;
+    private List<PointDTO> points;
 
     /**
      * 路径列表
      */
-    private List<PathEntity> paths;
+    private List<PathDTO> paths;
 
     /**
      * 位置列表
      */
-    private List<LocationEntity> locations;
+    private List<LocationDTO> locations;
 
     /**
-     * 图层组列表
-     */
-    private List<LayerGroupEntity> layerGroups;
-
-    /**
-     * 图层列表
-     */
-    private List<LayerEntity> layers;
-
-    /**
-     * 地图版本号（如：1.0, 1.1, 2.0）
+     * 地图版本号
      */
     private String mapVersion;
 
     /**
-     * 地图状态: 0-草稿(DRAFT), 1-已发布(PUBLISHED)
+     * 地图状态: 0-草稿, 1-已发布
      */
     private String status;
 
+    /**
+     * JSON 快照数据
+     */
     private String data;
 
+    /**
+     * 创建时间
+     */
     private Date createTime;
 
+    /**
+     * 更新时间
+     */
     private Date updateTime;
 }

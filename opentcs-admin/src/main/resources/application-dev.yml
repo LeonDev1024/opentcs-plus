@@ -33,9 +33,9 @@ spring:
         master:
           type: ${spring.datasource.type}
           driverClassName: com.mysql.cj.jdbc.Driver
-          url: jdbc:mysql://106.54.43.41:3309/opentcs?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&connectionCollation=utf8mb4_unicode_ci
-          username: root
-          password: 123456
+          url: jdbc:mysql://106.54.43.41:3306/opentcs?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&connectionCollation=utf8mb4_unicode_ci
+          username: opentcs
+          password: 'Opentcs@2024!DB'
       hikari:
         # 最大连接池数量
         maxPoolSize: 20
@@ -64,7 +64,7 @@ spring.data:
     # 数据库索引
     database: 0
     # redis 密码必须配置
-    password: Pji210610
+    password: 'Redis@2024!Cache'
     # 连接超时时间
     timeout: 10s
     # 是否开启ssl

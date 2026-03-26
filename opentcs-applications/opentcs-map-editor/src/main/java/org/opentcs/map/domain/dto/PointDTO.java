@@ -1,30 +1,25 @@
-package org.opentcs.kernel.persistence.entity;
+package org.opentcs.map.domain.dto;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.opentcs.common.mybatis.core.domain.DataEntity;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
- * 点位数据模型
- * 前端显示和后端计算共用同一套坐标
+ * 点位 DTO
  */
-@EqualsAndHashCode(callSuper = true)
 @Data
-@TableName("point")
-public class PointEntity extends DataEntity {
+public class PointDTO implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     /**
      * 主键ID
      */
-    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
     /**
@@ -48,17 +43,15 @@ public class PointEntity extends DataEntity {
     private String name;
 
     /**
-     * X坐标（前端显示和后端计算共用）
+     * X坐标
      */
-    @TableField("x_position")
     @JsonProperty("xPosition")
     @JsonAlias({"x_position"})
     private BigDecimal xPosition;
 
     /**
-     * Y坐标（前端显示和后端计算共用）
+     * Y坐标
      */
-    @TableField("y_position")
     @JsonProperty("yPosition")
     @JsonAlias({"y_position"})
     private BigDecimal yPosition;
@@ -66,7 +59,6 @@ public class PointEntity extends DataEntity {
     /**
      * Z坐标（楼层高度）
      */
-    @TableField("z_position")
     @JsonProperty("zPosition")
     @JsonAlias({"z_position"})
     private BigDecimal zPosition;
@@ -77,7 +69,7 @@ public class PointEntity extends DataEntity {
     private BigDecimal vehicleOrientation;
 
     /**
-     * 点位类型：HALT_POSITION, PARK_POSITION, REPORT_POSITION, CHARGE_POSITION, ELEVATOR_WAIT
+     * 点位类型
      */
     private String type;
 

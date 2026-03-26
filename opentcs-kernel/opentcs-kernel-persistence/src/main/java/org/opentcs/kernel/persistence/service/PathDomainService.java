@@ -64,4 +64,11 @@ public interface PathDomainService extends IService<PathEntity> {
      * @return 路径详情
      */
     PathDTO getByIdDTO(Long id);
+
+    /**
+     * 根据导航地图ID删除所有路径
+     * @param navigationMapId 导航地图ID
+     * @return 删除数量
+     */
+    int removeByMap(Long navigationMapId);
 }

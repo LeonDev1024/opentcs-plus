@@ -79,4 +79,11 @@ public interface LocationDomainService extends IService<LocationEntity> {
      * @return 位置列表
      */
     List<LocationEntity> selectAllLocationByPlantModelId(Long plantModelId);
+
+    /**
+     * 根据导航地图ID删除所有位置
+     * @param navigationMapId 导航地图ID
+     * @return 删除数量
+     */
+    int removeByMap(Long navigationMapId);
 }

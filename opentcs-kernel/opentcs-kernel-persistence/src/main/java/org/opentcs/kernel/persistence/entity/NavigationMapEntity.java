@@ -72,7 +72,13 @@ public class NavigationMapEntity extends BusinessEntity {
     private String properties;
 
     /**
-     * 状态
+     * 地图版本号
+     * 格式：1.0, 1.1, 1.2, ... 1.20 -> 2.0
+     */
+    private String mapVersion;
+
+    /**
+     * 状态: 0-草稿(DRAFT), 1-已发布(PUBLISHED)
      */
     private String status;
 

@@ -2,15 +2,13 @@ package org.opentcs.map.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.opentcs.common.core.domain.R;
-import org.opentcs.map.domain.bo.MapEditorBO;
+import org.opentcs.map.domain.dto.MapEditorDTO;
+import org.opentcs.map.domain.dto.MapEditorSaveDTO;
 import org.opentcs.map.domain.vo.LoadModelVO;
 import org.opentcs.map.application.IMapEditorService;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 
@@ -30,8 +28,8 @@ public class MapEditorController {
      * 加载地图模型
      */
     @PostMapping("/load")
-    public R<MapEditorBO> load(@RequestBody LoadModelVO loadModelVO) {
-        MapEditorBO result = mapEditorService.load(loadModelVO);
+    public R<MapEditorDTO> load(@RequestBody LoadModelVO loadModelVO) {
+        MapEditorDTO result = mapEditorService.load(loadModelVO);
         if (result == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "地图模型不存在");
         }
@@ -40,7 +38,17 @@ public class MapEditorController {
 
 
     @PostMapping("/save")
-    public R<Boolean> save(@RequestBody MapEditorBO mapEditorBO) {
-        return R.ok(mapEditorService.save(mapEditorBO));
+    public R<Boolean> save(@RequestBody MapEditorSaveDTO saveDTO) {
+        return R.ok(mapEditorService.save(saveDTO));
+    }
+
+    /**
+     * 发布地图
+     * @param mapId 地图ID
+     * @return 是否发布成功
+     */
+    @PostMapping("/publish/{mapId}")
+    public R<Boolean> publish(@PathVariable Long mapId) {
+        return R.ok(mapEditorService.publish(mapId));
     }
 }
