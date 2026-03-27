@@ -67,11 +67,6 @@ public class PathEntity extends DataEntity {
     private BigDecimal maxReverseVelocity;
 
     /**
-     * 路径方向类型：BIDIRECTIONAL, FORWARD, BACKWARD
-     */
-    private String routingType;
-
-    /**
      * 是否被锁定
      */
     private Boolean locked;
@@ -85,6 +80,18 @@ public class PathEntity extends DataEntity {
      * 扩展属性
      */
     private String properties;
+
+    /**
+     * 路径布局（JSON）。
+     *
+     * 当前用于持久化前端传入的 {@link #layoutControlPoints}，
+     * 并按 openTCS 的 {@code PathCreationTO.Layout} 语义封装为：
+     * { "connectionType": "...", "controlPoints": [ { "x": ..., "y": ... }, ... ] }
+     *
+     * <p>layerId 在当前表结构中尚未落库，因此暂不持久化。</p>
+     */
+    @TableField("layout")
+    private String layout;
 
     /**
      * 几何连接类型（仅导入 openTCS XML 时使用，不入库）：

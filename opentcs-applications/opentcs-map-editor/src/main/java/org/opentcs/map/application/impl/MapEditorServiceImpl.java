@@ -1,7 +1,8 @@
 package org.opentcs.map.application.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.servlet.http.HttpServletResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opentcs.kernel.api.dto.NavigationMapDTO;
@@ -13,6 +14,7 @@ import org.opentcs.map.domain.converter.MapElementConverter;
 import org.opentcs.map.domain.dto.*;
 import org.opentcs.map.domain.vo.LoadModelVO;
 import org.opentcs.map.utils.MapVersionUtil;
+import org.opentcs.common.core.dto.PathLayoutControlPointTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,10 +46,7 @@ public class MapEditorServiceImpl implements IMapEditorService {
     private final PointDomainService pointDomainService;
     private final PathDomainService pathDomainService;
     private final LocationDomainService locationDomainService;
-    private final LocationTypeDomainService locationTypeDomainService;
-    private final BlockDomainService blockDomainService;
-    private final LayerGroupDomainService layerGroupDomainService;
-    private final LayerDomainService layerDomainService;
+    private final ObjectMapper objectMapper;
 
     /**
      * 地图状态：草稿
@@ -78,6 +77,7 @@ public class MapEditorServiceImpl implements IMapEditorService {
         // 查询地图元素
         List<PointEntity> points = pointDomainService.listByMap(navMapId);
         List<PathEntity> paths = pathDomainService.listByMap(navMapId);
+        hydratePathLayout(paths);
         List<LocationEntity> locations = locationDomainService.selectByNavigationMapId(navMapId);
 
         // 尝试加载 JSON 快照
@@ -113,6 +113,51 @@ public class MapEditorServiceImpl implements IMapEditorService {
                 points.size(), paths.size(), locations.size());
 
         return dto;
+    }
+
+    private void hydratePathLayout(List<PathEntity> paths) {
+        if (paths == null || paths.isEmpty()) {
+            return;
+        }
+        for (PathEntity path : paths) {
+            if (path.getLayoutControlPoints() != null && !path.getLayoutControlPoints().isEmpty()) {
+                continue;
+            }
+            if (path.getLayout() == null || path.getLayout().isBlank()) {
+                continue;
+            }
+            try {
+                String layoutJson = path.getLayout().trim();
+                // 兼容历史数据：layout 可能只是一个 controlPoints 数组
+                if (layoutJson.startsWith("[")) {
+                    List<PathLayoutControlPointTO> controlPoints = objectMapper.readValue(
+                        layoutJson,
+                        new TypeReference<List<PathLayoutControlPointTO>>() {
+                        }
+                    );
+                    path.setLayoutControlPoints(controlPoints);
+                }
+                else {
+                    PathLayoutPersist persist = objectMapper.readValue(layoutJson, PathLayoutPersist.class);
+                    path.setConnectionType(persist.connectionType);
+                    path.setLayoutControlPoints(persist.controlPoints);
+                }
+            } catch (Exception e) {
+                // layout 只用于前端重建几何形状：尽量不影响其它模型加载
+                log.warn("解析 path.layout 失败, pathId={}, layout={}", path.getPathId(), path.getLayout(), e);
+            }
+        }
+    }
+
+    /**
+     * path.layout JSON 持久化结构
+     *
+     * <p>与 openTCS 的 {@code PathCreationTO.Layout} 对齐：connectionType + controlPoints。
+     * 当前系统中 layerId 暂未落库，因此这里先不持久化 layerId。</p>
+     */
+    private static class PathLayoutPersist {
+        public String connectionType;
+        public List<PathLayoutControlPointTO> controlPoints;
     }
 
     @Override
@@ -151,6 +196,17 @@ public class MapEditorServiceImpl implements IMapEditorService {
                 PathEntity path = MapElementConverter.toPathEntity(pathDTO);
                 path.setId(null);
                 path.setNavigationMapId(navMapId);
+                // Persist path layout for subsequent load.
+                if (path.getLayoutControlPoints() != null) {
+                    try {
+                        PathLayoutPersist persist = new PathLayoutPersist();
+                        persist.connectionType = path.getConnectionType() != null ? path.getConnectionType() : "DIRECT";
+                        persist.controlPoints = path.getLayoutControlPoints();
+                        path.setLayout(objectMapper.writeValueAsString(persist));
+                    } catch (Exception e) {
+                        throw new RuntimeException("序列化 path.layout 失败, pathId=" + path.getPathId(), e);
+                    }
+                }
                 pathDomainService.save(path);
             }
         }

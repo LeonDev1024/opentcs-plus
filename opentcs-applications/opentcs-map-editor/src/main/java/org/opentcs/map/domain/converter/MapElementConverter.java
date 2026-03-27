@@ -99,10 +99,10 @@ public class MapElementConverter {
         dto.setLength(entity.getLength());
         dto.setMaxVelocity(entity.getMaxVelocity());
         dto.setMaxReverseVelocity(entity.getMaxReverseVelocity());
-        dto.setRoutingType(entity.getRoutingType());
         dto.setLocked(entity.getLocked());
         dto.setIsBlocked(entity.getIsBlocked());
         dto.setProperties(entity.getProperties());
+        dto.setConnectionType(entity.getConnectionType());
 
         // 转换布局控制点
         if (entity.getLayoutControlPoints() != null) {
@@ -137,10 +137,10 @@ public class MapElementConverter {
         entity.setLength(dto.getLength());
         entity.setMaxVelocity(dto.getMaxVelocity());
         entity.setMaxReverseVelocity(dto.getMaxReverseVelocity());
-        entity.setRoutingType(dto.getRoutingType());
         entity.setLocked(dto.getLocked());
         entity.setIsBlocked(dto.getIsBlocked());
         entity.setProperties(dto.getProperties());
+        entity.setConnectionType(dto.getConnectionType());
 
         // 转换布局控制点
         if (dto.getLayoutControlPoints() != null) {

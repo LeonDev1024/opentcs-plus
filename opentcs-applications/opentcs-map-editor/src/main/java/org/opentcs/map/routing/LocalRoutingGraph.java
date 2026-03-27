@@ -58,12 +58,6 @@ public class LocalRoutingGraph {
         // 添加正向边
         Edge forward = new Edge(path.getDestPointId(), length, maxVel, path.getPathId());
         adjacency.computeIfAbsent(path.getSourcePointId(), k -> new ArrayList<>()).add(forward);
-
-        // 如果是双向路径，添加反向边
-        if ("BIDIRECTIONAL".equals(path.getRoutingType())) {
-            Edge backward = new Edge(path.getSourcePointId(), length, maxReverseVel, path.getPathId());
-            adjacency.computeIfAbsent(path.getDestPointId(), k -> new ArrayList<>()).add(backward);
-        }
     }
 
     /**
