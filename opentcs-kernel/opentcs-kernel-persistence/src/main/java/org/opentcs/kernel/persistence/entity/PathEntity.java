@@ -67,11 +67,6 @@ public class PathEntity extends DataEntity {
     private BigDecimal maxReverseVelocity;
 
     /**
-     * 路径方向类型：BIDIRECTIONAL, FORWARD, BACKWARD
-     */
-    private String routingType;
-
-    /**
      * 是否被锁定
      */
     private Boolean locked;

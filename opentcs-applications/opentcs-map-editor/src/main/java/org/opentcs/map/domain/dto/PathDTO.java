@@ -62,11 +62,6 @@ public class PathDTO implements Serializable {
     private BigDecimal maxReverseVelocity;
 
     /**
-     * 路径方向类型：BIDIRECTIONAL, FORWARD, BACKWARD
-     */
-    private String routingType;
-
-    /**
      * 是否被锁定
      */
     private Boolean locked;
@@ -82,13 +77,15 @@ public class PathDTO implements Serializable {
     private String properties;
 
     /**
-     * 几何连接类型（仅导入 openTCS XML 时使用）：
-     * DIRECT / ELBOW / SLANTED / POLYPATH / BEZIER / BEZIER_3
+     * DIRECT / ELBOW / BEZIER
      */
     private String connectionType;
 
     /**
-     * 布局控制点（用于前端重建几何形状）
+     * 布局控制点
+     * （控制点）用于描述路径的绘制方式
+     *  定义路径在图形界面上的具体形状和走向
+     *  仅当连接类型为 BEZIER时使用
      */
     private List<LayoutControlPointDTO> layoutControlPoints;
 

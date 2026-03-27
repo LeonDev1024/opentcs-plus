@@ -167,7 +167,6 @@ CREATE TABLE path (
     length DECIMAL(12,4) NOT NULL COMMENT '路径长度',
     max_velocity DECIMAL(8,4) COMMENT '最大允许速度',
     max_reverse_velocity DECIMAL(8,4) COMMENT '最大反向速度',
-    routing_type VARCHAR(50) DEFAULT 'BIDIRECTIONAL' COMMENT '路径方向类型',
     locked TINYINT(1) DEFAULT 0 COMMENT '是否被锁定',
     is_blocked TINYINT(1) DEFAULT 0 COMMENT '是否被阻塞',
     layout JSON COMMENT '路径布局（connectionType + controlPoints）',

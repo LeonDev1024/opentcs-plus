@@ -76,7 +76,6 @@ public class DTOConverter {
         dto.setLength(entity.getLength());
         dto.setMaxVelocity(entity.getMaxVelocity());
         dto.setMaxReverseVelocity(entity.getMaxReverseVelocity());
-        dto.setRoutingType(entity.getRoutingType());
         dto.setLocked(entity.getLocked());
         dto.setIsBlocked(entity.getIsBlocked());
         dto.setProperties(entity.getProperties());
