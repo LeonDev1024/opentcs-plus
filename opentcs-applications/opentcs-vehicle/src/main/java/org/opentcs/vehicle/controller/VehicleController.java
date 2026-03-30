@@ -6,14 +6,17 @@ import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.common.web.core.BaseController;
 import org.opentcs.kernel.api.dto.VehicleCrudDTO;
+import org.opentcs.kernel.api.dto.VehicleEntityDTO;
 import org.opentcs.vehicle.persistence.entity.VehicleEntity;
 import org.opentcs.vehicle.persistence.service.VehicleDomainService;
 import org.opentcs.vehicle.application.VehicleApplicationService;
 import org.opentcs.kernel.api.dto.VehicleDTO;
 import org.opentcs.driver.api.dto.DriverConfig;
 import org.opentcs.driver.api.dto.InstantAction;
+import org.opentcs.vehicle.controller.req.RegisterVehicleWithDriverRequest;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -34,8 +37,8 @@ public class VehicleController extends BaseController {
      * 分页查询车辆列表
      */
     @GetMapping("/list")
-    public TableDataInfo<VehicleCrudDTO> listVehicles(VehicleEntity vehicle, PageQuery pageQuery) {
-        return vehicleService.selectPageVehicleDTO(vehicle, pageQuery);
+    public TableDataInfo<VehicleCrudDTO> listVehicles(VehicleEntityDTO vehicle, PageQuery pageQuery) {
+        return vehicleService.selectPageVehicleDTO(toEntity(vehicle), pageQuery);
     }
 
     /**
@@ -60,16 +63,16 @@ public class VehicleController extends BaseController {
      * 创建车辆
      */
     @PostMapping("/create")
-    public R<Boolean> createVehicle(@RequestBody VehicleEntity vehicle) {
-        return R.ok(vehicleService.save(vehicle));
+    public R<Boolean> createVehicle(@RequestBody VehicleEntityDTO vehicle) {
+        return R.ok(vehicleService.save(toEntity(vehicle)));
     }
 
     /**
      * 更新车辆
      */
     @PutMapping("/update")
-    public R<Boolean> updateVehicle(@RequestBody VehicleEntity vehicle) {
-        return R.ok(vehicleService.updateById(vehicle));
+    public R<Boolean> updateVehicle(@RequestBody VehicleEntityDTO vehicle) {
+        return R.ok(vehicleService.updateById(toEntity(vehicle)));
     }
 
     /**
@@ -108,16 +111,20 @@ public class VehicleController extends BaseController {
      * 获取车辆实时状态（数据库）
      */
     @GetMapping("/status/{id}")
-    public R<VehicleEntity> getVehicleStatus(@PathVariable Long id) {
-        return R.ok(vehicleService.getVehicleStatus(id));
+    public R<VehicleEntityDTO> getVehicleStatus(@PathVariable Long id) {
+        return R.ok(toDTO(vehicleService.getVehicleStatus(id)));
     }
 
     /**
      * 获取所有车辆状态
      */
     @GetMapping("/status/all")
-    public R<List<VehicleEntity>> getAllVehicleStatus() {
-        return R.ok(vehicleService.getAllVehicleStatus());
+    public R<List<VehicleEntityDTO>> getAllVehicleStatus() {
+        List<VehicleEntity> list = vehicleService.getAllVehicleStatus();
+        List<VehicleEntityDTO> result = list == null
+            ? new ArrayList<>()
+            : list.stream().map(this::toDTO).collect(Collectors.toList());
+        return R.ok(result);
     }
 
     /**
@@ -157,16 +164,16 @@ public class VehicleController extends BaseController {
      * 车辆注册（到内核）
      */
     @PostMapping("/register")
-    public R<Boolean> registerVehicle(@RequestBody VehicleEntity vehicle) {
-        return R.ok(vehicleService.registerVehicle(vehicle));
+    public R<Boolean> registerVehicle(@RequestBody VehicleEntityDTO vehicle) {
+        return R.ok(vehicleApplicationService.registerVehicle(vehicle, null));
     }
 
     /**
      * 车辆注册（含驱动配置）
      */
     @PostMapping("/registerWithDriver")
-    public R<Boolean> registerVehicleWithDriver(@RequestBody VehicleEntity vehicle, @RequestBody DriverConfig driverConfig) {
-        return R.ok(vehicleApplicationService.registerVehicle(vehicle, driverConfig));
+    public R<Boolean> registerVehicleWithDriver(@RequestBody RegisterVehicleWithDriverRequest request) {
+        return R.ok(vehicleApplicationService.registerVehicle(request.getVehicle(), request.getDriverConfig()));
     }
 
     /**
@@ -191,5 +198,44 @@ public class VehicleController extends BaseController {
     @PostMapping("/unregister/{id}")
     public R<Boolean> unregisterVehicle(@PathVariable Long id) {
         return R.ok(vehicleApplicationService.unregisterVehicle(id));
+    }
+
+    private VehicleEntity toEntity(VehicleEntityDTO dto) {
+        VehicleEntity entity = new VehicleEntity();
+        entity.setId(dto.getId());
+        entity.setName(dto.getName());
+        entity.setVinCode(dto.getVinCode());
+        entity.setVehicleTypeId(dto.getVehicleTypeId());
+        entity.setCurrentPosition(dto.getCurrentPosition());
+        entity.setNextPosition(dto.getNextPosition());
+        entity.setState(dto.getState());
+        entity.setIntegrationLevel(dto.getIntegrationLevel());
+        entity.setEnergyLevel(dto.getEnergyLevel());
+        entity.setCurrentTransportOrder(dto.getCurrentTransportOrder());
+        entity.setProperties(dto.getProperties());
+        entity.setCreateTime(dto.getCreateTime());
+        entity.setUpdateTime(dto.getUpdateTime());
+        return entity;
+    }
+
+    private VehicleEntityDTO toDTO(VehicleEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+        VehicleEntityDTO dto = new VehicleEntityDTO();
+        dto.setId(entity.getId());
+        dto.setName(entity.getName());
+        dto.setVinCode(entity.getVinCode());
+        dto.setVehicleTypeId(entity.getVehicleTypeId());
+        dto.setCurrentPosition(entity.getCurrentPosition());
+        dto.setNextPosition(entity.getNextPosition());
+        dto.setState(entity.getState());
+        dto.setIntegrationLevel(entity.getIntegrationLevel());
+        dto.setEnergyLevel(entity.getEnergyLevel());
+        dto.setCurrentTransportOrder(entity.getCurrentTransportOrder());
+        dto.setProperties(entity.getProperties());
+        dto.setCreateTime(entity.getCreateTime());
+        dto.setUpdateTime(entity.getUpdateTime());
+        return dto;
     }
 }

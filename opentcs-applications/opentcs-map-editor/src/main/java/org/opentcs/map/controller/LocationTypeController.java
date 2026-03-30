@@ -1,15 +1,12 @@
 package org.opentcs.map.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.opentcs.common.core.domain.R;
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.common.web.core.BaseController;
 import org.opentcs.kernel.api.dto.LocationTypeDTO;
-import org.opentcs.kernel.persistence.entity.LocationTypeEntity;
-import org.opentcs.kernel.persistence.service.LocationTypeDomainService;
+import org.opentcs.map.application.MapFacadeApplicationService;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,15 +22,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LocationTypeController extends BaseController {
 
-    private final LocationTypeDomainService locationTypeDomainService;
-    private final ObjectMapper objectMapper;
+    private final MapFacadeApplicationService mapFacadeApplicationService;
 
     /**
      * 查询所有位置类型
      */
     @GetMapping("/list")
-    public TableDataInfo<LocationTypeDTO> list(LocationTypeEntity locationType, PageQuery pageQuery) {
-        return locationTypeDomainService.selectPageDTO(locationType, pageQuery);
+    public TableDataInfo<LocationTypeDTO> list(LocationTypeDTO locationType, PageQuery pageQuery) {
+        return mapFacadeApplicationService.listLocationTypes(locationType, pageQuery);
     }
 
     /**
@@ -41,7 +37,7 @@ public class LocationTypeController extends BaseController {
      */
     @GetMapping("/{id}")
     public R<LocationTypeDTO> getLocationTypeById(@PathVariable Long id) {
-        return R.ok(locationTypeDomainService.getByIdDTO(id));
+        return R.ok(mapFacadeApplicationService.getLocationTypeById(id));
     }
 
     /**
@@ -49,23 +45,23 @@ public class LocationTypeController extends BaseController {
      */
     @GetMapping("/all")
     public R<List<LocationTypeDTO>> getAllLocationTypes() {
-        return R.ok(locationTypeDomainService.listDTO());
+        return R.ok(mapFacadeApplicationService.listAllLocationTypes());
     }
 
     /**
      * 创建位置类型
      */
     @PostMapping("/create")
-    public R<Boolean> createLocationType(@RequestBody LocationTypeEntity locationType) {
-        return R.ok(locationTypeDomainService.save(locationType));
+    public R<Boolean> createLocationType(@RequestBody LocationTypeDTO locationType) {
+        return R.ok(mapFacadeApplicationService.createLocationType(locationType));
     }
 
     /**
      * 更新位置类型
      */
     @PutMapping("/update")
-    public R<Boolean> updateLocationType(@RequestBody LocationTypeEntity locationType) {
-        return R.ok(locationTypeDomainService.updateById(locationType));
+    public R<Boolean> updateLocationType(@RequestBody LocationTypeDTO locationType) {
+        return R.ok(mapFacadeApplicationService.updateLocationType(locationType));
     }
 
     /**
@@ -73,6 +69,6 @@ public class LocationTypeController extends BaseController {
      */
     @DeleteMapping("/{id}")
     public R<Boolean> deleteLocationType(@PathVariable Long id) {
-        return R.ok(locationTypeDomainService.removeById(id));
+        return R.ok(mapFacadeApplicationService.deleteLocationType(id));
     }
 }

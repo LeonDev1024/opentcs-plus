@@ -59,11 +59,25 @@ public interface NavigationMapDomainService extends IService<NavigationMapEntity
     NavigationMapEntity getNavigationMapDetail(Long id);
 
     /**
+     * 获取导航地图详情（DTO）
+     * @param id 导航地图ID
+     * @return 导航地图详情
+     */
+    NavigationMapDTO getNavigationMapDetailDTO(Long id);
+
+    /**
      * 更新导航地图
      * @param navigationMap 导航地图
      * @return 是否更新成功
      */
     boolean updateNavigationMap(NavigationMapEntity navigationMap);
+
+    /**
+     * 更新导航地图（DTO）
+     * @param navigationMap 导航地图
+     * @return 是否更新成功
+     */
+    boolean updateNavigationMapDTO(NavigationMapDTO navigationMap);
 
     /**
      * 删除导航地图

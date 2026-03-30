@@ -9,10 +9,13 @@ import org.opentcs.order.persistence.entity.TransportOrderEntity;
 import org.opentcs.order.persistence.service.TransportOrderDomainService;
 import org.opentcs.order.application.TransportOrderApplicationService;
 import org.opentcs.kernel.api.dto.TransportOrderDTO;
+import org.opentcs.kernel.api.dto.TransportOrderEntityDTO;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 运输订单 Controller
@@ -29,31 +32,37 @@ public class TransportOrderController extends BaseController {
      * 分页查询运输订单列表
      */
     @GetMapping("/list")
-    public TableDataInfo<TransportOrderEntity> listTransportOrders(TransportOrderEntity transportOrder, PageQuery pageQuery) {
-        return transportOrderDomainService.selectPageTransportOrder(transportOrder, pageQuery);
+    public TableDataInfo<TransportOrderEntityDTO> listTransportOrders(TransportOrderEntityDTO transportOrder, PageQuery pageQuery) {
+        TableDataInfo<TransportOrderEntity> table = transportOrderDomainService.selectPageTransportOrder(toEntity(transportOrder), pageQuery);
+        TableDataInfo<TransportOrderEntityDTO> result = new TableDataInfo<>();
+        result.setTotal(table.getTotal());
+        result.setCode(table.getCode());
+        result.setMsg(table.getMsg());
+        result.setRows(table.getRows() == null ? new ArrayList<>() : table.getRows().stream().map(this::toDTO).collect(Collectors.toList()));
+        return result;
     }
 
     /**
      * 查询所有运输订单
      */
     @GetMapping("/")
-    public R<List<TransportOrderEntity>> getAllTransportOrders() {
-        return R.ok(transportOrderDomainService.list());
+    public R<List<TransportOrderEntityDTO>> getAllTransportOrders() {
+        return R.ok(transportOrderDomainService.list().stream().map(this::toDTO).collect(Collectors.toList()));
     }
 
     /**
      * 根据ID查询运输订单
      */
     @GetMapping("/{id}")
-    public R<TransportOrderEntity> getTransportOrderById(@PathVariable Long id) {
-        return R.ok(transportOrderDomainService.getById(id));
+    public R<TransportOrderEntityDTO> getTransportOrderById(@PathVariable Long id) {
+        return R.ok(toDTO(transportOrderDomainService.getById(id)));
     }
 
     /**
      * 创建运输订单
      */
     @PostMapping("/")
-    public R<Boolean> createTransportOrder(@RequestBody TransportOrderEntity transportOrder) {
+    public R<Boolean> createTransportOrder(@RequestBody TransportOrderEntityDTO transportOrder) {
         return R.ok(transportOrderApplicationService.createTransportOrder(transportOrder));
     }
 
@@ -61,16 +70,18 @@ public class TransportOrderController extends BaseController {
      * 批量创建运输订单
      */
     @PostMapping("/batch")
-    public R<Boolean> batchCreateTransportOrder(@RequestBody List<TransportOrderEntity> transportOrders) {
-        return R.ok(transportOrderDomainService.batchCreateTransportOrder(transportOrders));
+    public R<Boolean> batchCreateTransportOrder(@RequestBody List<TransportOrderEntityDTO> transportOrders) {
+        return R.ok(transportOrderDomainService.batchCreateTransportOrder(
+            transportOrders.stream().map(this::toEntity).collect(Collectors.toList())
+        ));
     }
 
     /**
      * 更新运输订单
      */
     @PutMapping("/")
-    public R<Boolean> updateTransportOrder(@RequestBody TransportOrderEntity transportOrder) {
-        return R.ok(transportOrderDomainService.updateById(transportOrder));
+    public R<Boolean> updateTransportOrder(@RequestBody TransportOrderEntityDTO transportOrder) {
+        return R.ok(transportOrderDomainService.updateById(toEntity(transportOrder)));
     }
 
     /**
@@ -159,5 +170,44 @@ public class TransportOrderController extends BaseController {
     @GetMapping("/statistics")
     public R<Map<String, Object>> getOrderStatistics() {
         return R.ok(transportOrderApplicationService.getOrderStatistics());
+    }
+
+    private TransportOrderEntity toEntity(TransportOrderEntityDTO dto) {
+        TransportOrderEntity entity = new TransportOrderEntity();
+        entity.setId(dto.getId());
+        entity.setName(dto.getName());
+        entity.setOrderNo(dto.getOrderNo());
+        entity.setState(dto.getState());
+        entity.setIntendedVehicle(dto.getIntendedVehicle());
+        entity.setProcessingVehicle(dto.getProcessingVehicle());
+        entity.setDestinations(dto.getDestinations());
+        entity.setCreationTime(dto.getCreationTime());
+        entity.setFinishedTime(dto.getFinishedTime());
+        entity.setDeadline(dto.getDeadline());
+        entity.setProperties(dto.getProperties());
+        entity.setCreateTime(dto.getCreateTime());
+        entity.setUpdateTime(dto.getUpdateTime());
+        return entity;
+    }
+
+    private TransportOrderEntityDTO toDTO(TransportOrderEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+        TransportOrderEntityDTO dto = new TransportOrderEntityDTO();
+        dto.setId(entity.getId());
+        dto.setName(entity.getName());
+        dto.setOrderNo(entity.getOrderNo());
+        dto.setState(entity.getState());
+        dto.setIntendedVehicle(entity.getIntendedVehicle());
+        dto.setProcessingVehicle(entity.getProcessingVehicle());
+        dto.setDestinations(entity.getDestinations());
+        dto.setCreationTime(entity.getCreationTime());
+        dto.setFinishedTime(entity.getFinishedTime());
+        dto.setDeadline(entity.getDeadline());
+        dto.setProperties(entity.getProperties());
+        dto.setCreateTime(entity.getCreateTime());
+        dto.setUpdateTime(entity.getUpdateTime());
+        return dto;
     }
 }

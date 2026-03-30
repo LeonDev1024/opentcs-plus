@@ -31,6 +31,21 @@ public interface PathDomainService extends IService<PathEntity> {
     TableDataInfo<PathDTO> selectPageDTO(PathEntity path, PageQuery pageQuery);
 
     /**
+     * 分页查询路径列表（DTO 查询条件）
+     * @param path 查询条件
+     * @param pageQuery 分页参数
+     * @return 分页结果
+     */
+    TableDataInfo<PathDTO> selectPageDTO(PathDTO path, PageQuery pageQuery);
+
+    /**
+     * 保存路径（DTO）
+     * @param path 路径数据
+     * @return 是否保存成功
+     */
+    boolean saveDTO(PathDTO path);
+
+    /**
      * 根据导航地图ID查询所有路径
      * @param navigationMapId 导航地图ID
      * @return 路径列表
@@ -64,6 +79,13 @@ public interface PathDomainService extends IService<PathEntity> {
      * @return 路径详情
      */
     PathDTO getByIdDTO(Long id);
+
+    /**
+     * 根据ID更新路径（DTO）
+     * @param path 路径数据
+     * @return 是否更新成功
+     */
+    boolean updateByIdDTO(PathDTO path);
 
     /**
      * 根据导航地图ID删除所有路径

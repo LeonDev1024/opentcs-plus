@@ -49,6 +49,11 @@ public class LocationTypeServiceImpl extends ServiceImpl<LocationTypeMapper, Loc
     }
 
     @Override
+    public TableDataInfo<LocationTypeDTO> selectPageDTO(LocationTypeDTO locationType, PageQuery pageQuery) {
+        return selectPageDTO(toEntity(locationType), pageQuery);
+    }
+
+    @Override
     public List<LocationTypeEntity> selectAll() {
         return this.list();
     }
@@ -66,6 +71,16 @@ public class LocationTypeServiceImpl extends ServiceImpl<LocationTypeMapper, Loc
     @Override
     public LocationTypeDTO getByIdDTO(Long id) {
         return convertToDTO(this.getById(id));
+    }
+
+    @Override
+    public boolean saveDTO(LocationTypeDTO locationType) {
+        return this.save(toEntity(locationType));
+    }
+
+    @Override
+    public boolean updateByIdDTO(LocationTypeDTO locationType) {
+        return this.updateById(toEntity(locationType));
     }
 
     /**
@@ -93,5 +108,20 @@ public class LocationTypeServiceImpl extends ServiceImpl<LocationTypeMapper, Loc
         return entities.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
+    }
+
+    private LocationTypeEntity toEntity(LocationTypeDTO dto) {
+        if (dto == null) {
+            return null;
+        }
+        LocationTypeEntity entity = new LocationTypeEntity();
+        entity.setId(dto.getId());
+        entity.setName(dto.getName());
+        entity.setAllowedOperations(dto.getAllowedOperations());
+        entity.setAllowedPeripheralOperations(dto.getAllowedPeripheralOperations());
+        entity.setProperties(dto.getProperties());
+        entity.setCreateTime(dto.getCreateTime());
+        entity.setUpdateTime(dto.getUpdateTime());
+        return entity;
     }
 }

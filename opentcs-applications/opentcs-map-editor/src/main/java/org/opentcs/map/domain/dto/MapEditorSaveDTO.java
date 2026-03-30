@@ -1,6 +1,7 @@
 package org.opentcs.map.domain.dto;
 
 import lombok.Data;
+import org.opentcs.kernel.api.dto.PointDTO;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -54,12 +55,12 @@ public class MapEditorSaveDTO implements Serializable {
     /**
      * 路径列表
      */
-    private List<PathDTO> paths;
+    private List<org.opentcs.kernel.api.dto.PathDTO> paths;
 
     /**
      * 位置列表
      */
-    private List<LocationDTO> locations;
+    private List<org.opentcs.kernel.api.dto.LocationDTO> locations;
 
     /**
      * 地图画布数据（JSON 格式，用于生成快照）
