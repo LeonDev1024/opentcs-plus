@@ -21,6 +21,13 @@ public interface FactoryModelDomainService extends IService<FactoryModelEntity> 
     boolean createFactoryModel(FactoryModelEntity factoryModel);
 
     /**
+     * 创建工厂模型（DTO）
+     * @param factoryModel 工厂模型
+     * @return 是否创建成功
+     */
+    boolean createFactoryModelDTO(FactoryModelDTO factoryModel);
+
+    /**
      * 分页查询工厂模型列表（兼容旧版）
      * @param factoryModel 查询条件
      * @param pageQuery 分页参数
@@ -35,6 +42,14 @@ public interface FactoryModelDomainService extends IService<FactoryModelEntity> 
      * @return 分页结果
      */
     TableDataInfo<FactoryModelDTO> selectPageFactoryModelDTO(FactoryModelEntity factoryModel, PageQuery pageQuery);
+
+    /**
+     * 分页查询工厂模型列表（DTO 查询条件）
+     * @param factoryModel 查询条件
+     * @param pageQuery 分页参数
+     * @return 分页结果
+     */
+    TableDataInfo<FactoryModelDTO> selectPageFactoryModelDTO(FactoryModelDTO factoryModel, PageQuery pageQuery);
 
     /**
      * 分页查询工厂模型列表
@@ -84,6 +99,13 @@ public interface FactoryModelDomainService extends IService<FactoryModelEntity> 
      * @return 是否更新成功
      */
     boolean updateFactoryModel(FactoryModelEntity factoryModel);
+
+    /**
+     * 更新工厂模型（DTO）
+     * @param factoryModel 工厂模型
+     * @return 是否更新成功
+     */
+    boolean updateFactoryModelDTO(FactoryModelDTO factoryModel);
 
     /**
      * 删除工厂模型

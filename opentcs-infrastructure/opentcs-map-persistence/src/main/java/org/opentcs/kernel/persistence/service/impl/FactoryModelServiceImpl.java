@@ -54,6 +54,12 @@ public class FactoryModelServiceImpl extends ServiceImpl<FactoryModelMapper, Fac
     }
 
     @Override
+    @CacheEvict(allEntries = true)
+    public boolean createFactoryModelDTO(FactoryModelDTO factoryModel) {
+        return createFactoryModel(toEntity(factoryModel));
+    }
+
+    @Override
     public TableDataInfo<FactoryModelEntity> selectPage(FactoryModelEntity factoryModel, PageQuery pageQuery) {
         IPage<FactoryModelEntity> page = this.getBaseMapper().selectPageFactoryModel(
                 pageQuery.build(), factoryModel);
@@ -75,6 +81,11 @@ public class FactoryModelServiceImpl extends ServiceImpl<FactoryModelMapper, Fac
         result.setRows(dtoList);
         result.setTotal(page.getTotal());
         return result;
+    }
+
+    @Override
+    public TableDataInfo<FactoryModelDTO> selectPageFactoryModelDTO(FactoryModelDTO factoryModel, PageQuery pageQuery) {
+        return selectPageFactoryModelDTO(toEntity(factoryModel), pageQuery);
     }
 
     @Override
@@ -123,7 +134,30 @@ public class FactoryModelServiceImpl extends ServiceImpl<FactoryModelMapper, Fac
 
     @Override
     @CacheEvict(allEntries = true)
+    public boolean updateFactoryModelDTO(FactoryModelDTO factoryModel) {
+        return updateFactoryModel(toEntity(factoryModel));
+    }
+
+    @Override
+    @CacheEvict(allEntries = true)
     public boolean deleteFactoryModel(Long id) {
         return this.removeById(id);
+    }
+
+    private FactoryModelEntity toEntity(FactoryModelDTO dto) {
+        if (dto == null) {
+            return null;
+        }
+        FactoryModelEntity entity = new FactoryModelEntity();
+        entity.setId(dto.getId());
+        entity.setFactoryId(dto.getFactoryId());
+        entity.setName(dto.getName());
+        entity.setScale(dto.getScale());
+        entity.setProperties(dto.getProperties());
+        entity.setDescription(dto.getDescription());
+        entity.setStatus(dto.getStatus());
+        entity.setCreateTime(dto.getCreateTime());
+        entity.setUpdateTime(dto.getUpdateTime());
+        return entity;
     }
 }

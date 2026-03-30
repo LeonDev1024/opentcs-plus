@@ -3,6 +3,7 @@ package org.opentcs.kernel.persistence.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
+import org.opentcs.kernel.api.dto.PointDTO;
 import org.opentcs.kernel.persistence.entity.PointEntity;
 
 import java.util.List;
@@ -21,6 +22,13 @@ public interface PointDomainService extends IService<PointEntity> {
      */
     TableDataInfo<PointEntity> selectPagePoint(PointEntity point, PageQuery pageQuery);
 
+    /**
+     * 保存点位（DTO）
+     * @param point 点位数据
+     * @return 是否保存成功
+     */
+    boolean saveDTO(PointDTO point);
+
 
     /**
      * 根据导航地图ID查询所有点位
@@ -28,6 +36,13 @@ public interface PointDomainService extends IService<PointEntity> {
      * @return 点位列表
      */
     List<PointEntity> listByMap(Long navigationMapId);
+
+    /**
+     * 根据导航地图ID查询所有点位（DTO）
+     * @param navigationMapId 导航地图ID
+     * @return 点位列表
+     */
+    List<PointDTO> listByMapDTO(Long navigationMapId);
 
     /**
      * 根据地图ID列表查询点位
@@ -42,4 +57,11 @@ public interface PointDomainService extends IService<PointEntity> {
      * @return 删除数量
      */
     int removeByMap(Long navigationMapId);
+
+    /**
+     * 根据ID更新点位（DTO）
+     * @param point 点位数据
+     * @return 是否更新成功
+     */
+    boolean updateByIdDTO(PointDTO point);
 }

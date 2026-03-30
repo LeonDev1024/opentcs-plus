@@ -1,8 +1,10 @@
 package org.opentcs.order.application;
 
+import org.opentcs.kernel.api.OrderLifecycleApi;
 import org.opentcs.kernel.application.TransportOrderRegistry;
 import org.opentcs.kernel.application.VehicleRegistry;
 import org.opentcs.kernel.application.DispatcherService;
+import org.opentcs.kernel.api.dto.TransportOrderEntityDTO;
 import org.opentcs.kernel.domain.order.TransportOrder;
 import org.opentcs.kernel.domain.order.OrderState;
 import org.opentcs.kernel.domain.vehicle.Vehicle;
@@ -30,7 +32,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class TransportOrderApplicationService {
+public class TransportOrderApplicationService implements OrderLifecycleApi {
 
     private final TransportOrderDomainService orderService;
     private final TransportOrderRegistry orderRegistry;
@@ -44,7 +46,8 @@ public class TransportOrderApplicationService {
      * 3. 自动分配车辆
      */
     @Transactional
-    public boolean createTransportOrder(TransportOrderEntity entity) {
+    public boolean createTransportOrder(TransportOrderEntityDTO command) {
+        TransportOrderEntity entity = toEntity(command);
         // 1. 生成订单ID
         String orderId = entity.getOrderNo() != null ? entity.getOrderNo() : UUID.randomUUID().toString();
 
@@ -184,8 +187,14 @@ public class TransportOrderApplicationService {
     public void onOrderCompleted(String orderId) {
         TransportOrder kernelOrder = orderRegistry.getOrder(orderId);
         if (kernelOrder != null) {
-            kernelOrder.complete();
-            orderRegistry.completeOrder(orderId);
+            String processingVehicle = kernelOrder.getProcessingVehicle();
+            if (processingVehicle != null) {
+                dispatcherService.vehicleCompletedOrder(processingVehicle);
+            }
+            else {
+                kernelOrder.complete();
+                orderRegistry.completeOrder(orderId);
+            }
 
             // 更新数据库
             TransportOrderEntity entity = orderService.getByOrderNo(orderId);
@@ -204,8 +213,14 @@ public class TransportOrderApplicationService {
     public void onOrderFailed(String orderId, String reason) {
         TransportOrder kernelOrder = orderRegistry.getOrder(orderId);
         if (kernelOrder != null) {
-            kernelOrder.fail();
-            orderRegistry.releaseOrder(orderId);
+            String processingVehicle = kernelOrder.getProcessingVehicle();
+            if (processingVehicle != null) {
+                dispatcherService.vehicleCancelledOrder(processingVehicle);
+            }
+            else {
+                kernelOrder.fail();
+                orderRegistry.releaseOrder(orderId);
+            }
 
             // 更新数据库
             TransportOrderEntity entity = orderService.getByOrderNo(orderId);
@@ -217,6 +232,36 @@ public class TransportOrderApplicationService {
             }
 
             log.info("订单失败: {}, 原因: {}", orderId, reason);
+        }
+    }
+
+    @Override
+    public void onOrderExecutionResult(String orderId, String vehicleId, boolean success, String reason) {
+        TransportOrder kernelOrder = orderRegistry.getOrder(orderId);
+        if (kernelOrder == null) {
+            return;
+        }
+
+        TransportOrderEntity entity = orderService.getByOrderNo(orderId);
+        if (success) {
+            kernelOrder.complete();
+            orderRegistry.completeOrder(orderId);
+            if (entity != null) {
+                entity.setState("FINISHED");
+                entity.setProcessingVehicle(vehicleId);
+                orderService.updateById(entity);
+            }
+            log.info("订单执行成功: orderId={}, vehicleId={}", orderId, vehicleId);
+        } else {
+            kernelOrder.fail();
+            orderRegistry.releaseOrder(orderId);
+            if (entity != null) {
+                entity.setState("FAILED");
+                entity.setProcessingVehicle(vehicleId);
+                entity.setProperties("{\"remark\":\"" + (reason != null ? reason : "车辆执行失败") + "\"}");
+                orderService.updateById(entity);
+            }
+            log.info("订单执行失败: orderId={}, vehicleId={}, reason={}", orderId, vehicleId, reason);
         }
     }
 
@@ -277,5 +322,23 @@ public class TransportOrderApplicationService {
         dto.setState(OrderStateDTO.valueOf(order.getState().name()));
 
         return dto;
+    }
+
+    private TransportOrderEntity toEntity(TransportOrderEntityDTO dto) {
+        TransportOrderEntity entity = new TransportOrderEntity();
+        entity.setId(dto.getId());
+        entity.setName(dto.getName());
+        entity.setOrderNo(dto.getOrderNo());
+        entity.setState(dto.getState());
+        entity.setIntendedVehicle(dto.getIntendedVehicle());
+        entity.setProcessingVehicle(dto.getProcessingVehicle());
+        entity.setDestinations(dto.getDestinations());
+        entity.setCreationTime(dto.getCreationTime());
+        entity.setFinishedTime(dto.getFinishedTime());
+        entity.setDeadline(dto.getDeadline());
+        entity.setProperties(dto.getProperties());
+        entity.setCreateTime(dto.getCreateTime());
+        entity.setUpdateTime(dto.getUpdateTime());
+        return entity;
     }
 }

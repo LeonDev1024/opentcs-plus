@@ -30,6 +30,14 @@ public interface LocationTypeDomainService extends IService<LocationTypeEntity> 
     TableDataInfo<LocationTypeDTO> selectPageDTO(LocationTypeEntity locationType, PageQuery pageQuery);
 
     /**
+     * 分页查询位置类型列表（DTO 查询条件）
+     * @param locationType 查询条件
+     * @param pageQuery 分页参数
+     * @return 分页结果
+     */
+    TableDataInfo<LocationTypeDTO> selectPageDTO(LocationTypeDTO locationType, PageQuery pageQuery);
+
+    /**
      * 查询所有位置类型
      * @return 位置类型列表
      */
@@ -54,4 +62,18 @@ public interface LocationTypeDomainService extends IService<LocationTypeEntity> 
      * @return 位置类型
      */
     LocationTypeDTO getByIdDTO(Long id);
+
+    /**
+     * 保存位置类型（DTO）
+     * @param locationType 位置类型
+     * @return 是否保存成功
+     */
+    boolean saveDTO(LocationTypeDTO locationType);
+
+    /**
+     * 更新位置类型（DTO）
+     * @param locationType 位置类型
+     * @return 是否更新成功
+     */
+    boolean updateByIdDTO(LocationTypeDTO locationType);
 }

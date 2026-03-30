@@ -6,8 +6,7 @@ import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.common.web.core.BaseController;
 import org.opentcs.kernel.api.dto.BlockDTO;
-import org.opentcs.kernel.persistence.entity.BlockEntity;
-import org.opentcs.kernel.persistence.service.BlockDomainService;
+import org.opentcs.map.application.MapFacadeApplicationService;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,15 +22,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BlockController extends BaseController {
 
-    private final BlockDomainService blockDomainService;
+    private final MapFacadeApplicationService mapFacadeApplicationService;
 
     /**
      * 分页查询区域列表
      * 支持按工厂ID和类型筛选
      */
     @GetMapping("/list")
-    public TableDataInfo<BlockDTO> list(BlockEntity block, PageQuery pageQuery) {
-        return blockDomainService.selectPageDTO(block, pageQuery);
+    public TableDataInfo<BlockDTO> list(BlockDTO block, PageQuery pageQuery) {
+        return mapFacadeApplicationService.listBlocks(block, pageQuery);
     }
 
     /**
@@ -39,7 +38,7 @@ public class BlockController extends BaseController {
      */
     @GetMapping("/listByFactory/{factoryId}")
     public R<List<BlockDTO>> listByFactory(@PathVariable Long factoryId) {
-        return R.ok(blockDomainService.selectByFactoryModelIdDTO(factoryId));
+        return R.ok(mapFacadeApplicationService.listBlocksByFactory(factoryId));
     }
 
     /**
@@ -49,7 +48,7 @@ public class BlockController extends BaseController {
     public R<List<BlockDTO>> listByFactoryAndType(
             @PathVariable Long factoryId,
             @PathVariable String type) {
-        return R.ok(blockDomainService.selectByFactoryModelIdAndTypeDTO(factoryId, type));
+        return R.ok(mapFacadeApplicationService.listBlocksByFactoryAndType(factoryId, type));
     }
 
     /**
@@ -57,23 +56,23 @@ public class BlockController extends BaseController {
      */
     @GetMapping("/{id}")
     public R<BlockDTO> getById(@PathVariable Long id) {
-        return R.ok(blockDomainService.selectByIdDTO(id));
+        return R.ok(mapFacadeApplicationService.getBlockById(id));
     }
 
     /**
      * 创建区域
      */
     @PostMapping("/create")
-    public R<Boolean> create(@RequestBody BlockEntity block) {
-        return R.ok(blockDomainService.create(block));
+    public R<Boolean> create(@RequestBody BlockDTO block) {
+        return R.ok(mapFacadeApplicationService.createBlock(block));
     }
 
     /**
      * 更新区域
      */
     @PutMapping("/update")
-    public R<Boolean> update(@RequestBody BlockEntity block) {
-        return R.ok(blockDomainService.update(block));
+    public R<Boolean> update(@RequestBody BlockDTO block) {
+        return R.ok(mapFacadeApplicationService.updateBlock(block));
     }
 
     /**
@@ -81,7 +80,7 @@ public class BlockController extends BaseController {
      */
     @DeleteMapping("/{id}")
     public R<Boolean> delete(@PathVariable Long id) {
-        return R.ok(blockDomainService.delete(id));
+        return R.ok(mapFacadeApplicationService.deleteBlock(id));
     }
 
     /**
@@ -96,4 +95,5 @@ public class BlockController extends BaseController {
                 "CHARGE"     // 充电区域
         ));
     }
+
 }

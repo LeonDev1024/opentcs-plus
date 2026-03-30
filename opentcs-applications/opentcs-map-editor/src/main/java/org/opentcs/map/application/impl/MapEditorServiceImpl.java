@@ -1,20 +1,17 @@
 package org.opentcs.map.application.impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.servlet.http.HttpServletResponse;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.opentcs.kernel.api.dto.FactoryModelDTO;
 import org.opentcs.kernel.api.dto.NavigationMapDTO;
-import org.opentcs.kernel.persistence.entity.*;
-import org.opentcs.kernel.persistence.mapper.NavigationMapHistoryMapper;
-import org.opentcs.kernel.persistence.service.*;
+import org.opentcs.kernel.api.map.MapSceneApi;
+import org.opentcs.kernel.api.map.MapSnapshotHistoryPort;
 import org.opentcs.map.application.IMapEditorService;
-import org.opentcs.map.domain.converter.MapElementConverter;
-import org.opentcs.map.domain.dto.*;
+import org.opentcs.map.domain.dto.MapEditorDTO;
+import org.opentcs.map.domain.dto.MapEditorSaveDTO;
 import org.opentcs.map.domain.vo.LoadModelVO;
 import org.opentcs.map.utils.MapVersionUtil;
-import org.opentcs.common.core.dto.PathLayoutControlPointTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +21,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 
 /**
  * 地图编辑器应用服务实现
@@ -40,13 +36,8 @@ public class MapEditorServiceImpl implements IMapEditorService {
     @Value("${opentcs.map.storage-path:./maps}")
     private String mapStoragePath;
 
-    private final FactoryModelDomainService factoryModelDomainService;
-    private final NavigationMapDomainService navigationMapDomainService;
-    private final NavigationMapHistoryMapper navigationMapHistoryMapper;
-    private final PointDomainService pointDomainService;
-    private final PathDomainService pathDomainService;
-    private final LocationDomainService locationDomainService;
-    private final ObjectMapper objectMapper;
+    private final MapSceneApi mapSceneApi;
+    private final MapSnapshotHistoryPort mapSnapshotHistoryPort;
 
     /**
      * 地图状态：草稿
@@ -62,23 +53,22 @@ public class MapEditorServiceImpl implements IMapEditorService {
         String mapId = loadModelVO.getMapId();
 
         // 获取导航地图基本信息（根据地图编号查询）
-        NavigationMapDTO navMapDTO = navigationMapDomainService.selectByMapId(mapId);
+        NavigationMapDTO navMapDTO = mapSceneApi.getNavigationMapByMapId(mapId);
         if (navMapDTO == null) {
             return null;
         }
         Long navMapId = navMapDTO.getId();
 
         // 获取工厂模型信息
-        FactoryModelEntity factoryModel = factoryModelDomainService.selectById(navMapDTO.getFactoryModelId());
+        FactoryModelDTO factoryModel = mapSceneApi.getFactoryModelById(navMapDTO.getFactoryModelId());
         if (factoryModel == null) {
             return null;
         }
 
         // 查询地图元素
-        List<PointEntity> points = pointDomainService.listByMap(navMapId);
-        List<PathEntity> paths = pathDomainService.listByMap(navMapId);
-        hydratePathLayout(paths);
-        List<LocationEntity> locations = locationDomainService.selectByNavigationMapId(navMapId);
+        var points = mapSceneApi.listPointsByMap(navMapId);
+        var paths = mapSceneApi.listPathsByMap(navMapId);
+        var locations = mapSceneApi.listLocationsByMap(navMapId);
 
         // 尝试加载 JSON 快照
         String snapshotUrl = getSnapshotFilePath(navMapDTO.getFactoryModelId(), mapId, navMapDTO.getMapVersion());
@@ -103,9 +93,9 @@ public class MapEditorServiceImpl implements IMapEditorService {
         dto.setRotation(navMapDTO.getRotation());
         dto.setMapVersion(navMapDTO.getMapVersion());
         dto.setStatus(navMapDTO.getStatus());
-        dto.setPoints(MapElementConverter.toPointDTOList(points));
-        dto.setPaths(MapElementConverter.toPathDTOList(paths));
-        dto.setLocations(MapElementConverter.toLocationDTOList(locations));
+        dto.setPoints(points);
+        dto.setPaths(paths);
+        dto.setLocations(locations);
         dto.setData(jsonData);
 
         log.info("加载导航地图完成: {}, 版本: {}, 状态: {}, 点位: {}, 路径: {}, 位置: {}",
@@ -115,51 +105,6 @@ public class MapEditorServiceImpl implements IMapEditorService {
         return dto;
     }
 
-    private void hydratePathLayout(List<PathEntity> paths) {
-        if (paths == null || paths.isEmpty()) {
-            return;
-        }
-        for (PathEntity path : paths) {
-            if (path.getLayoutControlPoints() != null && !path.getLayoutControlPoints().isEmpty()) {
-                continue;
-            }
-            if (path.getLayout() == null || path.getLayout().isBlank()) {
-                continue;
-            }
-            try {
-                String layoutJson = path.getLayout().trim();
-                // 兼容历史数据：layout 可能只是一个 controlPoints 数组
-                if (layoutJson.startsWith("[")) {
-                    List<PathLayoutControlPointTO> controlPoints = objectMapper.readValue(
-                        layoutJson,
-                        new TypeReference<List<PathLayoutControlPointTO>>() {
-                        }
-                    );
-                    path.setLayoutControlPoints(controlPoints);
-                }
-                else {
-                    PathLayoutPersist persist = objectMapper.readValue(layoutJson, PathLayoutPersist.class);
-                    path.setConnectionType(persist.connectionType);
-                    path.setLayoutControlPoints(persist.controlPoints);
-                }
-            } catch (Exception e) {
-                // layout 只用于前端重建几何形状：尽量不影响其它模型加载
-                log.warn("解析 path.layout 失败, pathId={}, layout={}", path.getPathId(), path.getLayout(), e);
-            }
-        }
-    }
-
-    /**
-     * path.layout JSON 持久化结构
-     *
-     * <p>与 openTCS 的 {@code PathCreationTO.Layout} 对齐：connectionType + controlPoints。
-     * 当前系统中 layerId 暂未落库，因此这里先不持久化 layerId。</p>
-     */
-    private static class PathLayoutPersist {
-        public String connectionType;
-        public List<PathLayoutControlPointTO> controlPoints;
-    }
-
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean save(MapEditorSaveDTO saveDTO) {
@@ -167,7 +112,7 @@ public class MapEditorServiceImpl implements IMapEditorService {
         log.info("保存地图模型: {}, 版本: {}", mapId, saveDTO.getMapVersion());
 
         // 获取导航地图
-        NavigationMapDTO navMapDTO = navigationMapDomainService.selectByMapId(mapId);
+        NavigationMapDTO navMapDTO = mapSceneApi.getNavigationMapByMapId(mapId);
         if (navMapDTO == null) {
             throw new RuntimeException("地图不存在: " + mapId);
         }
@@ -181,63 +126,29 @@ public class MapEditorServiceImpl implements IMapEditorService {
         // 1. 更新语义表（point / path / location）
         // 先删除旧数据，再插入新数据
         if (saveDTO.getPoints() != null) {
-            pointDomainService.removeByMap(navMapId);
-            for (PointDTO pointDTO : saveDTO.getPoints()) {
-                PointEntity point = MapElementConverter.toPointEntity(pointDTO);
-                point.setId(null); // 新增
-                point.setNavigationMapId(navMapId);
-                pointDomainService.save(point);
-            }
+            mapSceneApi.replacePointsByMap(navMapId, saveDTO.getPoints());
         }
 
         if (saveDTO.getPaths() != null) {
-            pathDomainService.removeByMap(navMapId);
-            for (PathDTO pathDTO : saveDTO.getPaths()) {
-                PathEntity path = MapElementConverter.toPathEntity(pathDTO);
-                path.setId(null);
-                path.setNavigationMapId(navMapId);
-                // Persist path layout for subsequent load.
-                if (path.getLayoutControlPoints() != null) {
-                    try {
-                        PathLayoutPersist persist = new PathLayoutPersist();
-                        persist.connectionType = path.getConnectionType() != null ? path.getConnectionType() : "DIRECT";
-                        persist.controlPoints = path.getLayoutControlPoints();
-                        path.setLayout(objectMapper.writeValueAsString(persist));
-                    } catch (Exception e) {
-                        throw new RuntimeException("序列化 path.layout 失败, pathId=" + path.getPathId(), e);
-                    }
-                }
-                pathDomainService.save(path);
-            }
+            mapSceneApi.replacePathsByMap(navMapId, saveDTO.getPaths());
         }
 
         if (saveDTO.getLocations() != null) {
-            locationDomainService.removeByMap(navMapId);
-            for (LocationDTO locationDTO : saveDTO.getLocations()) {
-                LocationEntity location = MapElementConverter.toLocationEntity(locationDTO);
-                location.setId(null);
-                location.setNavigationMapId(navMapId);
-                locationDomainService.save(location);
-            }
+            mapSceneApi.replaceLocationsByMap(navMapId, saveDTO.getLocations());
         }
 
         // 2. 生成并保存 JSON 快照（只保存 data 字段，不保存点路径位置）
         String snapshotUrl = saveJsonSnapshot(saveDTO.getData(), navMapDTO.getFactoryModelId(), mapId, newVersion);
 
         // 3. 记录历史版本
-        NavigationMapHistoryEntity history = new NavigationMapHistoryEntity();
-        history.setNavigationMapId(navMapId);
-        history.setMapVersion(newVersion);
-        history.setSnapshotUrl(snapshotUrl);
-        history.setChangeSummary(saveDTO.getName());
-        navigationMapHistoryMapper.insert(history);
+        mapSnapshotHistoryPort.recordSnapshot(navMapId, newVersion, snapshotUrl, saveDTO.getName());
 
         // 4. 更新 navigation_map 的版本号和状态
-        NavigationMapEntity navMapEntity = new NavigationMapEntity();
-        navMapEntity.setId(navMapId);
-        navMapEntity.setMapVersion(newVersion);
-        navMapEntity.setStatus(STATUS_DRAFT); // 保存后仍为草稿状态
-        navigationMapDomainService.updateById(navMapEntity);
+        NavigationMapDTO navMapUpdate = new NavigationMapDTO();
+        navMapUpdate.setId(navMapId);
+        navMapUpdate.setMapVersion(newVersion);
+        navMapUpdate.setStatus(STATUS_DRAFT); // 保存后仍为草稿状态
+        mapSceneApi.updateNavigationMap(navMapUpdate);
 
         log.info("保存地图完成: {} -> v{}", mapId, newVersion);
         return true;
@@ -249,7 +160,7 @@ public class MapEditorServiceImpl implements IMapEditorService {
         log.info("发布地图: {}", mapId);
 
         // 查询地图
-        NavigationMapEntity navMap = navigationMapDomainService.getById(mapId);
+        NavigationMapDTO navMap = mapSceneApi.getNavigationMapById(mapId);
         if (navMap == null) {
             throw new RuntimeException("地图不存在: " + mapId);
         }
@@ -262,7 +173,7 @@ public class MapEditorServiceImpl implements IMapEditorService {
 
         // 更新为发布状态
         navMap.setStatus(STATUS_PUBLISHED);
-        navigationMapDomainService.updateById(navMap);
+        mapSceneApi.updateNavigationMap(navMap);
 
         log.info("发布地图完成: {} -> v{}", mapId, navMap.getMapVersion());
         return true;
@@ -292,8 +203,8 @@ public class MapEditorServiceImpl implements IMapEditorService {
     public Boolean uploadEditorData(Long id, MultipartFile file) {
         // TODO: 实现编辑器数据上传
         log.info("上传编辑器数据: {}, file: {}", id, file.getOriginalFilename());
-        FactoryModelEntity entity = factoryModelDomainService.selectById(id);
-        if (entity == null) {
+        FactoryModelDTO factoryModel = mapSceneApi.getFactoryModelById(id);
+        if (factoryModel == null) {
             throw new RuntimeException("地图模型不存在");
         }
         // Store the file content or path as needed
@@ -331,4 +242,5 @@ public class MapEditorServiceImpl implements IMapEditorService {
     private String getSnapshotFilePath(Long factoryModelId, String mapId, String version) {
         return Paths.get(mapStoragePath, factoryModelId.toString(), mapId, "v" + version + ".json").toString();
     }
+
 }
