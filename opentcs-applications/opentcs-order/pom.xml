@@ -48,9 +48,10 @@
             <groupId>org.opentcs</groupId>
             <artifactId>opentcs-kernel-core</artifactId>
         </dependency>
+        <!-- Persistence -->
         <dependency>
             <groupId>org.opentcs</groupId>
-            <artifactId>opentcs-infrastructure-kernel-persistence</artifactId>
+            <artifactId>opentcs-order-persistence</artifactId>
         </dependency>
     </dependencies>
 </project>

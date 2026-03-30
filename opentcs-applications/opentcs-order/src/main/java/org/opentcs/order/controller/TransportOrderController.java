@@ -5,8 +5,8 @@ import org.opentcs.common.core.domain.R;
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.common.web.core.BaseController;
-import org.opentcs.kernel.persistence.entity.TransportOrderEntity;
-import org.opentcs.order.service.TransportOrderService;
+import org.opentcs.order.persistence.entity.TransportOrderEntity;
+import org.opentcs.order.persistence.service.TransportOrderDomainService;
 import org.opentcs.order.application.TransportOrderApplicationService;
 import org.opentcs.kernel.api.dto.TransportOrderDTO;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +22,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class TransportOrderController extends BaseController {
 
-    private final TransportOrderService transportOrderService;
+    private final TransportOrderDomainService transportOrderDomainService;
     private final TransportOrderApplicationService transportOrderApplicationService;
 
     /**
@@ -30,7 +30,7 @@ public class TransportOrderController extends BaseController {
      */
     @GetMapping("/list")
     public TableDataInfo<TransportOrderEntity> listTransportOrders(TransportOrderEntity transportOrder, PageQuery pageQuery) {
-        return transportOrderService.selectPageTransportOrder(transportOrder, pageQuery);
+        return transportOrderDomainService.selectPageTransportOrder(transportOrder, pageQuery);
     }
 
     /**
@@ -38,7 +38,7 @@ public class TransportOrderController extends BaseController {
      */
     @GetMapping("/")
     public R<List<TransportOrderEntity>> getAllTransportOrders() {
-        return R.ok(transportOrderService.list());
+        return R.ok(transportOrderDomainService.list());
     }
 
     /**
@@ -46,7 +46,7 @@ public class TransportOrderController extends BaseController {
      */
     @GetMapping("/{id}")
     public R<TransportOrderEntity> getTransportOrderById(@PathVariable Long id) {
-        return R.ok(transportOrderService.getById(id));
+        return R.ok(transportOrderDomainService.getById(id));
     }
 
     /**
@@ -62,7 +62,7 @@ public class TransportOrderController extends BaseController {
      */
     @PostMapping("/batch")
     public R<Boolean> batchCreateTransportOrder(@RequestBody List<TransportOrderEntity> transportOrders) {
-        return R.ok(transportOrderService.batchCreateTransportOrder(transportOrders));
+        return R.ok(transportOrderDomainService.batchCreateTransportOrder(transportOrders));
     }
 
     /**
@@ -70,7 +70,7 @@ public class TransportOrderController extends BaseController {
      */
     @PutMapping("/")
     public R<Boolean> updateTransportOrder(@RequestBody TransportOrderEntity transportOrder) {
-        return R.ok(transportOrderService.updateById(transportOrder));
+        return R.ok(transportOrderDomainService.updateById(transportOrder));
     }
 
     /**
@@ -78,7 +78,7 @@ public class TransportOrderController extends BaseController {
      */
     @DeleteMapping("/{id}")
     public R<Boolean> deleteTransportOrder(@PathVariable Long id) {
-        return R.ok(transportOrderService.removeById(id));
+        return R.ok(transportOrderDomainService.removeById(id));
     }
 
     /**
@@ -134,7 +134,7 @@ public class TransportOrderController extends BaseController {
      */
     @GetMapping("/status/{id}")
     public R<Map<String, Object>> getOrderStatus(@PathVariable Long id) {
-        return R.ok(transportOrderService.getOrderStatus(id));
+        return R.ok(transportOrderDomainService.getOrderStatus(id));
     }
 
     /**
@@ -142,7 +142,7 @@ public class TransportOrderController extends BaseController {
      */
     @GetMapping("/history/{id}")
     public TableDataInfo<Map<String, Object>> getOrderHistory(@PathVariable Long id, PageQuery pageQuery) {
-        return transportOrderService.getOrderHistory(id, pageQuery);
+        return transportOrderDomainService.getOrderHistory(id, pageQuery);
     }
 
     /**
@@ -150,7 +150,7 @@ public class TransportOrderController extends BaseController {
      */
     @PostMapping("/optimize")
     public R<Map<String, Object>> optimizeOrderDispatch(@RequestBody List<Long> orderIds) {
-        return R.ok(transportOrderService.optimizeOrderDispatch(orderIds));
+        return R.ok(transportOrderDomainService.optimizeOrderDispatch(orderIds));
     }
 
     /**

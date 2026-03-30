@@ -5,8 +5,8 @@ import org.opentcs.common.core.domain.R;
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.common.web.core.BaseController;
-import org.opentcs.kernel.persistence.entity.VehicleTypeEntity;
-import org.opentcs.vehicle.service.VehicleTypeService;
+import org.opentcs.vehicle.persistence.entity.VehicleTypeEntity;
+import org.opentcs.vehicle.persistence.service.VehicleTypeDomainService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,7 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class VehicleTypeController extends BaseController {
 
-    private final VehicleTypeService vehicleTypeService;
+    private final VehicleTypeDomainService vehicleTypeService;
 
     /**
      * 分页查询车辆类型列表

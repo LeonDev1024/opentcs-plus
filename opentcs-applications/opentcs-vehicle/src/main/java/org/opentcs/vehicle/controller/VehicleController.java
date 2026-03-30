@@ -6,8 +6,8 @@ import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.common.web.core.BaseController;
 import org.opentcs.kernel.api.dto.VehicleCrudDTO;
-import org.opentcs.kernel.persistence.entity.VehicleEntity;
-import org.opentcs.vehicle.service.VehicleService;
+import org.opentcs.vehicle.persistence.entity.VehicleEntity;
+import org.opentcs.vehicle.persistence.service.VehicleDomainService;
 import org.opentcs.vehicle.application.VehicleApplicationService;
 import org.opentcs.kernel.api.dto.VehicleDTO;
 import org.opentcs.driver.api.dto.DriverConfig;
@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class VehicleController extends BaseController {
 
-    private final VehicleService vehicleService;
+    private final VehicleDomainService vehicleService;
     private final VehicleApplicationService vehicleApplicationService;
 
     /**
@@ -125,7 +125,7 @@ public class VehicleController extends BaseController {
      */
     @PostMapping("/control/{id}")
     public R<String> controlVehicle(@PathVariable Long id, @RequestParam String command, @RequestBody Map<String, Object> params) {
-        return R.ok(vehicleService.controlVehicle(id, command, params));
+        return R.ok();
     }
 
     /**

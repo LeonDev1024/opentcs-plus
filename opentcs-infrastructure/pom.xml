@@ -16,6 +16,8 @@
     <description>基础设施层聚合（持久化、缓存等实现，依赖领域与 API，不被领域依赖）</description>
 
     <modules>
-        <module>opentcs-infrastructure-kernel-persistence</module>
+        <module>opentcs-map-persistence</module>
+        <module>opentcs-vehicle-persistence</module>
+        <module>opentcs-order-persistence</module>
     </modules>
 </project>

@@ -14,10 +14,10 @@ import org.opentcs.kernel.api.dto.PositionDTO;
 import org.opentcs.driver.api.dto.DriverConfig;
 import org.opentcs.driver.api.dto.InstantAction;
 import org.opentcs.driver.registry.DriverRegistry;
-import org.opentcs.vehicle.service.VehicleService;
+import org.opentcs.vehicle.persistence.service.VehicleDomainService;
 import org.opentcs.driver.api.dto.VehicleStatus;
+import org.opentcs.vehicle.persistence.entity.VehicleEntity;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class VehicleApplicationService {
 
-    private final VehicleService vehicleService;
+    private final VehicleDomainService vehicleService;
     private final VehicleRegistry vehicleRegistry;
     private final TransportOrderRegistry orderRegistry;
     private final DriverRegistry driverRegistry;
@@ -49,18 +49,16 @@ public class VehicleApplicationService {
      * 3. 配置驱动连接
      */
     @Transactional
-    public boolean registerVehicle(org.opentcs.kernel.persistence.entity.VehicleEntity entity, DriverConfig driverConfig) {
+    public boolean registerVehicle(VehicleEntity entity, DriverConfig driverConfig) {
         // 1. 保存到数据库
-        org.opentcs.kernel.persistence.entity.VehicleEntity dbVehicle = vehicleService.getBaseMapper().selectOne(
-                new LambdaQueryWrapper<org.opentcs.kernel.persistence.entity.VehicleEntity>()
-                        .eq(org.opentcs.kernel.persistence.entity.VehicleEntity::getName, entity.getName()));
+        VehicleEntity dbVehicle = vehicleService.getByName(entity.getName());
         if (dbVehicle != null) {
             throw new RuntimeException("车辆名称已存在: " + entity.getName());
         }
 
         entity.setState("UNAVAILABLE");
         entity.setIntegrationLevel("TO_BE_UTILIZED");
-        vehicleService.getBaseMapper().insert(entity);
+        vehicleService.save(entity);
 
         // 2. 注册到内核
         Vehicle kernelVehicle = new Vehicle(entity.getName());
@@ -82,7 +80,7 @@ public class VehicleApplicationService {
      */
     @Transactional
     public boolean unregisterVehicle(Long vehicleId) {
-        org.opentcs.kernel.persistence.entity.VehicleEntity entity = vehicleService.getBaseMapper().selectById(vehicleId);
+        VehicleEntity entity = vehicleService.getById(vehicleId);
         if (entity == null) {
             throw new RuntimeException("车辆不存在: " + vehicleId);
         }
@@ -94,7 +92,7 @@ public class VehicleApplicationService {
         driverRegistry.unregisterVehicle(entity.getName());
 
         // 3. 从数据库删除
-        vehicleService.getBaseMapper().deleteById(vehicleId);
+        vehicleService.removeById(vehicleId);
 
         log.info("车辆注销成功: {}", entity.getName());
         return true;
@@ -104,7 +102,7 @@ public class VehicleApplicationService {
      * 激活车辆（使车辆上线）
      */
     public boolean activateVehicle(Long vehicleId) {
-        org.opentcs.kernel.persistence.entity.VehicleEntity entity = vehicleService.getBaseMapper().selectById(vehicleId);
+        VehicleEntity entity = vehicleService.getById(vehicleId);
         if (entity == null) {
             throw new RuntimeException("车辆不存在: " + vehicleId);
         }
@@ -112,7 +110,7 @@ public class VehicleApplicationService {
         // 更新数据库状态
         entity.setState("IDLE");
         entity.setIntegrationLevel("LEVEL_3");
-        vehicleService.getBaseMapper().updateById(entity);
+        vehicleService.updateById(entity);
 
         // 更新内核状态
         vehicleRegistry.updateVehicleState(entity.getName(), VehicleState.IDLE);
@@ -125,7 +123,7 @@ public class VehicleApplicationService {
      * 停用车辆（使车辆下线）
      */
     public boolean deactivateVehicle(Long vehicleId) {
-        org.opentcs.kernel.persistence.entity.VehicleEntity entity = vehicleService.getBaseMapper().selectById(vehicleId);
+        VehicleEntity entity = vehicleService.getById(vehicleId);
         if (entity == null) {
             throw new RuntimeException("车辆不存在: " + vehicleId);
         }
@@ -139,7 +137,7 @@ public class VehicleApplicationService {
         // 更新数据库状态
         entity.setState("UNAVAILABLE");
         entity.setIntegrationLevel("TO_BE_UTILIZED");
-        vehicleService.getBaseMapper().updateById(entity);
+        vehicleService.updateById(entity);
 
         // 更新内核状态
         vehicleRegistry.updateVehicleState(entity.getName(), VehicleState.UNAVAILABLE);

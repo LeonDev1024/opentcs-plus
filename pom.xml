@@ -149,7 +149,17 @@
             </dependency>
             <dependency>
                 <groupId>org.opentcs</groupId>
-                <artifactId>opentcs-infrastructure-kernel-persistence</artifactId>
+                <artifactId>opentcs-map-persistence</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-vehicle-persistence</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-order-persistence</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
