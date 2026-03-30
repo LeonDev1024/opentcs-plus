@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.opentcs</groupId>
+        <artifactId>opentcs-plus</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <artifactId>opentcs-infrastructure</artifactId>
+    <packaging>pom</packaging>
+    <name>opentcs-infrastructure</name>
+    <description>基础设施层聚合（持久化、缓存等实现，依赖领域与 API，不被领域依赖）</description>
+
+    <modules>
+        <module>opentcs-map-persistence</module>
+        <module>opentcs-vehicle-persistence</module>
+        <module>opentcs-order-persistence</module>
+    </modules>
+</project>

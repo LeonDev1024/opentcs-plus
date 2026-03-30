@@ -52,7 +52,7 @@
         </dependency>
         <dependency>
             <groupId>org.opentcs</groupId>
-            <artifactId>opentcs-kernel-persistence</artifactId>
+            <artifactId>opentcs-map-persistence</artifactId>
         </dependency>
     </dependencies>
 </project>

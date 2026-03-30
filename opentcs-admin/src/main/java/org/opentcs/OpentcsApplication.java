@@ -16,7 +16,18 @@ import org.springframework.context.annotation.FilterType;
 @SpringBootApplication
 @MapperScan("org.opentcs.**.mapper")
 @ComponentScan(
-    basePackages = {"org.opentcs", "org.opentcs.map"},
+    basePackages = {
+        "org.opentcs.web",
+        "org.opentcs.kernel",
+        "org.opentcs.driver",
+        "org.opentcs.map",
+        "org.opentcs.order",
+        "org.opentcs.vehicle",
+        "org.opentcs.system",
+        "org.opentcs.strategies",
+        "org.opentcs.common",
+        "org.opentcs.security"
+    },
     excludeFilters = {
         @ComponentScan.Filter(type = FilterType.REGEX, pattern = "org\\.opentcs\\.common\\.tenant\\..*")
     }

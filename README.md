@@ -31,10 +31,13 @@ opentcs-plus/
 │   ├── opentcs-vehicle/                    # 车辆管理
 │   ├── opentcs-system/                     # 系统管理
 │   └── opentcs-simulation/                 # 仿真模拟
-├── opentcs-kernel/                         # 领域层 - OpenTCS Kernel 核心重构
-│   ├── opentcs-kernel-api/                 # 核心接口定义
-│   ├── opentcs-kernel-core/                # 核心领域模型
-│   └── opentcs-kernel-persistence/         # 持久化
+├── opentcs-kernel/                         # 领域层 - Kernel 契约与领域模型
+│   ├── opentcs-kernel-api/                 # 端口与 DTO、算法接口
+│   ├── opentcs-kernel-domain/              # 纯领域模型
+│   └── opentcs-kernel-core/                # 应用服务与 Spring 装配
+├── opentcs-infrastructure/                 # 基础设施层 - 持久化等
+│   └── opentcs-infrastructure-kernel-persistence/
+├── opentcs-strategies-default/             # 内置策略（仅依赖 kernel-api）
 ├── opentcs-driver/                         # 基础设施层 - AGV 驱动适配
 │   ├── opentcs-driver-api/                 # 驱动接口
 │   └── opentcs-driver-adapter-vda5050/     # VDA5050协议适配器

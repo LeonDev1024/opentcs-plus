@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.opentcs</groupId>
+        <artifactId>opentcs-kernel</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <artifactId>opentcs-kernel-domain</artifactId>
+    <name>opentcs-kernel-domain</name>
+    <description>调度核心领域模型（纯领域，无持久化/缓存/框架实现依赖）</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-kernel-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+    </dependencies>
+</project>

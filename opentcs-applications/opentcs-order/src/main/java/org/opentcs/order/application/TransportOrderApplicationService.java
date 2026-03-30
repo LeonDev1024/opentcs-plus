@@ -8,8 +8,8 @@ import org.opentcs.kernel.domain.order.OrderState;
 import org.opentcs.kernel.domain.vehicle.Vehicle;
 import org.opentcs.kernel.api.dto.TransportOrderDTO;
 import org.opentcs.kernel.api.dto.OrderStateDTO;
-import org.opentcs.order.service.TransportOrderService;
-import org.opentcs.order.mapper.TransportOrderMapper;
+import org.opentcs.order.persistence.service.TransportOrderDomainService;
+import org.opentcs.order.persistence.entity.TransportOrderEntity;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TransportOrderApplicationService {
 
-    private final TransportOrderService orderService;
+    private final TransportOrderDomainService orderService;
     private final TransportOrderRegistry orderRegistry;
     private final VehicleRegistry vehicleRegistry;
     private final DispatcherService dispatcherService;
@@ -44,14 +44,14 @@ public class TransportOrderApplicationService {
      * 3. 自动分配车辆
      */
     @Transactional
-    public boolean createTransportOrder(org.opentcs.kernel.persistence.entity.TransportOrderEntity entity) {
+    public boolean createTransportOrder(TransportOrderEntity entity) {
         // 1. 生成订单ID
         String orderId = entity.getOrderNo() != null ? entity.getOrderNo() : UUID.randomUUID().toString();
 
         // 2. 保存到数据库
         entity.setOrderNo(orderId);
         entity.setState("RAW");
-        orderService.getBaseMapper().insert(entity);
+        orderService.save(entity);
 
         // 3. 创建并分配订单（内核自动处理）
         try {
@@ -72,14 +72,14 @@ public class TransportOrderApplicationService {
 
             // 更新数据库状态
             entity.setState(kernelOrder.getState().name());
-            orderService.getBaseMapper().updateById(entity);
+            orderService.updateById(entity);
 
             log.info("运输订单创建成功: {} -> {}", sourcePoint, destPoint);
             return true;
         } catch (Exception e) {
             log.error("订单创建失败: {}", e.getMessage());
             // 回滚数据库
-            orderService.getBaseMapper().deleteById(entity.getId());
+            orderService.removeById(entity.getId());
             throw new RuntimeException("订单创建失败: " + e.getMessage());
         }
     }
@@ -89,7 +89,7 @@ public class TransportOrderApplicationService {
      */
     @Transactional
     public boolean cancelTransportOrder(Long orderId) {
-        org.opentcs.kernel.persistence.entity.TransportOrderEntity entity = orderService.getBaseMapper().selectById(orderId);
+        TransportOrderEntity entity = orderService.getById(orderId);
         if (entity == null) {
             throw new RuntimeException("订单不存在: " + orderId);
         }
@@ -103,7 +103,7 @@ public class TransportOrderApplicationService {
 
         // 更新数据库
         entity.setState("CANCELLED");
-        orderService.getBaseMapper().updateById(entity);
+        orderService.updateById(entity);
 
         log.info("订单已取消: {}", entity.getOrderNo());
         return true;
@@ -114,7 +114,7 @@ public class TransportOrderApplicationService {
      */
     @Transactional
     public boolean assignVehicle(Long orderId, String vehicleId) {
-        org.opentcs.kernel.persistence.entity.TransportOrderEntity entity = orderService.getBaseMapper().selectById(orderId);
+        TransportOrderEntity entity = orderService.getById(orderId);
         if (entity == null) {
             throw new RuntimeException("订单不存在: " + orderId);
         }
@@ -133,7 +133,7 @@ public class TransportOrderApplicationService {
         entity.setState("DISPATCHED");
         entity.setIntendedVehicle(vehicleId);
         entity.setProcessingVehicle(vehicleId);
-        orderService.getBaseMapper().updateById(entity);
+        orderService.updateById(entity);
 
         log.info("订单已分配给车辆 {}: {}", vehicleId, entity.getOrderNo());
         return true;
@@ -188,13 +188,10 @@ public class TransportOrderApplicationService {
             orderRegistry.completeOrder(orderId);
 
             // 更新数据库
-            List<org.opentcs.kernel.persistence.entity.TransportOrderEntity> entities = orderService.getBaseMapper()
-                    .selectList(new LambdaQueryWrapper<org.opentcs.kernel.persistence.entity.TransportOrderEntity>()
-                            .eq(org.opentcs.kernel.persistence.entity.TransportOrderEntity::getOrderNo, orderId));
-            if (!entities.isEmpty()) {
-                org.opentcs.kernel.persistence.entity.TransportOrderEntity entity = entities.get(0);
+            TransportOrderEntity entity = orderService.getByOrderNo(orderId);
+            if (entity != null) {
                 entity.setState("FINISHED");
-                orderService.getBaseMapper().updateById(entity);
+                orderService.updateById(entity);
             }
 
             log.info("订单已完成: {}", orderId);
@@ -211,15 +208,12 @@ public class TransportOrderApplicationService {
             orderRegistry.releaseOrder(orderId);
 
             // 更新数据库
-            List<org.opentcs.kernel.persistence.entity.TransportOrderEntity> entities = orderService.getBaseMapper()
-                    .selectList(new LambdaQueryWrapper<org.opentcs.kernel.persistence.entity.TransportOrderEntity>()
-                            .eq(org.opentcs.kernel.persistence.entity.TransportOrderEntity::getOrderNo, orderId));
-            if (!entities.isEmpty()) {
-                org.opentcs.kernel.persistence.entity.TransportOrderEntity entity = entities.get(0);
+            TransportOrderEntity entity = orderService.getByOrderNo(orderId);
+            if (entity != null) {
                 entity.setState("FAILED");
                 // 使用properties字段存储备注
                 entity.setProperties("{\"remark\":\"" + reason + "\"}");
-                orderService.getBaseMapper().updateById(entity);
+                orderService.updateById(entity);
             }
 
             log.info("订单失败: {}, 原因: {}", orderId, reason);
@@ -280,7 +274,7 @@ public class TransportOrderApplicationService {
         dto.setIntendedVehicle(order.getIntendedVehicle());
 
         // 使用枚举
-        dto.setState(org.opentcs.kernel.api.dto.OrderStateDTO.valueOf(order.getState().name()));
+        dto.setState(OrderStateDTO.valueOf(order.getState().name()));
 
         return dto;
     }

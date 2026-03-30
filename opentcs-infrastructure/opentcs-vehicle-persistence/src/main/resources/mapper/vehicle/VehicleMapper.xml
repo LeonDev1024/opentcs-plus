@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.opentcs.vehicle.persistence.mapper.VehicleMapper">
+
+    <resultMap type="org.opentcs.vehicle.persistence.entity.VehicleEntity" id="VehicleResult">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="vinCode" column="vin_code"/>
+        <result property="vehicleTypeId" column="vehicle_type_id"/>
+        <result property="vehicleTypeName" column="vehicle_type_name"/>
+        <result property="currentPosition" column="current_position"/>
+        <result property="nextPosition" column="next_position"/>
+        <result property="state" column="state"/>
+        <result property="integrationLevel" column="integration_level"/>
+        <result property="energyLevel" column="energy_level"/>
+        <result property="currentTransportOrder" column="current_transport_order"/>
+        <result property="properties" column="properties"/>
+        <result property="createDept" column="create_dept"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="version" column="version"/>
+        <result property="delFlag" column="del_flag"/>
+    </resultMap>
+
+    <select id="selectPageVehicle" resultMap="VehicleResult">
+        SELECT v.id, v.name, v.vin_code, v.vehicle_type_id, vt.name as vehicle_type_name,
+               v.current_position, v.next_position, v.state, v.integration_level,
+               v.energy_level, v.current_transport_order, v.properties,
+               v.create_dept, v.create_by, v.create_time, v.update_by, v.update_time, v.version, v.del_flag
+        FROM vehicle v
+        LEFT JOIN vehicle_type vt ON v.vehicle_type_id = vt.id
+        <where>
+            <if test="param2.name != null and param2.name != ''">AND v.name LIKE CONCAT('%', #{param2.name}, '%')</if>
+            <if test="param2.state != null and param2.state != ''">AND v.state = #{param2.state}</if>
+            <if test="param2.vinCode != null and param2.vinCode != ''">AND v.vin_code LIKE CONCAT('%', #{param2.vinCode}, '%')</if>
+            <if test="param2.vehicleTypeId != null">AND v.vehicle_type_id = #{param2.vehicleTypeId}</if>
+            AND v.del_flag = '0'
+        </where>
+    </select>
+
+</mapper>

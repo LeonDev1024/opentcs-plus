@@ -69,10 +69,13 @@ opentcs-plus/
 │   ├── opentcs-vehicle/                    # 车辆管理
 │   ├── opentcs-system/                     # 系统管理
 │   └── opentcs-simulation/                 # 仿真模拟
-├── opentcs-kernel/                         # 领域层 - OpenTCS Kernel 核心重构
-│   ├── opentcs-kernel-api/                 # 核心接口定义
-│   ├── opentcs-kernel-core/                # 核心领域模型
-│   └── opentcs-kernel-persistence/         # 持久化
+├── opentcs-kernel/                         # 领域层 - Kernel 契约与领域模型
+│   ├── opentcs-kernel-api/                 # 端口与对外 DTO、算法接口
+│   ├── opentcs-kernel-domain/              # 纯领域模型（无持久化/缓存依赖）
+│   └── opentcs-kernel-core/                # 应用服务与 Spring 装配
+├── opentcs-infrastructure/                 # 基础设施层 - 持久化等实现
+│   └── opentcs-infrastructure-kernel-persistence/  # 调度核心 MyBatis 持久化
+├── opentcs-strategies-default/             # 内置路由/调度策略（仅依赖 kernel-api）
 ├── opentcs-driver/                         # 基础设施层 - AGV 驱动适配
 │   ├── opentcs-driver-api/                 # 驱动接口
 │   └── opentcs-driver-adapter-vda5050/     # VDA5050协议适配器
@@ -101,10 +104,11 @@ opentcs-plus/
 
 ### 核心领域模型 (opentcs-kernel)
 
-Kernel 模块是 OpenTCS 调度核心的重构实现：
-- **kernel-api**：核心接口（调度引擎、路径规划、车辆管理）
-- **kernel-core**：领域模型（Point, Path, Vehicle, TransportOrder, Course）
-- **kernel-persistence**：MyBatis Plus 持久化层
+Kernel 模块是调度核心实现（不依赖外部 OpenTCS 工程，自洽领域模型）：
+- **kernel-api**：端口与 DTO、算法接口（`Router`/`Scheduler` 等）
+- **kernel-domain**：领域模型（Point, Path, Vehicle, TransportOrder 等，无基础设施依赖）
+- **kernel-core**：应用服务（注册表、调度、路由规划装配）
+- **opentcs-infrastructure-kernel-persistence**：MyBatis 持久化实现（基础设施层）
 
 ### API 入口
 

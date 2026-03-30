@@ -15,10 +15,14 @@
         <module>opentcs-applications</module>
         <!-- 领域层 - OpenTCS Kernel -->
         <module>opentcs-kernel</module>
+        <!-- 基础设施层 - 持久化等 -->
+        <module>opentcs-infrastructure</module>
         <!-- 基础设施层 - Driver 驱动适配 -->
         <module>opentcs-driver</module>
         <!-- 安全模块 -->
         <module>opentcs-security</module>
+        <!-- 策略模块 - 调度/路由/资源分配算法实现 -->
+        <module>opentcs-strategies-default</module>
         <!-- 接口层 (依赖于上面所有模块) -->
         <module>opentcs-admin</module>
     </modules>
@@ -135,13 +139,40 @@
             </dependency>
             <dependency>
                 <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-kernel-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.opentcs</groupId>
                 <artifactId>opentcs-kernel-core</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>org.opentcs</groupId>
-                <artifactId>opentcs-kernel-persistence</artifactId>
+                <artifactId>opentcs-map-persistence</artifactId>
                 <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-vehicle-persistence</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-order-persistence</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-strategies-default</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.tngtech.archunit</groupId>
+                <artifactId>archunit-junit5</artifactId>
+                <version>1.3.0</version>
+                <scope>test</scope>
             </dependency>
 
             <!-- driver 的依赖配置-->
@@ -350,6 +381,13 @@
                 <groupId>com.alibaba</groupId>
                 <artifactId>fastjson</artifactId>
                 <version>${fastjson.version}</version>
+            </dependency>
+
+            <!-- JGraphT 图算法库 -->
+            <dependency>
+                <groupId>org.jgrapht</groupId>
+                <artifactId>jgrapht-core</artifactId>
+                <version>1.5.2</version>
             </dependency>
 
         </dependencies>
