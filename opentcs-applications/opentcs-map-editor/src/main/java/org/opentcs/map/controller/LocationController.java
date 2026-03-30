@@ -6,15 +6,11 @@ import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.common.web.core.BaseController;
 import org.opentcs.kernel.api.dto.LocationDTO;
-import org.opentcs.kernel.api.dto.NavigationMapDTO;
-import org.opentcs.kernel.persistence.entity.LocationEntity;
-import org.opentcs.kernel.persistence.service.LocationDomainService;
-import org.opentcs.kernel.persistence.service.NavigationMapDomainService;
+import org.opentcs.map.application.MapFacadeApplicationService;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 位置/站点管理
@@ -26,16 +22,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class LocationController extends BaseController {
 
-    private final LocationDomainService locationDomainService;
-    private final NavigationMapDomainService navigationMapDomainService;
+    private final MapFacadeApplicationService mapFacadeApplicationService;
 
     /**
      * 分页查询位置列表
      * 支持按工厂ID和导航地图ID筛选
      */
     @GetMapping("/list")
-    public TableDataInfo<LocationDTO> list(LocationEntity location, PageQuery pageQuery) {
-        return locationDomainService.selectPageDTO(location, pageQuery);
+    public TableDataInfo<LocationDTO> list(LocationDTO location, PageQuery pageQuery) {
+        return mapFacadeApplicationService.listLocations(location, pageQuery);
     }
 
     /**
@@ -44,17 +39,7 @@ public class LocationController extends BaseController {
      */
     @GetMapping("/listByFactory/{factoryId}")
     public R<List<LocationDTO>> listByFactory(@PathVariable Long factoryId) {
-        // 先查询该工厂下的所有导航地图
-        List<NavigationMapDTO> maps = navigationMapDomainService.selectByFactoryModelId(factoryId);
-        if (maps == null || maps.isEmpty()) {
-            return R.ok(List.of());
-        }
-        // 获取所有地图ID
-        List<Long> mapIds = maps.stream()
-                .map(NavigationMapDTO::getId)
-                .collect(Collectors.toList());
-        // 查询所有属于这些地图的位置
-        return R.ok(locationDomainService.selectByMapIdsDTO(mapIds));
+        return R.ok(mapFacadeApplicationService.listLocationsByFactory(factoryId));
     }
 
     /**
@@ -62,7 +47,7 @@ public class LocationController extends BaseController {
      */
     @GetMapping("/listByMap/{mapId}")
     public R<List<LocationDTO>> listByMap(@PathVariable Long mapId) {
-        return R.ok(locationDomainService.selectByNavigationMapIdDTO(mapId));
+        return R.ok(mapFacadeApplicationService.listLocationsByMap(mapId));
     }
 
     /**
@@ -70,6 +55,6 @@ public class LocationController extends BaseController {
      */
     @GetMapping("/{id}")
     public R<LocationDTO> getById(@PathVariable Long id) {
-        return R.ok(locationDomainService.selectByIdDTO(id));
+        return R.ok(mapFacadeApplicationService.getLocationById(id));
     }
 }

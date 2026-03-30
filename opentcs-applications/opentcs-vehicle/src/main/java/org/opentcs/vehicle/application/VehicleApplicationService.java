@@ -1,11 +1,14 @@
 package org.opentcs.vehicle.application;
 
+import org.opentcs.kernel.api.OrderLifecycleApi;
+import org.opentcs.kernel.application.DispatcherService;
 import org.opentcs.kernel.application.VehicleRegistry;
 import org.opentcs.kernel.application.TransportOrderRegistry;
 import org.opentcs.kernel.domain.vehicle.Vehicle;
 import org.opentcs.kernel.domain.vehicle.VehicleState;
 import org.opentcs.kernel.domain.vehicle.VehiclePosition;
 import org.opentcs.kernel.domain.order.TransportOrder;
+import org.opentcs.kernel.api.dto.VehicleEntityDTO;
 import org.opentcs.kernel.api.dto.VehicleDTO;
 import org.opentcs.kernel.api.dto.TransportOrderDTO;
 import org.opentcs.kernel.api.dto.VehicleStateDTO;
@@ -40,6 +43,8 @@ public class VehicleApplicationService {
     private final VehicleDomainService vehicleService;
     private final VehicleRegistry vehicleRegistry;
     private final TransportOrderRegistry orderRegistry;
+    private final DispatcherService dispatcherService;
+    private final OrderLifecycleApi orderLifecycleApi;
     private final DriverRegistry driverRegistry;
 
     /**
@@ -49,7 +54,8 @@ public class VehicleApplicationService {
      * 3. 配置驱动连接
      */
     @Transactional
-    public boolean registerVehicle(VehicleEntity entity, DriverConfig driverConfig) {
+    public boolean registerVehicle(VehicleEntityDTO command, DriverConfig driverConfig) {
+        VehicleEntity entity = toEntity(command);
         // 1. 保存到数据库
         VehicleEntity dbVehicle = vehicleService.getByName(entity.getName());
         if (dbVehicle != null) {
@@ -231,8 +237,11 @@ public class VehicleApplicationService {
      * 车辆完成订单
      */
     public void onVehicleOrderCompleted(String vehicleId) {
-        vehicleRegistry.completeVehicleOrder(vehicleId);
-        vehicleRegistry.updateVehicleState(vehicleId, VehicleState.IDLE);
+        String orderId = vehicleRegistry.getVehicleCurrentOrder(vehicleId);
+        dispatcherService.vehicleCompletedOrder(vehicleId);
+        if (orderId != null) {
+            orderLifecycleApi.onOrderExecutionResult(orderId, vehicleId, true, null);
+        }
         log.info("车辆订单完成: {}", vehicleId);
     }
 
@@ -240,8 +249,11 @@ public class VehicleApplicationService {
      * 车辆订单取消
      */
     public void onVehicleOrderCancelled(String vehicleId) {
-        vehicleRegistry.cancelVehicleOrder(vehicleId);
-        vehicleRegistry.updateVehicleState(vehicleId, VehicleState.IDLE);
+        String orderId = vehicleRegistry.getVehicleCurrentOrder(vehicleId);
+        dispatcherService.vehicleCancelledOrder(vehicleId);
+        if (orderId != null) {
+            orderLifecycleApi.onOrderExecutionResult(orderId, vehicleId, false, "车辆侧取消订单");
+        }
         log.info("车辆订单取消: {}", vehicleId);
     }
 
@@ -364,5 +376,23 @@ public class VehicleApplicationService {
             default:
                 return VehicleState.UNKNOWN;
         }
+    }
+
+    private VehicleEntity toEntity(VehicleEntityDTO dto) {
+        VehicleEntity entity = new VehicleEntity();
+        entity.setId(dto.getId());
+        entity.setName(dto.getName());
+        entity.setVinCode(dto.getVinCode());
+        entity.setVehicleTypeId(dto.getVehicleTypeId());
+        entity.setCurrentPosition(dto.getCurrentPosition());
+        entity.setNextPosition(dto.getNextPosition());
+        entity.setState(dto.getState());
+        entity.setIntegrationLevel(dto.getIntegrationLevel());
+        entity.setEnergyLevel(dto.getEnergyLevel());
+        entity.setCurrentTransportOrder(dto.getCurrentTransportOrder());
+        entity.setProperties(dto.getProperties());
+        entity.setCreateTime(dto.getCreateTime());
+        entity.setUpdateTime(dto.getUpdateTime());
+        return entity;
     }
 }

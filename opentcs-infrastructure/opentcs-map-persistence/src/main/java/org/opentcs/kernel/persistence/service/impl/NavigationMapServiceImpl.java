@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.kernel.api.dto.NavigationMapDTO;
+import org.opentcs.kernel.persistence.service.DTOConverter;
 import org.opentcs.kernel.persistence.entity.*;
 import org.opentcs.kernel.persistence.mapper.*;
 import org.opentcs.kernel.persistence.service.NavigationMapDomainService;
@@ -97,9 +98,40 @@ public class NavigationMapServiceImpl extends ServiceImpl<NavigationMapMapper, N
     }
 
     @Override
+    public NavigationMapDTO getNavigationMapDetailDTO(Long id) {
+        return DTOConverter.toNavigationMapDTO(this.getById(id));
+    }
+
+    @Override
     @CacheEvict(allEntries = true)
     public boolean updateNavigationMap(NavigationMapEntity navigationMap) {
         return this.updateById(navigationMap);
+    }
+
+    @Override
+    @CacheEvict(allEntries = true)
+    public boolean updateNavigationMapDTO(NavigationMapDTO navigationMap) {
+        NavigationMapEntity entity = new NavigationMapEntity();
+        entity.setId(navigationMap.getId());
+        entity.setFactoryModelId(navigationMap.getFactoryModelId());
+        entity.setMapId(navigationMap.getMapId());
+        entity.setName(navigationMap.getName());
+        entity.setFloorNumber(navigationMap.getFloorNumber());
+        entity.setVehicleTypeId(navigationMap.getVehicleTypeId());
+        entity.setOriginX(navigationMap.getOriginX());
+        entity.setOriginY(navigationMap.getOriginY());
+        entity.setRotation(navigationMap.getRotation());
+        entity.setProperties(navigationMap.getProperties());
+        entity.setStatus(navigationMap.getStatus());
+        entity.setMapVersion(navigationMap.getMapVersion());
+        entity.setRasterUrl(navigationMap.getRasterUrl());
+        entity.setRasterVersion(navigationMap.getRasterVersion());
+        entity.setRasterWidth(navigationMap.getRasterWidth());
+        entity.setRasterHeight(navigationMap.getRasterHeight());
+        entity.setRasterResolution(navigationMap.getRasterResolution());
+        entity.setCreateTime(navigationMap.getCreateTime());
+        entity.setUpdateTime(navigationMap.getUpdateTime());
+        return this.updateById(entity);
     }
 
     @Override

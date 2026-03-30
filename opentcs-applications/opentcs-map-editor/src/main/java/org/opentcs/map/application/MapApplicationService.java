@@ -3,12 +3,10 @@ package org.opentcs.map.application;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opentcs.kernel.application.RoutePlannerImpl;
-import org.opentcs.kernel.persistence.entity.FactoryModelEntity;
-import org.opentcs.kernel.persistence.entity.PathEntity;
-import org.opentcs.kernel.persistence.entity.PointEntity;
-import org.opentcs.kernel.persistence.service.FactoryModelDomainService;
-import org.opentcs.kernel.persistence.service.PathDomainService;
-import org.opentcs.kernel.persistence.service.PointDomainService;
+import org.opentcs.kernel.api.dto.FactoryModelDTO;
+import org.opentcs.kernel.api.dto.PathDTO;
+import org.opentcs.kernel.api.dto.PointDTO;
+import org.opentcs.kernel.api.map.MapSceneApi;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,9 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MapApplicationService {
 
-    private final FactoryModelDomainService factoryModelDomainService;
-    private final PointDomainService pointDomainService;
-    private final PathDomainService pathDomainService;
+    private final MapSceneApi mapSceneApi;
     private final RoutePlannerImpl routePlanner;
 
     /**
@@ -34,7 +30,7 @@ public class MapApplicationService {
      */
     @Transactional(readOnly = true)
     public void loadMapToKernel(Long factoryModelId) {
-        FactoryModelEntity factoryModel = factoryModelDomainService.selectById(factoryModelId);
+        FactoryModelDTO factoryModel = mapSceneApi.getFactoryModelById(factoryModelId);
         if (factoryModel == null) {
             throw new RuntimeException("工厂模型不存在: " + factoryModelId);
         }
@@ -54,17 +50,17 @@ public class MapApplicationService {
     /**
      * 注册点到内核
      */
-    public void registerPoint(PointEntity pointEntity) {
+    public void registerPoint(PointDTO pointDTO) {
         org.opentcs.kernel.domain.routing.Point point =
             new org.opentcs.kernel.domain.routing.Point(
-                String.valueOf(pointEntity.getId()),
-                pointEntity.getName(),
-                pointEntity.getXPosition() != null ? pointEntity.getXPosition().doubleValue() : 0,
-                pointEntity.getYPosition() != null ? pointEntity.getYPosition().doubleValue() : 0,
-                pointEntity.getZPosition() != null ? pointEntity.getZPosition().doubleValue() : 0
+                String.valueOf(pointDTO.getId()),
+                pointDTO.getName(),
+                pointDTO.getXPosition() != null ? pointDTO.getXPosition().doubleValue() : 0,
+                pointDTO.getYPosition() != null ? pointDTO.getYPosition().doubleValue() : 0,
+                pointDTO.getZPosition() != null ? pointDTO.getZPosition().doubleValue() : 0
         );
         routePlanner.registerPoint(point);
-        log.debug("点位已注册到内核: {}", pointEntity.getId());
+        log.debug("点位已注册到内核: {}", pointDTO.getId());
     }
 
     /**
@@ -78,16 +74,16 @@ public class MapApplicationService {
     /**
      * 注册路径到内核
      */
-    public void registerPath(PathEntity pathEntity) {
+    public void registerPath(PathDTO pathDTO) {
         org.opentcs.kernel.domain.routing.Path path =
             new org.opentcs.kernel.domain.routing.Path(
-                String.valueOf(pathEntity.getId()),
-                String.valueOf(pathEntity.getSourcePointId()),
-                String.valueOf(pathEntity.getDestPointId()),
-                pathEntity.getLength() != null ? pathEntity.getLength().doubleValue() : 0
+                String.valueOf(pathDTO.getId()),
+                String.valueOf(pathDTO.getSourcePointId()),
+                String.valueOf(pathDTO.getDestPointId()),
+                pathDTO.getLength() != null ? pathDTO.getLength().doubleValue() : 0
         );
         routePlanner.registerPath(path);
-        log.debug("路径已注册到内核: {}", pathEntity.getId());
+        log.debug("路径已注册到内核: {}", pathDTO.getId());
     }
 
     /**

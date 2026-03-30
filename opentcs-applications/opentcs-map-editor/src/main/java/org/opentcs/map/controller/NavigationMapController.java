@@ -6,8 +6,7 @@ import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.common.web.core.BaseController;
 import org.opentcs.kernel.api.dto.NavigationMapDTO;
-import org.opentcs.kernel.persistence.entity.NavigationMapEntity;
-import org.opentcs.kernel.persistence.service.NavigationMapDomainService;
+import org.opentcs.map.application.MapFacadeApplicationService;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,14 +21,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class NavigationMapController extends BaseController {
 
-    private final NavigationMapDomainService navigationMapDomainService;
+    private final MapFacadeApplicationService mapFacadeApplicationService;
 
     /**
      * 查询导航地图列表
      */
     @GetMapping("/list")
-    public TableDataInfo<NavigationMapDTO> list(NavigationMapEntity navigationMap, PageQuery pageQuery) {
-        return navigationMapDomainService.selectPageNavigationMap(navigationMap, pageQuery);
+    public TableDataInfo<NavigationMapDTO> list(NavigationMapDTO navigationMap, PageQuery pageQuery) {
+        return mapFacadeApplicationService.listNavigationMaps(navigationMap, pageQuery);
     }
 
     /**
@@ -37,15 +36,15 @@ public class NavigationMapController extends BaseController {
      */
     @GetMapping("/list/{factoryId}")
     public R<List<NavigationMapDTO>> listByFactory(@PathVariable Long factoryId) {
-        return R.ok(navigationMapDomainService.selectByFactoryModelId(factoryId));
+        return R.ok(mapFacadeApplicationService.listNavigationMapsByFactory(factoryId));
     }
 
     /**
      * 根据ID查询导航地图详情
      */
     @GetMapping("/{id}")
-    public R<NavigationMapEntity> getById(@PathVariable Long id) {
-        return R.ok(navigationMapDomainService.getNavigationMapDetail(id));
+    public R<NavigationMapDTO> getById(@PathVariable Long id) {
+        return R.ok(mapFacadeApplicationService.getNavigationMapById(id));
     }
 
     /**
@@ -53,23 +52,23 @@ public class NavigationMapController extends BaseController {
      */
     @GetMapping("/floor/{factoryId}/{floorNumber}")
     public R<NavigationMapDTO> getByFloor(@PathVariable Long factoryId, @PathVariable Integer floorNumber) {
-        return R.ok(navigationMapDomainService.selectByFactoryModelIdAndFloor(factoryId, floorNumber));
+        return R.ok(mapFacadeApplicationService.getNavigationMapByFloor(factoryId, floorNumber));
     }
 
     /**
      * 创建导航地图
      */
     @PostMapping("/create")
-    public R<Boolean> create(@RequestBody NavigationMapEntity navigationMap) {
-        return R.ok(navigationMapDomainService.createNavigationMap(navigationMap));
+    public R<Boolean> create(@RequestBody NavigationMapDTO navigationMap) {
+        return R.ok(mapFacadeApplicationService.createNavigationMap(navigationMap));
     }
 
     /**
      * 更新导航地图
      */
     @PutMapping("/update")
-    public R<Boolean> update(@RequestBody NavigationMapEntity navigationMap) {
-        return R.ok(navigationMapDomainService.updateNavigationMap(navigationMap));
+    public R<Boolean> update(@RequestBody NavigationMapDTO navigationMap) {
+        return R.ok(mapFacadeApplicationService.updateNavigationMap(navigationMap));
     }
 
     /**
@@ -77,6 +76,6 @@ public class NavigationMapController extends BaseController {
      */
     @DeleteMapping("/{id}")
     public R<Boolean> delete(@PathVariable Long id) {
-        return R.ok(navigationMapDomainService.deleteNavigationMap(id));
+        return R.ok(mapFacadeApplicationService.deleteNavigationMap(id));
     }
 }

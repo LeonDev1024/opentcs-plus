@@ -79,6 +79,16 @@ public class LocationServiceImpl extends ServiceImpl<LocationMapper, LocationEnt
     }
 
     @Override
+    public TableDataInfo<LocationDTO> selectPageDTO(LocationDTO location, PageQuery pageQuery) {
+        return selectPageDTO(toEntity(location), pageQuery);
+    }
+
+    @Override
+    public boolean saveDTO(LocationDTO location) {
+        return this.save(toEntity(location));
+    }
+
+    @Override
     public List<LocationEntity> selectByNavigationMapId(Long navigationMapId) {
         return this.list(new LambdaQueryWrapper<LocationEntity>()
                 .eq(LocationEntity::getNavigationMapId, navigationMapId)
@@ -116,6 +126,11 @@ public class LocationServiceImpl extends ServiceImpl<LocationMapper, LocationEnt
     }
 
     @Override
+    public boolean updateByIdDTO(LocationDTO location) {
+        return this.updateById(toEntity(location));
+    }
+
+    @Override
     public List<LocationEntity> selectAllLocationByPlantModelId(Long plantModelId) {
         return this.list(new LambdaQueryWrapper<LocationEntity>()
                 .eq(LocationEntity::getNavigationMapId, plantModelId)
@@ -126,5 +141,23 @@ public class LocationServiceImpl extends ServiceImpl<LocationMapper, LocationEnt
     public int removeByMap(Long navigationMapId) {
         return this.baseMapper.delete(new LambdaQueryWrapper<LocationEntity>()
                 .eq(LocationEntity::getNavigationMapId, navigationMapId));
+    }
+
+    private LocationEntity toEntity(LocationDTO dto) {
+        LocationEntity entity = new LocationEntity();
+        entity.setId(dto.getId());
+        entity.setNavigationMapId(dto.getNavigationMapId());
+        entity.setLocationTypeId(dto.getLocationTypeId());
+        entity.setLocationId(dto.getLocationId());
+        entity.setName(dto.getName());
+        entity.setXPosition(dto.getXPosition());
+        entity.setYPosition(dto.getYPosition());
+        entity.setZPosition(dto.getZPosition());
+        entity.setLocked(dto.getLocked());
+        entity.setIsOccupied(dto.getIsOccupied());
+        entity.setProperties(dto.getProperties());
+        entity.setCreateTime(dto.getCreateTime());
+        entity.setUpdateTime(dto.getUpdateTime());
+        return entity;
     }
 }
