@@ -54,7 +54,7 @@
         </dependency>
         <dependency>
             <groupId>org.opentcs</groupId>
-            <artifactId>opentcs-kernel-persistence</artifactId>
+            <artifactId>opentcs-infrastructure-kernel-persistence</artifactId>
         </dependency>
 
         <!-- Driver -->

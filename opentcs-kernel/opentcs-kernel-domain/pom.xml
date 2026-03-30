@@ -10,57 +10,30 @@
         <version>${revision}</version>
     </parent>
 
-    <artifactId>opentcs-kernel-core</artifactId>
-    <name>opentcs-kernel-core</name>
-    <description>内核应用服务与 Spring 装配（依赖领域层，不依赖持久化实现）</description>
+    <artifactId>opentcs-kernel-domain</artifactId>
+    <name>opentcs-kernel-domain</name>
+    <description>调度核心领域模型（纯领域，无持久化/缓存/框架实现依赖）</description>
 
     <dependencies>
-        <!-- Kernel API -->
         <dependency>
             <groupId>org.opentcs</groupId>
             <artifactId>opentcs-kernel-api</artifactId>
         </dependency>
 
-        <!-- Domain -->
-        <dependency>
-            <groupId>org.opentcs</groupId>
-            <artifactId>opentcs-kernel-domain</artifactId>
-        </dependency>
-
-        <!-- Spring Context -->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-        </dependency>
-
-        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
 
-        <!-- Validation -->
         <dependency>
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
         </dependency>
 
-        <!-- SLF4J -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.tngtech.archunit</groupId>
-            <artifactId>archunit-junit5</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

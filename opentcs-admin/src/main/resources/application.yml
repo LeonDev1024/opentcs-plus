@@ -243,3 +243,19 @@ websocket:
   path: /resource/websocket
   # 设置访问源地址
   allowedOrigins: '*'
+
+--- # OpenTCS Plus 内置策略（与 StrategiesConfiguration 前缀一致）
+opentcs:
+  strategies:
+    routing:
+      algorithm: dijkstra
+      cache-enabled: true
+      cache-ttl-seconds: 300
+    dispatch:
+      parking-enabled: true
+      recharge-enabled: true
+      batch-size: 50
+      dispatch-interval-ms: 1000
+    scheduling:
+      deadlock-prevention: true
+      conflict-check-interval-ms: 100

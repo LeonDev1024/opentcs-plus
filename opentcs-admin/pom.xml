@@ -132,6 +132,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-strategies-default</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
             <groupId>de.codecentric</groupId>
             <artifactId>spring-boot-admin-starter-client</artifactId>
         </dependency>

@@ -20,6 +20,11 @@ public interface VehicleGateway {
     void initialize();
 
     /**
+     * 注册驱动适配器（由 {@link org.opentcs.driver.registry.DriverRegistry} 或装配代码调用）。
+     */
+    void registerAdapter(String driverType, DriverAdapter adapter);
+
+    /**
      * 销毁网关
      */
     void destroy();

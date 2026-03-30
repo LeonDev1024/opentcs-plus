@@ -18,8 +18,8 @@
     <modules>
         <module>opentcs-kernel-bom</module>
         <module>opentcs-kernel-api</module>
+        <module>opentcs-kernel-domain</module>
         <module>opentcs-kernel-core</module>
-        <module>opentcs-kernel-persistence</module>
     </modules>
 
     <dependencyManagement>
@@ -31,12 +31,12 @@
             </dependency>
             <dependency>
                 <groupId>org.opentcs</groupId>
-                <artifactId>opentcs-kernel-core</artifactId>
+                <artifactId>opentcs-kernel-domain</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>org.opentcs</groupId>
-                <artifactId>opentcs-kernel-persistence</artifactId>
+                <artifactId>opentcs-kernel-core</artifactId>
                 <version>${revision}</version>
             </dependency>
         </dependencies>

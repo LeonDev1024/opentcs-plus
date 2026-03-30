@@ -6,7 +6,6 @@ import org.opentcs.driver.api.dto.DriverConfig;
 import org.opentcs.driver.api.dto.DriverOrder;
 import org.opentcs.driver.api.dto.InstantAction;
 import org.opentcs.driver.api.dto.VehicleStatus;
-import org.opentcs.driver.vda5050.VDA5050Adapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,23 +40,7 @@ public class VehicleGatewayImpl implements VehicleGateway {
     @Override
     public void initialize() {
         this.initialized = true;
-
-        // 注册默认适配器
-        registerDefaultAdapters();
-
-        LOG.info("车辆网关初始化完成");
-    }
-
-    /**
-     * 注册默认适配器
-     */
-    private void registerDefaultAdapters() {
-        // 注册VDA5050适配器
-        VDA5050Adapter vda5050Adapter = new VDA5050Adapter();
-        vda5050Adapter.initialize(new DriverConfig());
-        adapters.put("VDA5050", vda5050Adapter);
-
-        LOG.info("已注册默认驱动适配器: VDA5050");
+        LOG.info("车辆网关初始化完成（适配器由 DriverRegistry 注册，不在此重复 new）");
     }
 
     @Override
@@ -211,9 +194,7 @@ public class VehicleGatewayImpl implements VehicleGateway {
         }
     }
 
-    /**
-     * 注册自定义驱动适配器
-     */
+    @Override
     public void registerAdapter(String driverType, DriverAdapter adapter) {
         adapters.put(driverType, adapter);
         LOG.info("已注册驱动适配器: {}", driverType);
