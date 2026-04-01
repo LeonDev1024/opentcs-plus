@@ -5,7 +5,6 @@ import org.opentcs.kernel.api.dto.PointDTO;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -18,34 +17,9 @@ public class MapEditorSaveDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 地图标识
+     * 待保存的导航地图元信息（至少包含 mapId；可选 name、版本、原点、画布 JSON 等）
      */
-    private String mapId;
-
-    /**
-     * 地图名称
-     */
-    private String name;
-
-    /**
-     * 地图版本号
-     */
-    private String mapVersion;
-
-    /**
-     * 地图原点X坐标
-     */
-    private BigDecimal originX;
-
-    /**
-     * 地图原点Y坐标
-     */
-    private BigDecimal originY;
-
-    /**
-     * 地图旋转角度
-     */
-    private BigDecimal rotation;
+    private MapEditorMapInfoDTO mapInfo;
 
     /**
      * 点位列表
@@ -63,7 +37,12 @@ public class MapEditorSaveDTO implements Serializable {
     private List<org.opentcs.kernel.api.dto.LocationDTO> locations;
 
     /**
-     * 地图画布数据（JSON 格式，用于生成快照）
+     * 图层组列表（编辑语义）。
      */
-    private String data;
+    private List<MapEditorLayerGroupDTO> layerGroups;
+
+    /**
+     * 图层列表（编辑语义）。
+     */
+    private List<MapEditorLayerDTO> layers;
 }

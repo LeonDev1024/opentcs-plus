@@ -36,6 +36,11 @@ public class LocationEntity extends DataEntity {
     private Long locationTypeId;
 
     /**
+     * 归属图层ID
+     */
+    private Long layerId;
+
+    /**
      * 位置唯一标识
      */
     private String locationId;
@@ -77,4 +82,9 @@ public class LocationEntity extends DataEntity {
      * 扩展属性
      */
     private String properties;
+
+    /**
+     * 位置布局数据（JSON）。
+     */
+    private String layout;
 }

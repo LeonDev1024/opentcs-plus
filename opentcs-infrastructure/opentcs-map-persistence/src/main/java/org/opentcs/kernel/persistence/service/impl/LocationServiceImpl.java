@@ -3,6 +3,9 @@ package org.opentcs.kernel.persistence.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.kernel.api.dto.LocationDTO;
@@ -13,13 +16,19 @@ import org.opentcs.kernel.persistence.service.LocationDomainService;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 位置领域服务实现
  */
 @Service
+@RequiredArgsConstructor
 public class LocationServiceImpl extends ServiceImpl<LocationMapper, LocationEntity> implements LocationDomainService {
+
+    private final ObjectMapper objectMapper;
 
     @Override
     public TableDataInfo<LocationEntity> selectPage(LocationEntity location, PageQuery pageQuery) {
@@ -147,6 +156,7 @@ public class LocationServiceImpl extends ServiceImpl<LocationMapper, LocationEnt
         LocationEntity entity = new LocationEntity();
         entity.setId(dto.getId());
         entity.setNavigationMapId(dto.getNavigationMapId());
+        entity.setLayerId(dto.getLayerId());
         entity.setLocationTypeId(dto.getLocationTypeId());
         entity.setLocationId(dto.getLocationId());
         entity.setName(dto.getName());
@@ -156,8 +166,73 @@ public class LocationServiceImpl extends ServiceImpl<LocationMapper, LocationEnt
         entity.setLocked(dto.getLocked());
         entity.setIsOccupied(dto.getIsOccupied());
         entity.setProperties(dto.getProperties());
+        normalizeLocationLayout(dto, entity);
         entity.setCreateTime(dto.getCreateTime());
         entity.setUpdateTime(dto.getUpdateTime());
         return entity;
+    }
+
+    private void normalizeLocationLayout(LocationDTO dto, LocationEntity entity) {
+        Map<String, Object> layout = parseLayout(dto.getLayout());
+        if (entity.getLayerId() == null) {
+            entity.setLayerId(toLong(layout.get("layerId")));
+        }
+        if (entity.getXPosition() == null) {
+            entity.setXPosition(toDecimal(layout.get("x")));
+        }
+        if (entity.getYPosition() == null) {
+            entity.setYPosition(toDecimal(layout.get("y")));
+        }
+        if (entity.getZPosition() == null) {
+            entity.setZPosition(toDecimal(layout.get("z")));
+        }
+
+        if (dto.getLayout() != null && !dto.getLayout().isBlank()) {
+            entity.setLayout(dto.getLayout());
+            return;
+        }
+
+        Map<String, Object> canonical = new LinkedHashMap<>();
+        canonical.put("layerId", entity.getLayerId());
+        canonical.put("x", entity.getXPosition());
+        canonical.put("y", entity.getYPosition());
+        canonical.put("z", entity.getZPosition());
+        entity.setLayout(writeLayout(canonical));
+    }
+
+    private Map<String, Object> parseLayout(String raw) {
+        if (raw == null || raw.isBlank()) return Map.of();
+        try {
+            return objectMapper.readValue(raw, new TypeReference<Map<String, Object>>() {
+            });
+        } catch (Exception ignored) {
+            return Map.of();
+        }
+    }
+
+    private String writeLayout(Map<String, Object> layout) {
+        try {
+            return objectMapper.writeValueAsString(layout);
+        } catch (Exception e) {
+            return "{}";
+        }
+    }
+
+    private Long toLong(Object value) {
+        if (value == null) return null;
+        try {
+            return Long.valueOf(String.valueOf(value));
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private BigDecimal toDecimal(Object value) {
+        if (value == null) return null;
+        try {
+            return new BigDecimal(String.valueOf(value));
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 }

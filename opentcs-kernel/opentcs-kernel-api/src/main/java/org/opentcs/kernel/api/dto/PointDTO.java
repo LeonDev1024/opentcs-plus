@@ -43,6 +43,12 @@ public class PointDTO {
 
     private String properties;
 
+    /**
+     * 点位布局数据（JSON）。
+     * 用于承载编辑器中的显示布局属性（如颜色、半径、标签等）。
+     */
+    private String layout;
+
     private Date createTime;
 
     private Date updateTime;

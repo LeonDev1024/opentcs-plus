@@ -60,6 +60,7 @@ public class DTOConverter {
         LocationDTO dto = new LocationDTO();
         dto.setId(entity.getId());
         dto.setNavigationMapId(entity.getNavigationMapId());
+        dto.setLayerId(entity.getLayerId());
         dto.setLocationTypeId(entity.getLocationTypeId());
         dto.setLocationId(entity.getLocationId());
         dto.setName(entity.getName());
@@ -69,6 +70,7 @@ public class DTOConverter {
         dto.setLocked(entity.getLocked());
         dto.setIsOccupied(entity.getIsOccupied());
         dto.setProperties(entity.getProperties());
+        dto.setLayout(entity.getLayout());
         dto.setCreateTime(entity.getCreateTime());
         dto.setUpdateTime(entity.getUpdateTime());
         return dto;
@@ -86,6 +88,7 @@ public class DTOConverter {
         PathDTO dto = new PathDTO();
         dto.setId(entity.getId());
         dto.setNavigationMapId(entity.getNavigationMapId());
+        dto.setLayerId(entity.getLayerId());
         dto.setPathId(entity.getPathId());
         dto.setName(entity.getName());
         dto.setSourcePointId(entity.getSourcePointId());
@@ -96,8 +99,7 @@ public class DTOConverter {
         dto.setLocked(entity.getLocked());
         dto.setIsBlocked(entity.getIsBlocked());
         dto.setProperties(entity.getProperties());
-        dto.setConnectionType(entity.getConnectionType());
-        dto.setLayoutControlPoints(entity.getLayoutControlPoints());
+        dto.setLayout(entity.getLayout());
         dto.setCreateTime(entity.getCreateTime());
         dto.setUpdateTime(entity.getUpdateTime());
         return dto;
@@ -129,6 +131,7 @@ public class DTOConverter {
         dto.setIsOccupied(entity.getIsOccupied());
         dto.setLabel(entity.getLabel());
         dto.setProperties(entity.getProperties());
+        dto.setLayout(entity.getLayout());
         dto.setCreateTime(entity.getCreateTime());
         dto.setUpdateTime(entity.getUpdateTime());
         return dto;
