@@ -46,3 +46,6 @@ build/
 ### Logs ###
 logs/
 opentcs-admin/logs/
+
+### Design Docs ###
+doc/
