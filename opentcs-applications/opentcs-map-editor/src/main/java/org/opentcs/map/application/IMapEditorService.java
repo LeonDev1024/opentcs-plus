@@ -49,8 +49,8 @@ public interface IMapEditorService {
 
     /**
      * 发布地图
-     * @param mapId 地图ID
+     * @param mapId 地图业务标识（navigation_map.map_id）
      * @return 是否发布成功
      */
-    Boolean publish(Long mapId);
+    Boolean publish(String mapId);
 }

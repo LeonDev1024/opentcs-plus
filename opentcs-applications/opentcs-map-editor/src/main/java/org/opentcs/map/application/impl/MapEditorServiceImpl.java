@@ -1,14 +1,26 @@
 package org.opentcs.map.application.impl;
 
 import jakarta.servlet.http.HttpServletResponse;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opentcs.kernel.api.dto.FactoryModelDTO;
+import org.opentcs.kernel.api.dto.LocationDTO;
 import org.opentcs.kernel.api.dto.NavigationMapDTO;
+import org.opentcs.kernel.api.dto.PathDTO;
+import org.opentcs.kernel.api.dto.PointDTO;
 import org.opentcs.kernel.api.map.MapSceneApi;
 import org.opentcs.kernel.api.map.MapSnapshotHistoryPort;
+import org.opentcs.kernel.persistence.entity.LayerEntity;
+import org.opentcs.kernel.persistence.entity.LayerGroupEntity;
+import org.opentcs.kernel.persistence.service.LayerDomainService;
+import org.opentcs.kernel.persistence.service.LayerGroupDomainService;
 import org.opentcs.map.application.IMapEditorService;
 import org.opentcs.map.domain.dto.MapEditorDTO;
+import org.opentcs.map.domain.dto.MapEditorLayerDTO;
+import org.opentcs.map.domain.dto.MapEditorLayerGroupDTO;
+import org.opentcs.map.domain.dto.MapEditorMapInfoDTO;
 import org.opentcs.map.domain.dto.MapEditorSaveDTO;
 import org.opentcs.map.domain.vo.LoadModelVO;
 import org.opentcs.map.utils.MapVersionUtil;
@@ -21,6 +33,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * 地图编辑器应用服务实现
@@ -38,6 +56,9 @@ public class MapEditorServiceImpl implements IMapEditorService {
 
     private final MapSceneApi mapSceneApi;
     private final MapSnapshotHistoryPort mapSnapshotHistoryPort;
+    private final LayerGroupDomainService layerGroupDomainService;
+    private final LayerDomainService layerDomainService;
+    private final ObjectMapper objectMapper;
 
     /**
      * 地图状态：草稿
@@ -47,10 +68,12 @@ public class MapEditorServiceImpl implements IMapEditorService {
      * 地图状态：已发布
      */
     private static final String STATUS_PUBLISHED = "1";
+    private static final String MAP_ID_PATTERN = "^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$";
 
     @Override
     public MapEditorDTO load(LoadModelVO loadModelVO) {
         String mapId = loadModelVO.getMapId();
+        validateMapId(mapId);
 
         // 获取导航地图基本信息（根据地图编号查询）
         NavigationMapDTO navMapDTO = mapSceneApi.getNavigationMapByMapId(mapId);
@@ -69,6 +92,8 @@ public class MapEditorServiceImpl implements IMapEditorService {
         var points = mapSceneApi.listPointsByMap(navMapId);
         var paths = mapSceneApi.listPathsByMap(navMapId);
         var locations = mapSceneApi.listLocationsByMap(navMapId);
+        var layerGroups = layerGroupDomainService.selectByNavigationMapId(navMapId);
+        var layers = layerDomainService.selectByNavigationMapId(navMapId);
 
         // 尝试加载 JSON 快照
         String snapshotUrl = getSnapshotFilePath(navMapDTO.getFactoryModelId(), mapId, navMapDTO.getMapVersion());
@@ -83,20 +108,28 @@ public class MapEditorServiceImpl implements IMapEditorService {
         }
 
         // 构建 DTO
+        MapEditorMapInfoDTO mapInfo = new MapEditorMapInfoDTO();
+        mapInfo.setId(navMapDTO.getId());
+        mapInfo.setName(navMapDTO.getName());
+        mapInfo.setMapId(navMapDTO.getMapId());
+        mapInfo.setFactoryModelId(navMapDTO.getFactoryModelId());
+        mapInfo.setFactoryName(factoryModel.getName());
+        mapInfo.setOriginX(navMapDTO.getOriginX());
+        mapInfo.setOriginY(navMapDTO.getOriginY());
+        mapInfo.setRotation(navMapDTO.getRotation());
+        mapInfo.setMapVersion(navMapDTO.getMapVersion());
+        mapInfo.setStatus(navMapDTO.getStatus());
+        mapInfo.setData(jsonData);
+        mapInfo.setCreateTime(navMapDTO.getCreateTime());
+        mapInfo.setUpdateTime(navMapDTO.getUpdateTime());
+
         MapEditorDTO dto = new MapEditorDTO();
-        dto.setName(navMapDTO.getName());
-        dto.setMapId(navMapDTO.getMapId());
-        dto.setFactoryModelId(navMapDTO.getFactoryModelId());
-        dto.setFactoryName(factoryModel.getName());
-        dto.setOriginX(navMapDTO.getOriginX());
-        dto.setOriginY(navMapDTO.getOriginY());
-        dto.setRotation(navMapDTO.getRotation());
-        dto.setMapVersion(navMapDTO.getMapVersion());
-        dto.setStatus(navMapDTO.getStatus());
+        dto.setMapInfo(mapInfo);
         dto.setPoints(points);
         dto.setPaths(paths);
         dto.setLocations(locations);
-        dto.setData(jsonData);
+        dto.setLayerGroups(toLayerGroupDTOs(layerGroups));
+        dto.setLayers(toLayerDTOs(layers));
 
         log.info("加载导航地图完成: {}, 版本: {}, 状态: {}, 点位: {}, 路径: {}, 位置: {}",
                 navMapDTO.getName(), navMapDTO.getMapVersion(), navMapDTO.getStatus(),
@@ -108,8 +141,13 @@ public class MapEditorServiceImpl implements IMapEditorService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean save(MapEditorSaveDTO saveDTO) {
-        String mapId = saveDTO.getMapId();
-        log.info("保存地图模型: {}, 版本: {}", mapId, saveDTO.getMapVersion());
+        MapEditorMapInfoDTO info = saveDTO.getMapInfo();
+        if (info == null || info.getMapId() == null || info.getMapId().isBlank()) {
+            throw new IllegalArgumentException("mapInfo.mapId 不能为空");
+        }
+        String mapId = info.getMapId();
+        validateMapId(mapId);
+        log.info("保存地图模型: {}, 版本: {}", mapId, info.getMapVersion());
 
         // 获取导航地图
         NavigationMapDTO navMapDTO = mapSceneApi.getNavigationMapByMapId(mapId);
@@ -120,8 +158,17 @@ public class MapEditorServiceImpl implements IMapEditorService {
 
         // 计算新版本号
         String currentVersion = navMapDTO.getMapVersion();
+        if (info.getMapVersion() != null && !info.getMapVersion().isBlank() && currentVersion != null
+            && !currentVersion.equals(info.getMapVersion())) {
+            throw new RuntimeException("保存冲突：地图版本已变化，请刷新后重试");
+        }
         String newVersion = MapVersionUtil.getNextVersion(currentVersion);
         log.info("版本升级: {} -> {}", currentVersion, newVersion);
+
+        // 0. 保存图层组/图层，并回填元素 layerId
+        Map<String, Long> layerIdMapping = persistLayers(navMapId, saveDTO.getLayerGroups(), saveDTO.getLayers());
+        remapElementLayerIds(saveDTO, layerIdMapping);
+        validateElementLayouts(saveDTO);
 
         // 1. 更新语义表（point / path / location）
         // 先删除旧数据，再插入新数据
@@ -138,10 +185,11 @@ public class MapEditorServiceImpl implements IMapEditorService {
         }
 
         // 2. 生成并保存 JSON 快照（只保存 data 字段，不保存点路径位置）
-        String snapshotUrl = saveJsonSnapshot(saveDTO.getData(), navMapDTO.getFactoryModelId(), mapId, newVersion);
+        String snapshotPayload = buildSnapshotPayload(info.getData(), saveDTO);
+        String snapshotUrl = saveJsonSnapshot(snapshotPayload, navMapDTO.getFactoryModelId(), mapId, newVersion);
 
         // 3. 记录历史版本
-        mapSnapshotHistoryPort.recordSnapshot(navMapId, newVersion, snapshotUrl, saveDTO.getName());
+        mapSnapshotHistoryPort.recordSnapshot(navMapId, newVersion, snapshotUrl, info.getName());
 
         // 4. 更新 navigation_map 的版本号和状态
         NavigationMapDTO navMapUpdate = new NavigationMapDTO();
@@ -156,11 +204,12 @@ public class MapEditorServiceImpl implements IMapEditorService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean publish(Long mapId) {
+    public Boolean publish(String mapId) {
+        validateMapId(mapId);
         log.info("发布地图: {}", mapId);
 
         // 查询地图
-        NavigationMapDTO navMap = mapSceneApi.getNavigationMapById(mapId);
+        NavigationMapDTO navMap = mapSceneApi.getNavigationMapByMapId(mapId);
         if (navMap == null) {
             throw new RuntimeException("地图不存在: " + mapId);
         }
@@ -171,11 +220,60 @@ public class MapEditorServiceImpl implements IMapEditorService {
             return true;
         }
 
+        // 发布前硬校验（基础 5 条）
+        Long navMapId = navMap.getId();
+        var points = mapSceneApi.listPointsByMap(navMapId);
+        var paths = mapSceneApi.listPathsByMap(navMapId);
+        var locations = mapSceneApi.listLocationsByMap(navMapId);
+        var layers = layerDomainService.selectByNavigationMapId(navMapId);
+        if (points.isEmpty()) {
+            throw new RuntimeException("发布失败：地图缺少点位数据");
+        }
+        if (paths.isEmpty()) {
+            throw new RuntimeException("发布失败：地图缺少路径数据");
+        }
+        if (locations.isEmpty()) {
+            throw new RuntimeException("发布失败：地图缺少位置数据");
+        }
+        Set<String> pointIds = new HashSet<>();
+        for (var point : points) {
+            if (point.getPointId() != null && !point.getPointId().isBlank()) {
+                pointIds.add(point.getPointId());
+            }
+        }
+        for (var path : paths) {
+            if (path.getSourcePointId() == null || !pointIds.contains(path.getSourcePointId())) {
+                throw new RuntimeException("发布失败：存在路径起点不存在，pathId=" + path.getPathId());
+            }
+            if (path.getDestPointId() == null || !pointIds.contains(path.getDestPointId())) {
+                throw new RuntimeException("发布失败：存在路径终点不存在，pathId=" + path.getPathId());
+            }
+        }
+        Set<Long> layerIds = new HashSet<>();
+        for (var layer : layers) {
+            layerIds.add(layer.getId());
+        }
+        for (var point : points) {
+            if (point.getLayerId() != null && !layerIds.contains(point.getLayerId())) {
+                throw new RuntimeException("发布失败：点位存在无效 layerId，pointId=" + point.getPointId());
+            }
+        }
+        for (var path : paths) {
+            if (path.getLayerId() != null && !layerIds.contains(path.getLayerId())) {
+                throw new RuntimeException("发布失败：路径存在无效 layerId，pathId=" + path.getPathId());
+            }
+        }
+        for (var location : locations) {
+            if (location.getLayerId() != null && !layerIds.contains(location.getLayerId())) {
+                throw new RuntimeException("发布失败：位置存在无效 layerId，locationId=" + location.getLocationId());
+            }
+        }
+
         // 更新为发布状态
         navMap.setStatus(STATUS_PUBLISHED);
         mapSceneApi.updateNavigationMap(navMap);
 
-        log.info("发布地图完成: {} -> v{}", mapId, navMap.getMapVersion());
+        log.info("发布地图完成: {} -> v{}", navMap.getMapId(), navMap.getMapVersion());
         return true;
     }
 
@@ -225,8 +323,8 @@ public class MapEditorServiceImpl implements IMapEditorService {
             Path filePath = dirPath.resolve(fileName);
 
             // 写入文件
-            if (jsonData == null || jsonData.isEmpty()) {
-                jsonData = "{}";
+            if (jsonData == null || jsonData.isBlank()) {
+                throw new IllegalArgumentException("快照内容不能为空");
             }
             Files.writeString(filePath, jsonData);
 
@@ -241,6 +339,191 @@ public class MapEditorServiceImpl implements IMapEditorService {
      */
     private String getSnapshotFilePath(Long factoryModelId, String mapId, String version) {
         return Paths.get(mapStoragePath, factoryModelId.toString(), mapId, "v" + version + ".json").toString();
+    }
+
+    private String buildSnapshotPayload(String incomingData, MapEditorSaveDTO saveDTO) {
+        if (incomingData != null && !incomingData.isBlank()) {
+            return incomingData;
+        }
+        String layerGroupsCount = saveDTO.getLayerGroups() == null ? "0" : String.valueOf(saveDTO.getLayerGroups().size());
+        String layersCount = saveDTO.getLayers() == null ? "0" : String.valueOf(saveDTO.getLayers().size());
+        return "{\"visualLayout\":{\"layerGroupsCount\":" + layerGroupsCount + ",\"layersCount\":" + layersCount + "}}";
+    }
+
+    private List<MapEditorLayerGroupDTO> toLayerGroupDTOs(List<LayerGroupEntity> entities) {
+        List<MapEditorLayerGroupDTO> list = new ArrayList<>();
+        for (LayerGroupEntity entity : entities) {
+            MapEditorLayerGroupDTO dto = new MapEditorLayerGroupDTO();
+            dto.setId(String.valueOf(entity.getId()));
+            dto.setName(entity.getName());
+            dto.setVisible(entity.getVisible());
+            dto.setOrdinal(entity.getOrdinal());
+            dto.setProperties(entity.getProperties());
+            list.add(dto);
+        }
+        return list;
+    }
+
+    private List<MapEditorLayerDTO> toLayerDTOs(List<LayerEntity> entities) {
+        List<MapEditorLayerDTO> list = new ArrayList<>();
+        for (LayerEntity entity : entities) {
+            MapEditorLayerDTO dto = new MapEditorLayerDTO();
+            dto.setId(String.valueOf(entity.getId()));
+            dto.setLayerGroupId(entity.getLayerGroupId() == null ? null : String.valueOf(entity.getLayerGroupId()));
+            dto.setName(entity.getName());
+            dto.setVisible(entity.getVisible());
+            dto.setOrdinal(entity.getOrdinal());
+            dto.setProperties(entity.getProperties());
+            list.add(dto);
+        }
+        return list;
+    }
+
+    private Map<String, Long> persistLayers(Long navMapId,
+                                            List<MapEditorLayerGroupDTO> layerGroups,
+                                            List<MapEditorLayerDTO> layers) {
+        Map<String, Long> mapping = new HashMap<>();
+        if (layerGroups == null && layers == null) {
+            return mapping;
+        }
+        layerDomainService.remove(new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<LayerEntity>()
+            .eq(LayerEntity::getNavigationMapId, navMapId));
+        layerGroupDomainService.remove(new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<LayerGroupEntity>()
+            .eq(LayerGroupEntity::getNavigationMapId, navMapId));
+
+        if (layerGroups != null) {
+            for (int i = 0; i < layerGroups.size(); i++) {
+                MapEditorLayerGroupDTO dto = layerGroups.get(i);
+                LayerGroupEntity entity = new LayerGroupEntity();
+                entity.setNavigationMapId(navMapId);
+                entity.setName(dto.getName());
+                entity.setVisible(dto.getVisible() == null || dto.getVisible());
+                entity.setOrdinal(dto.getOrdinal() != null ? dto.getOrdinal() : i + 1);
+                entity.setProperties(dto.getProperties());
+                layerGroupDomainService.save(entity);
+                if (dto.getId() != null) {
+                    mapping.put(dto.getId(), entity.getId());
+                }
+                mapping.put(String.valueOf(entity.getId()), entity.getId());
+            }
+        }
+        if (layers != null) {
+            for (int i = 0; i < layers.size(); i++) {
+                MapEditorLayerDTO dto = layers.get(i);
+                LayerEntity entity = new LayerEntity();
+                entity.setNavigationMapId(navMapId);
+                entity.setName(dto.getName());
+                entity.setVisible(dto.getVisible() == null || dto.getVisible());
+                entity.setOrdinal(dto.getOrdinal() != null ? dto.getOrdinal() : i + 1);
+                entity.setProperties(dto.getProperties());
+                if (dto.getLayerGroupId() != null) {
+                    entity.setLayerGroupId(mapping.get(dto.getLayerGroupId()));
+                }
+                layerDomainService.save(entity);
+                if (dto.getId() != null) {
+                    mapping.put(dto.getId(), entity.getId());
+                }
+                mapping.put(String.valueOf(entity.getId()), entity.getId());
+            }
+        }
+        return mapping;
+    }
+
+    private void remapElementLayerIds(MapEditorSaveDTO saveDTO, Map<String, Long> layerIdMapping) {
+        if (layerIdMapping.isEmpty()) {
+            return;
+        }
+        if (saveDTO.getPoints() != null) {
+            saveDTO.getPoints().forEach(p -> p.setLayerId(remapLayerId(p.getLayerId(), layerIdMapping)));
+        }
+        if (saveDTO.getPaths() != null) {
+            saveDTO.getPaths().forEach(p -> p.setLayerId(remapLayerId(p.getLayerId(), layerIdMapping)));
+        }
+        if (saveDTO.getLocations() != null) {
+            saveDTO.getLocations().forEach(l -> l.setLayerId(remapLayerId(l.getLayerId(), layerIdMapping)));
+        }
+    }
+
+    private Long remapLayerId(Long originalId, Map<String, Long> layerIdMapping) {
+        if (originalId == null) {
+            return null;
+        }
+        return layerIdMapping.getOrDefault(String.valueOf(originalId), originalId);
+    }
+
+    private void validateElementLayouts(MapEditorSaveDTO saveDTO) {
+        if (saveDTO.getPoints() != null) {
+            for (PointDTO point : saveDTO.getPoints()) {
+                validateLayoutJson(point.getLayout(), "point", point.getPointId());
+            }
+        }
+        if (saveDTO.getPaths() != null) {
+            for (PathDTO path : saveDTO.getPaths()) {
+                validatePathLayout(path.getLayout(), path.getPathId());
+            }
+        }
+        if (saveDTO.getLocations() != null) {
+            for (LocationDTO location : saveDTO.getLocations()) {
+                validateLayoutJson(location.getLayout(), "location", location.getLocationId());
+            }
+        }
+    }
+
+    private void validateLayoutJson(String layout, String type, String businessId) {
+        if (layout == null || layout.isBlank()) {
+            return;
+        }
+        Map<String, Object> root;
+        try {
+            root = objectMapper.readValue(layout, new TypeReference<Map<String, Object>>() {
+            });
+        } catch (Exception e) {
+            throw new IllegalArgumentException("保存失败：" + type + " layout 非法，id=" + businessId);
+        }
+        validateCoordinateIfPresent(root.get("x"), type, businessId, "x");
+        validateCoordinateIfPresent(root.get("y"), type, businessId, "y");
+        validateCoordinateIfPresent(root.get("z"), type, businessId, "z");
+    }
+
+    private void validatePathLayout(String layout, String pathId) {
+        if (layout == null || layout.isBlank()) {
+            return;
+        }
+        Map<String, Object> root;
+        try {
+            root = objectMapper.readValue(layout, new TypeReference<Map<String, Object>>() {
+            });
+        } catch (Exception e) {
+            throw new IllegalArgumentException("保存失败：path layout 非法，pathId=" + pathId);
+        }
+        Object controlPoints = root.get("controlPoints");
+        if (controlPoints instanceof List<?> points) {
+            for (Object item : points) {
+                if (!(item instanceof Map<?, ?> cp)) {
+                    throw new IllegalArgumentException("保存失败：path layout.controlPoints 非法，pathId=" + pathId);
+                }
+                validateCoordinateIfPresent(cp.get("x"), "path", pathId, "controlPoint.x");
+                validateCoordinateIfPresent(cp.get("y"), "path", pathId, "controlPoint.y");
+            }
+        }
+    }
+
+    private void validateCoordinateIfPresent(Object value, String type, String businessId, String field) {
+        if (value == null) return;
+        try {
+            Double.parseDouble(String.valueOf(value));
+        } catch (Exception e) {
+            throw new IllegalArgumentException("保存失败：" + type + " layout." + field + " 非数字，id=" + businessId);
+        }
+    }
+
+    private void validateMapId(String mapId) {
+        if (mapId == null || mapId.isBlank()) {
+            throw new IllegalArgumentException("mapId 不能为空");
+        }
+        if (!mapId.matches(MAP_ID_PATTERN)) {
+            throw new IllegalArgumentException("mapId 格式非法，仅允许字母、数字、下划线、中划线，长度1-64");
+        }
     }
 
 }

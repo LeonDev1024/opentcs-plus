@@ -110,4 +110,9 @@ public class PointEntity extends DataEntity {
      * 扩展属性
      */
     private String properties;
+
+    /**
+     * 点位布局数据（JSON）。
+     */
+    private String layout;
 }

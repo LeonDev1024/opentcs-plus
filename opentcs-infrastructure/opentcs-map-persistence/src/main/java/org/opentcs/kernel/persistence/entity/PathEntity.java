@@ -7,10 +7,8 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.opentcs.common.mybatis.core.domain.DataEntity;
-import org.opentcs.common.core.dto.PathLayoutControlPointTO;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 /**
  * 路径数据模型
@@ -35,6 +33,11 @@ public class PathEntity extends DataEntity {
      * 路径唯一标识
      */
     private String pathId;
+
+    /**
+     * 归属图层ID
+     */
+    private Long layerId;
 
     /**
      * 路径名称
@@ -84,26 +87,11 @@ public class PathEntity extends DataEntity {
     /**
      * 路径布局（JSON）。
      *
-     * 当前用于持久化前端传入的 {@link #layoutControlPoints}，
-     * 并按 openTCS 的 {@code PathCreationTO.Layout} 语义封装为：
+     * 用于持久化前端传入的路径几何数据，
+     * 按 openTCS 的 {@code PathCreationTO.Layout} 语义封装为：
      * { "connectionType": "...", "controlPoints": [ { "x": ..., "y": ... }, ... ] }
      *
-     * <p>layerId 在当前表结构中尚未落库，因此暂不持久化。</p>
      */
     @TableField("layout")
     private String layout;
-
-    /**
-     * 几何连接类型（仅导入 openTCS XML 时使用，不入库）：
-     * DIRECT / ELBOW / SLANTED / POLYPATH / BEZIER / BEZIER_3
-     */
-    @TableField(exist = false)
-    private String connectionType;
-
-    /**
-     * 路径控制点列表（仅导入 openTCS XML 时使用，不入库），
-     * 用于前端重建近似的路径几何形状。
-     */
-    @TableField(exist = false)
-    private List<PathLayoutControlPointTO> layoutControlPoints;
 }

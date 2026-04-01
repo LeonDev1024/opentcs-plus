@@ -145,6 +145,7 @@ CREATE TABLE point (
     is_blocked TINYINT(1) DEFAULT 0 COMMENT '是否被阻塞',
     is_occupied TINYINT(1) DEFAULT 0 COMMENT '是否被占用',
     label VARCHAR(500) COMMENT '标签',
+    layout JSON COMMENT '点位布局数据',
     properties JSON COMMENT '扩展属性',
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -160,6 +161,7 @@ CREATE TABLE point (
 CREATE TABLE path (
     id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     navigation_map_id BIGINT NOT NULL COMMENT '归属导航地图ID',
+    layer_id BIGINT COMMENT '归属图层ID',
     path_id VARCHAR(255) NOT NULL COMMENT '路径唯一标识',
     name VARCHAR(255) NOT NULL COMMENT '路径名称',
     source_point_id VARCHAR(255) NOT NULL COMMENT '起始点位标识',
@@ -175,7 +177,8 @@ CREATE TABLE path (
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     del_flag CHAR(1) DEFAULT '0',
     CONSTRAINT pk_path PRIMARY KEY (id),
-    CONSTRAINT fk_path_navigation_map FOREIGN KEY (navigation_map_id) REFERENCES navigation_map(id) ON DELETE CASCADE
+    CONSTRAINT fk_path_navigation_map FOREIGN KEY (navigation_map_id) REFERENCES navigation_map(id) ON DELETE CASCADE,
+    CONSTRAINT fk_path_layer FOREIGN KEY (layer_id) REFERENCES factory_layer(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='路径表';
 
 -- ============================================================
@@ -184,6 +187,7 @@ CREATE TABLE path (
 CREATE TABLE location (
     id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     navigation_map_id BIGINT NOT NULL COMMENT '归属导航地图ID',
+    layer_id BIGINT COMMENT '归属图层ID',
     location_type_id BIGINT NOT NULL COMMENT '位置类型ID',
     location_id VARCHAR(255) NOT NULL COMMENT '位置唯一标识',
     name VARCHAR(255) NOT NULL COMMENT '位置名称',
@@ -192,12 +196,14 @@ CREATE TABLE location (
     position_z DECIMAL(12,4) DEFAULT 0 COMMENT 'Z坐标',
     locked TINYINT(1) DEFAULT 0 COMMENT '是否被锁定',
     is_occupied TINYINT(1) DEFAULT 0 COMMENT '是否被占用',
+    layout JSON COMMENT '位置布局数据',
     properties JSON COMMENT '扩展属性',
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     del_flag CHAR(1) DEFAULT '0',
     CONSTRAINT pk_location PRIMARY KEY (id),
     CONSTRAINT fk_location_navigation_map FOREIGN KEY (navigation_map_id) REFERENCES navigation_map(id) ON DELETE CASCADE,
+    CONSTRAINT fk_location_layer FOREIGN KEY (layer_id) REFERENCES factory_layer(id) ON DELETE SET NULL,
     CONSTRAINT fk_location_type FOREIGN KEY (location_type_id) REFERENCES location_type(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='位置表';
 

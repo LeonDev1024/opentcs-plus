@@ -44,11 +44,11 @@ public class MapEditorController {
 
     /**
      * 发布地图
-     * @param mapId 地图ID
+     * @param mapId 地图业务标识（mapId）
      * @return 是否发布成功
      */
     @PostMapping("/publish/{mapId}")
-    public R<Boolean> publish(@PathVariable Long mapId) {
+    public R<Boolean> publish(@PathVariable String mapId) {
         return R.ok(mapEditorService.publish(mapId));
     }
 }

@@ -17,6 +17,8 @@ public class LocationDTO {
 
     private Long navigationMapId;
 
+    private Long layerId;
+
     private Long locationTypeId;
 
     private String locationId;
@@ -38,6 +40,11 @@ public class LocationDTO {
     private String label;
 
     private String properties;
+
+    /**
+     * 位置布局数据（JSON）。
+     */
+    private String layout;
 
     private Date createTime;
 

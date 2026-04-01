@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.opentcs.common.core.dto.PathLayoutControlPointTO;
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.kernel.api.dto.PathDTO;
@@ -108,6 +107,7 @@ public class PathServiceImpl extends ServiceImpl<PathMapper, PathEntity> impleme
         PathEntity entity = new PathEntity();
         entity.setId(dto.getId());
         entity.setNavigationMapId(dto.getNavigationMapId());
+        entity.setLayerId(dto.getLayerId());
         entity.setPathId(dto.getPathId());
         entity.setName(dto.getName());
         entity.setSourcePointId(dto.getSourcePointId());
@@ -118,13 +118,18 @@ public class PathServiceImpl extends ServiceImpl<PathMapper, PathEntity> impleme
         entity.setLocked(dto.getLocked());
         entity.setIsBlocked(dto.getIsBlocked());
         entity.setProperties(dto.getProperties());
-        entity.setConnectionType(dto.getConnectionType());
-        entity.setLayoutControlPoints(dto.getLayoutControlPoints());
-        if (dto.getLayoutControlPoints() != null) {
+        entity.setLayout(dto.getLayout());
+        // 从 layout 回填关键派生字段（兼容仅传 layout 的场景）
+        PathLayoutPersist parsed = parseLayout(dto.getLayout());
+        if (entity.getLayerId() == null && parsed.layerId != null) {
+            entity.setLayerId(parsed.layerId);
+        }
+        if ((entity.getLayout() == null || entity.getLayout().isBlank()) && parsed.controlPoints != null) {
             try {
                 PathLayoutPersist persist = new PathLayoutPersist();
-                persist.connectionType = dto.getConnectionType() != null ? dto.getConnectionType() : "DIRECT";
-                persist.controlPoints = dto.getLayoutControlPoints();
+                persist.layerId = entity.getLayerId();
+                persist.connectionType = parsed.connectionType != null ? parsed.connectionType : "DIRECT";
+                persist.controlPoints = parsed.controlPoints;
                 entity.setLayout(objectMapper.writeValueAsString(persist));
             } catch (Exception e) {
                 throw new RuntimeException("序列化 path.layout 失败, pathId=" + dto.getPathId(), e);
@@ -136,15 +141,33 @@ public class PathServiceImpl extends ServiceImpl<PathMapper, PathEntity> impleme
     }
 
     private static class PathLayoutPersist {
+        public Long layerId;
         public String connectionType;
-        public List<org.opentcs.common.core.dto.PathLayoutControlPointTO> controlPoints;
+        public List<java.util.Map<String, Object>> controlPoints;
+    }
+
+    private PathLayoutPersist parseLayout(String layoutJson) {
+        if (layoutJson == null || layoutJson.isBlank()) {
+            return new PathLayoutPersist();
+        }
+        try {
+            if (layoutJson.trim().startsWith("[")) {
+                PathLayoutPersist persist = new PathLayoutPersist();
+                persist.controlPoints = objectMapper.readValue(
+                    layoutJson,
+                    new TypeReference<List<java.util.Map<String, Object>>>() {
+                    }
+                );
+                return persist;
+            }
+            return objectMapper.readValue(layoutJson, PathLayoutPersist.class);
+        } catch (Exception ignored) {
+            return new PathLayoutPersist();
+        }
     }
 
     private void hydratePathLayout(PathEntity path) {
         if (path == null) {
-            return;
-        }
-        if (path.getLayoutControlPoints() != null && !path.getLayoutControlPoints().isEmpty()) {
             return;
         }
         if (path.getLayout() == null || path.getLayout().isBlank()) {
@@ -153,16 +176,21 @@ public class PathServiceImpl extends ServiceImpl<PathMapper, PathEntity> impleme
         try {
             String layoutJson = path.getLayout().trim();
             if (layoutJson.startsWith("[")) {
-                List<PathLayoutControlPointTO> controlPoints = objectMapper.readValue(
+                List<java.util.Map<String, Object>> controlPoints = objectMapper.readValue(
                     layoutJson,
-                    new TypeReference<List<PathLayoutControlPointTO>>() {
+                    new TypeReference<List<java.util.Map<String, Object>>>() {
                     }
                 );
-                path.setLayoutControlPoints(controlPoints);
+                PathLayoutPersist persist = new PathLayoutPersist();
+                persist.layerId = path.getLayerId();
+                persist.connectionType = "DIRECT";
+                persist.controlPoints = controlPoints;
+                path.setLayout(objectMapper.writeValueAsString(persist));
             } else {
                 PathLayoutPersist persist = objectMapper.readValue(layoutJson, PathLayoutPersist.class);
-                path.setConnectionType(persist.connectionType);
-                path.setLayoutControlPoints(persist.controlPoints);
+                if (persist.layerId != null) {
+                    path.setLayerId(persist.layerId);
+                }
             }
         } catch (Exception ignored) {
             // ignore malformed legacy layout payload

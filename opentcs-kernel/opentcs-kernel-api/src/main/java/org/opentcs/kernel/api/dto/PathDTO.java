@@ -1,11 +1,9 @@
 package org.opentcs.kernel.api.dto;
 
 import lombok.Data;
-import org.opentcs.common.core.dto.PathLayoutControlPointTO;
 
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.List;
 
 /**
  * 路径数据传输对象
@@ -18,6 +16,8 @@ public class PathDTO {
     private Long plantModelId;
 
     private Long navigationMapId;
+
+    private Long layerId;
 
     private String pathId;
 
@@ -42,14 +42,9 @@ public class PathDTO {
     private String properties;
 
     /**
-     * 路径几何连接类型（DIRECT/ELBOW/BEZIER...）
+     * 路径布局数据（JSON）。
      */
-    private String connectionType;
-
-    /**
-     * 路径布局控制点（用于前端还原几何形状）
-     */
-    private List<PathLayoutControlPointTO> layoutControlPoints;
+    private String layout;
 
     private Date createTime;
 
