@@ -19,6 +19,7 @@ import org.opentcs.common.core.domain.dto.UserDTO;
 import org.opentcs.common.core.exception.ServiceException;
 import org.opentcs.common.core.service.UserService;
 import org.opentcs.common.core.utils.*;
+import org.opentcs.common.mybatis.helper.DataPermissionHelper;
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.common.satoken.utils.LoginHelper;
@@ -30,7 +31,6 @@ import org.opentcs.system.domain.vo.SysPostVo;
 import org.opentcs.system.domain.vo.SysRoleVo;
 import org.opentcs.system.domain.vo.SysUserExportVo;
 import org.opentcs.system.domain.vo.SysUserVo;
-import org.opentcs.system.mapper.*;
 import org.opentcs.system.mapper.*;
 import org.opentcs.system.service.ISysUserService;
 import org.springframework.cache.annotation.CacheEvict;
@@ -168,6 +168,17 @@ public class SysUserServiceImpl implements ISysUserService, UserService {
     @Override
     public SysUserVo selectUserByPhonenumber(String phonenumber) {
         return baseMapper.selectVoOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getPhonenumber, phonenumber));
+    }
+
+    /**
+     * 通过邮箱查询用户
+     *
+     * @param email 邮箱
+     * @return 用户对象信息
+     */
+    @Override
+    public SysUserVo selectUserByEmail(String email) {
+        return baseMapper.selectVoOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getEmail, email));
     }
 
     /**
@@ -577,6 +588,15 @@ public class SysUserServiceImpl implements ISysUserService, UserService {
         lqw.eq(SysUser::getDeptId, deptId);
         lqw.orderByAsc(SysUser::getUserId);
         return baseMapper.selectVoList(lqw);
+    }
+
+    @Override
+    public void recordLoginInfo(Long userId, String ip) {
+        SysUser sysUser = new SysUser();
+        sysUser.setUserId(userId);
+        sysUser.setLoginIp(ip);
+        sysUser.setLoginDate(DateUtils.getNowDate());
+        DataPermissionHelper.ignore(() -> baseMapper.updateById(sysUser));
     }
 
     /**

@@ -108,4 +108,21 @@ public class NavigationMapEntity extends BusinessEntity {
      * 栅格地图分辨率（米/像素）
      */
     private BigDecimal rasterResolution;
+
+    /**
+     * YAML原始origin参数 [ox, oy, angle]（米，度）
+     * 用于底图与SLAM地图坐标系对齐
+     */
+    private String yamlOrigin;
+
+    /**
+     * YAML文件OSS存储路径
+     */
+    private String yamlUrl;
+
+    /**
+     * 地图在工厂坐标系下的原点偏移 [x, y, angle]（毫米，度）
+     * 替代 originX/originY/rotation，用于多地图统一显示
+     */
+    private String mapOrigin;
 }

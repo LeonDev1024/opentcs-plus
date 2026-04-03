@@ -123,6 +123,16 @@ public class MapEditorServiceImpl implements IMapEditorService {
         mapInfo.setCreateTime(navMapDTO.getCreateTime());
         mapInfo.setUpdateTime(navMapDTO.getUpdateTime());
 
+        // 设置栅格底图相关字段
+        mapInfo.setRasterUrl(navMapDTO.getRasterUrl());
+        mapInfo.setRasterVersion(navMapDTO.getRasterVersion());
+        mapInfo.setRasterWidth(navMapDTO.getRasterWidth());
+        mapInfo.setRasterHeight(navMapDTO.getRasterHeight());
+        mapInfo.setRasterResolution(navMapDTO.getRasterResolution());
+        mapInfo.setYamlOrigin(navMapDTO.getYamlOrigin());
+        mapInfo.setYamlUrl(navMapDTO.getYamlUrl());
+        mapInfo.setMapOrigin(navMapDTO.getMapOrigin());
+
         MapEditorDTO dto = new MapEditorDTO();
         dto.setMapInfo(mapInfo);
         dto.setPoints(points);

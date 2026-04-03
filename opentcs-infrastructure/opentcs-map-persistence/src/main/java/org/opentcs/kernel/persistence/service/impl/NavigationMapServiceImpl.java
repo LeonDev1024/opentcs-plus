@@ -129,6 +129,9 @@ public class NavigationMapServiceImpl extends ServiceImpl<NavigationMapMapper, N
         entity.setRasterWidth(navigationMap.getRasterWidth());
         entity.setRasterHeight(navigationMap.getRasterHeight());
         entity.setRasterResolution(navigationMap.getRasterResolution());
+        entity.setYamlOrigin(navigationMap.getYamlOrigin());
+        entity.setYamlUrl(navigationMap.getYamlUrl());
+        entity.setMapOrigin(navigationMap.getMapOrigin());
         entity.setCreateTime(navigationMap.getCreateTime());
         entity.setUpdateTime(navigationMap.getUpdateTime());
         return this.updateById(entity);

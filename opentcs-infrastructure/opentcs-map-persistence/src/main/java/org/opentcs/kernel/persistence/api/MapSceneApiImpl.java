@@ -340,6 +340,9 @@ public class MapSceneApiImpl implements MapSceneApi {
         entity.setRasterWidth(dto.getRasterWidth());
         entity.setRasterHeight(dto.getRasterHeight());
         entity.setRasterResolution(dto.getRasterResolution());
+        entity.setYamlUrl(dto.getYamlUrl());
+        entity.setYamlOrigin(dto.getYamlOrigin());
+        entity.setMapOrigin(dto.getMapOrigin());
         entity.setCreateTime(dto.getCreateTime());
         entity.setUpdateTime(dto.getUpdateTime());
         return entity;

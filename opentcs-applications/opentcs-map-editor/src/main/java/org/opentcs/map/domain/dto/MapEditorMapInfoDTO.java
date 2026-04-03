@@ -18,7 +18,7 @@ public class MapEditorMapInfoDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 地图主键ID（仅内部兼容字段，前端与接口调用请统一使用 mapId）
+     * 地图主键ID（数据库自增）
      */
     private Long id;
 
@@ -81,4 +81,46 @@ public class MapEditorMapInfoDTO implements Serializable {
      * 更新时间（加载时返回）
      */
     private Date updateTime;
+
+    // ==================== 栅格底图相关字段 ====================
+
+    /**
+     * 栅格地图OSS存储路径
+     */
+    private String rasterUrl;
+
+    /**
+     * 栅格地图版本号
+     */
+    private Integer rasterVersion;
+
+    /**
+     * 栅格地图宽度（像素）
+     */
+    private Integer rasterWidth;
+
+    /**
+     * 栅格地图高度（像素）
+     */
+    private Integer rasterHeight;
+
+    /**
+     * 栅格地图分辨率（米/像素）
+     */
+    private BigDecimal rasterResolution;
+
+    /**
+     * YAML原始origin参数 [ox, oy, angle]（米，度）
+     */
+    private String yamlOrigin;
+
+    /**
+     * YAML文件OSS存储路径
+     */
+    private String yamlUrl;
+
+    /**
+     * 地图在工厂坐标系下的原点偏移 [x, y, angle]（毫米，度）
+     */
+    private String mapOrigin;
 }
