@@ -68,6 +68,14 @@ public interface ISysUserService {
     SysUserVo selectUserByPhonenumber(String phonenumber);
 
     /**
+     * 通过邮箱查询用户
+     *
+     * @param email 邮箱
+     * @return 用户对象信息
+     */
+    SysUserVo selectUserByEmail(String email);
+
+    /**
      * 通过用户ID查询用户
      *
      * @param userId 用户ID
@@ -228,4 +236,12 @@ public interface ISysUserService {
      * @return 结果
      */
     List<SysUserVo> selectUserListByDept(Long deptId);
+
+    /**
+     * 记录登录 IP 与时间（忽略数据权限）
+     *
+     * @param userId 用户ID
+     * @param ip     登录 IP
+     */
+    void recordLoginInfo(Long userId, String ip);
 }
