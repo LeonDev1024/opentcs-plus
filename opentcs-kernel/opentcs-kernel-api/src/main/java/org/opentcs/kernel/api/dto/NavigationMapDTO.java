@@ -118,4 +118,19 @@ public class NavigationMapDTO {
      * 栅格地图分辨率（米/像素）
      */
     private BigDecimal rasterResolution;
+
+    /**
+     * YAML原始origin参数 [ox, oy, angle]（米，度）
+     */
+    private String yamlOrigin;
+
+    /**
+     * YAML文件OSS存储路径
+     */
+    private String yamlUrl;
+
+    /**
+     * 地图在工厂坐标系下的原点偏移 [x, y, angle]（毫米，度）
+     */
+    private String mapOrigin;
 }
