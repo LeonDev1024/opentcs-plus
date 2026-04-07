@@ -4,6 +4,8 @@
 
     <resultMap type="org.opentcs.vehicle.persistence.entity.VehicleTypeEntity" id="VehicleTypeResult">
         <result property="id" column="id"/>
+        <result property="brandId" column="brand_id"/>
+        <result property="brandName" column="brand_name"/>
         <result property="name" column="name"/>
         <result property="length" column="length"/>
         <result property="width" column="width"/>
@@ -22,8 +24,9 @@
     </resultMap>
 
     <sql id="selectVehicleTypeVo">
-        SELECT id, name, length, width, height, max_velocity, max_reverse_velocity, energy_level, allowed_orders, allowed_peripheral_operations, properties, create_by, update_by, create_time, update_time, del_flag
-        FROM vehicle_type
+        SELECT t.id, t.brand_id, b.name as brand_name, t.name, t.length, t.width, t.height, t.max_velocity, t.max_reverse_velocity, t.energy_level, t.allowed_orders, t.allowed_peripheral_operations, t.properties, t.create_by, t.update_by, t.create_time, t.update_time, t.del_flag
+        FROM vehicle_type t
+        LEFT JOIN brand b ON t.brand_id = b.id AND b.del_flag = '0'
     </sql>
 
     <select id="selectPageVehicleType" parameterType="org.opentcs.vehicle.persistence.entity.VehicleTypeEntity"
@@ -31,8 +34,12 @@
         <include refid="selectVehicleTypeVo"/>
         <where>
             <if test="vehicleType.name != null and vehicleType.name != ''">
-                AND name LIKE CONCAT('%', #{vehicleType.name}, '%')
+                AND t.name LIKE CONCAT('%', #{vehicleType.name}, '%')
             </if>
+            <if test="vehicleType.brandId != null">
+                AND t.brand_id = #{vehicleType.brandId}
+            </if>
+            AND t.del_flag = '0'
         </where>
     </select>
 

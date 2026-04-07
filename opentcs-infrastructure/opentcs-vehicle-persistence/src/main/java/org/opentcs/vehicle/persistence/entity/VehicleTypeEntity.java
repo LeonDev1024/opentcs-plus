@@ -27,6 +27,17 @@ public class VehicleTypeEntity extends ConfigEntity {
     private Long id;
 
     /**
+     * 所属品牌ID
+     */
+    private Long brandId;
+
+    /**
+     * 品牌名称（非数据库字段，来自JOIN查询）
+     */
+    @TableField(exist = false)
+    private String brandName;
+
+    /**
      * 车辆类型名称
      */
     private String name;
