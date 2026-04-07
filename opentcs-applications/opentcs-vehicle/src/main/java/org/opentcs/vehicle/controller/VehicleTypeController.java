@@ -69,4 +69,16 @@ public class VehicleTypeController extends BaseController {
     public R<Boolean> deleteVehicleType(@PathVariable Long id) {
         return R.ok(vehicleTypeService.removeById(id));
     }
+
+    /**
+     * 根据品牌ID获取类型列表
+     */
+    @GetMapping("/by-brand/{brandId}")
+    public R<List<VehicleTypeEntity>> getVehicleTypesByBrandId(@PathVariable Long brandId) {
+        VehicleTypeEntity query = new VehicleTypeEntity();
+        query.setBrandId(brandId);
+        return R.ok(vehicleTypeService.list(new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<VehicleTypeEntity>()
+                .eq(VehicleTypeEntity::getBrandId, brandId)
+                .eq(VehicleTypeEntity::getDelFlag, "0")));
+    }
 }
