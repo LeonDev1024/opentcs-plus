@@ -17,6 +17,10 @@ public class OrderSpecDTO {
 
     private String intendedVehicle;  // 指定车辆（可选）
 
+    private String sourcePointId;  // 起点（用于路径规划）
+
+    private String destPointId;  // 终点（用于路径规划）
+
     private Long deadline;  // 截止时间戳
 
     private Map<String, String> properties;
@@ -44,6 +48,22 @@ public class OrderSpecDTO {
 
     public void setIntendedVehicle(String intendedVehicle) {
         this.intendedVehicle = intendedVehicle;
+    }
+
+    public String getSourcePointId() {
+        return sourcePointId;
+    }
+
+    public void setSourcePointId(String sourcePointId) {
+        this.sourcePointId = sourcePointId;
+    }
+
+    public String getDestPointId() {
+        return destPointId;
+    }
+
+    public void setDestPointId(String destPointId) {
+        this.destPointId = destPointId;
     }
 
     public Long getDeadline() {

@@ -1,9 +1,9 @@
 package org.opentcs.order.application;
 
-import org.opentcs.kernel.api.OrderLifecycleApi;
+import org.opentcs.kernel.api.TransportOrderApi;
+import org.opentcs.kernel.api.dto.OrderSpecDTO;
 import org.opentcs.kernel.application.TransportOrderRegistry;
 import org.opentcs.kernel.application.VehicleRegistry;
-import org.opentcs.kernel.application.DispatcherService;
 import org.opentcs.kernel.api.dto.TransportOrderEntityDTO;
 import org.opentcs.kernel.domain.order.TransportOrder;
 import org.opentcs.kernel.domain.order.OrderState;
@@ -32,12 +32,12 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class TransportOrderApplicationService implements OrderLifecycleApi {
+public class TransportOrderApplicationService {
 
     private final TransportOrderDomainService orderService;
     private final TransportOrderRegistry orderRegistry;
     private final VehicleRegistry vehicleRegistry;
-    private final DispatcherService dispatcherService;
+    private final TransportOrderApi transportOrderApi;
 
     /**
      * 创建运输订单
@@ -66,15 +66,18 @@ public class TransportOrderApplicationService implements OrderLifecycleApi {
                     ? entity.getDestinations().split(",")[1]
                     : (entity.getDestinations() != null ? entity.getDestinations() : "");
 
-            TransportOrder kernelOrder = dispatcherService.createAndDispatchOrder(
-                    orderId,
-                    sourcePoint,
-                    destPoint,
-                    entity.getName()
-            );
+            // 使用统一 API 创建订单（自动进行路径规划）
+            OrderSpecDTO orderSpec = new OrderSpecDTO();
+            orderSpec.setName(entity.getName());
+            orderSpec.setSourcePointId(sourcePoint);
+            orderSpec.setDestPointId(destPoint);
+
+            String createdOrderId = transportOrderApi.createOrder(orderSpec);
+            transportOrderApi.activateOrder(createdOrderId);
 
             // 更新数据库状态
-            entity.setState(kernelOrder.getState().name());
+            entity.setOrderNo(createdOrderId);
+            entity.setState("ACTIVE");
             orderService.updateById(entity);
 
             log.info("运输订单创建成功: {} -> {}", sourcePoint, destPoint);
@@ -101,7 +104,6 @@ public class TransportOrderApplicationService implements OrderLifecycleApi {
         TransportOrder kernelOrder = orderRegistry.getOrder(entity.getOrderNo());
         if (kernelOrder != null) {
             kernelOrder.cancel();
-            orderRegistry.cancelOrder(entity.getOrderNo());
         }
 
         // 更新数据库
@@ -123,14 +125,16 @@ public class TransportOrderApplicationService implements OrderLifecycleApi {
         }
 
         // 检查车辆是否可用
-        Vehicle vehicle = vehicleRegistry.getVehicle(vehicleId);
+        Vehicle vehicle = vehicleRegistry.getVehicleDomain(vehicleId);
         if (vehicle == null || !vehicle.canAcceptOrder()) {
             throw new RuntimeException("车辆不可用: " + vehicleId);
         }
 
         // 分配订单
-        orderRegistry.assignOrder(entity.getOrderNo(), vehicleId);
-        vehicleRegistry.assignOrderToVehicle(vehicleId, entity.getOrderNo());
+        TransportOrder kernelOrder = orderRegistry.getOrder(entity.getOrderNo());
+        if (kernelOrder != null) {
+            kernelOrder.assignTo(vehicleId);
+        }
 
         // 更新数据库
         entity.setState("DISPATCHED");
@@ -189,20 +193,17 @@ public class TransportOrderApplicationService implements OrderLifecycleApi {
         if (kernelOrder != null) {
             String processingVehicle = kernelOrder.getProcessingVehicle();
             if (processingVehicle != null) {
-                dispatcherService.vehicleCompletedOrder(processingVehicle);
-            }
-            else {
+                // 通知内核车辆完成订单
+                transportOrderApi.onOrderCompleted(orderId, processingVehicle, true);
+            } else {
                 kernelOrder.complete();
-                orderRegistry.completeOrder(orderId);
             }
 
-            // 更新数据库
             TransportOrderEntity entity = orderService.getByOrderNo(orderId);
             if (entity != null) {
                 entity.setState("FINISHED");
                 orderService.updateById(entity);
             }
-
             log.info("订单已完成: {}", orderId);
         }
     }
@@ -215,27 +216,22 @@ public class TransportOrderApplicationService implements OrderLifecycleApi {
         if (kernelOrder != null) {
             String processingVehicle = kernelOrder.getProcessingVehicle();
             if (processingVehicle != null) {
-                dispatcherService.vehicleCancelledOrder(processingVehicle);
-            }
-            else {
+                // 通知内核车辆取消订单
+                transportOrderApi.onOrderCompleted(orderId, processingVehicle, false);
+            } else {
                 kernelOrder.fail();
-                orderRegistry.releaseOrder(orderId);
             }
 
-            // 更新数据库
             TransportOrderEntity entity = orderService.getByOrderNo(orderId);
             if (entity != null) {
                 entity.setState("FAILED");
-                // 使用properties字段存储备注
                 entity.setProperties("{\"remark\":\"" + reason + "\"}");
                 orderService.updateById(entity);
             }
-
             log.info("订单失败: {}, 原因: {}", orderId, reason);
         }
     }
 
-    @Override
     public void onOrderExecutionResult(String orderId, String vehicleId, boolean success, String reason) {
         TransportOrder kernelOrder = orderRegistry.getOrder(orderId);
         if (kernelOrder == null) {
@@ -245,7 +241,6 @@ public class TransportOrderApplicationService implements OrderLifecycleApi {
         TransportOrderEntity entity = orderService.getByOrderNo(orderId);
         if (success) {
             kernelOrder.complete();
-            orderRegistry.completeOrder(orderId);
             if (entity != null) {
                 entity.setState("FINISHED");
                 entity.setProcessingVehicle(vehicleId);
@@ -254,7 +249,6 @@ public class TransportOrderApplicationService implements OrderLifecycleApi {
             log.info("订单执行成功: orderId={}, vehicleId={}", orderId, vehicleId);
         } else {
             kernelOrder.fail();
-            orderRegistry.releaseOrder(orderId);
             if (entity != null) {
                 entity.setState("FAILED");
                 entity.setProcessingVehicle(vehicleId);
