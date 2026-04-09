@@ -23,26 +23,6 @@ public class TransportOrderRegistry {
     }
 
     /**
-     * 取消订单
-     */
-    public void cancelOrder(String orderId) {
-        TransportOrder order = orders.get(orderId);
-        if (order != null) {
-            order.cancel();
-        }
-    }
-
-    /**
-     * 完成订单
-     */
-    public void completeOrder(String orderId) {
-        TransportOrder order = orders.get(orderId);
-        if (order != null) {
-            order.complete();
-        }
-    }
-
-    /**
      * 获取订单
      */
     public TransportOrder getOrder(String orderId) {
@@ -79,26 +59,6 @@ public class TransportOrderRegistry {
      */
     public boolean orderExists(String orderId) {
         return orders.containsKey(orderId);
-    }
-
-    /**
-     * 分配订单给车辆
-     */
-    public void assignOrder(String orderId, String vehicleId) {
-        TransportOrder order = orders.get(orderId);
-        if (order != null) {
-            order.assignTo(vehicleId);
-        }
-    }
-
-    /**
-     * 释放订单（车辆完成或取消）
-     */
-    public void releaseOrder(String orderId) {
-        TransportOrder order = orders.get(orderId);
-        if (order != null) {
-            order.release();
-        }
     }
 
     /**

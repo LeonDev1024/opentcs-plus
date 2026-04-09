@@ -1,34 +1,37 @@
 package org.opentcs.vehicle.application;
 
-import org.opentcs.kernel.api.OrderLifecycleApi;
-import org.opentcs.kernel.application.DispatcherService;
-import org.opentcs.kernel.application.VehicleRegistry;
-import org.opentcs.kernel.application.TransportOrderRegistry;
-import org.opentcs.kernel.domain.vehicle.Vehicle;
-import org.opentcs.kernel.domain.vehicle.VehicleState;
-import org.opentcs.kernel.domain.vehicle.VehiclePosition;
-import org.opentcs.kernel.domain.order.TransportOrder;
-import org.opentcs.kernel.api.dto.VehicleEntityDTO;
-import org.opentcs.kernel.api.dto.VehicleDTO;
-import org.opentcs.kernel.api.dto.TransportOrderDTO;
-import org.opentcs.kernel.api.dto.VehicleStateDTO;
-import org.opentcs.kernel.api.dto.OrderStateDTO;
-import org.opentcs.kernel.api.dto.PositionDTO;
+import org.opentcs.common.mybatis.core.page.PageQuery;
+import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.driver.api.dto.DriverConfig;
 import org.opentcs.driver.api.dto.InstantAction;
-import org.opentcs.driver.registry.DriverRegistry;
-import org.opentcs.vehicle.persistence.service.VehicleDomainService;
 import org.opentcs.driver.api.dto.VehicleStatus;
+import org.opentcs.driver.registry.DriverRegistry;
+import org.opentcs.kernel.api.OrderLifecycleApi;
+import org.opentcs.kernel.api.dto.OrderStateDTO;
+import org.opentcs.kernel.api.dto.PositionDTO;
+import org.opentcs.kernel.api.dto.TransportOrderDTO;
+import org.opentcs.kernel.api.dto.VehicleCrudDTO;
+import org.opentcs.kernel.api.dto.VehicleDTO;
+import org.opentcs.kernel.api.dto.VehicleEntityDTO;
+import org.opentcs.kernel.application.TransportOrderRegistry;
+import org.opentcs.kernel.application.VehicleRegistry;
+import org.opentcs.kernel.domain.order.TransportOrder;
+import org.opentcs.kernel.domain.vehicle.Vehicle;
+import org.opentcs.kernel.domain.vehicle.VehiclePosition;
+import org.opentcs.kernel.domain.vehicle.VehicleState;
 import org.opentcs.vehicle.persistence.entity.VehicleEntity;
+import org.opentcs.vehicle.persistence.service.VehicleDomainService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.annotation.PostConstruct;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -43,9 +46,51 @@ public class VehicleApplicationService {
     private final VehicleDomainService vehicleService;
     private final VehicleRegistry vehicleRegistry;
     private final TransportOrderRegistry orderRegistry;
-    private final DispatcherService dispatcherService;
     private final OrderLifecycleApi orderLifecycleApi;
     private final DriverRegistry driverRegistry;
+
+    /**
+     * 启动时向驱动层注册状态监听器，自动检测订单完成事件。
+     */
+    @PostConstruct
+    public void initStatusListener() {
+        driverRegistry.addStatusListener(this::handleDriverStatus);
+        log.info("已注册驱动状态监听器");
+    }
+
+    /**
+     * 驱动层推送的状态变更处理：
+     * 1. 更新内核运行时状态（位置、电量、AGV 状态）
+     * 2. 检测订单完成：车辆从 EXECUTING/WAITING 转为 IDLE 时，通知 OrderLifecycleApi
+     */
+    private void handleDriverStatus(VehicleStatus status) {
+        String vehicleId = status.getVehicleId();
+        Vehicle kernelVehicle = vehicleRegistry.getVehicleDomain(vehicleId);
+        if (kernelVehicle == null) {
+            log.warn("未注册车辆的状态推送，已忽略: {}", vehicleId);
+            return;
+        }
+
+        VehicleState previousState = kernelVehicle.getState();
+        String activeOrderId = vehicleRegistry.getVehicleCurrentOrder(vehicleId);
+
+        // 更新内核状态（位置、电量、AGV 状态）
+        onVehicleStatusChanged(status);
+
+        // 检测订单完成：车辆曾处于执行/等待状态，且 AGV 回报 IDLE
+        boolean wasExecuting = previousState == VehicleState.EXECUTING
+                || previousState == VehicleState.WAITING;
+        boolean isNowIdle = "IDLE".equalsIgnoreCase(status.getAgvState());
+
+        if (wasExecuting && isNowIdle && activeOrderId != null) {
+            boolean hasFault = status.getErrors() != null && status.getErrors().stream()
+                    .anyMatch(e -> "FAULT".equalsIgnoreCase(e.getErrorLevel()));
+            orderLifecycleApi.onOrderExecutionResult(
+                    activeOrderId, vehicleId, !hasFault,
+                    hasFault ? "AGV 报告 FAULT 错误，订单执行失败" : null);
+            log.info("订单执行结果已上报: orderId={}, vehicleId={}, success={}", activeOrderId, vehicleId, !hasFault);
+        }
+    }
 
     /**
      * 注册车辆到系统
@@ -70,7 +115,7 @@ public class VehicleApplicationService {
         Vehicle kernelVehicle = new Vehicle(entity.getName());
         kernelVehicle.setName(entity.getName());
         kernelVehicle.updateState(VehicleState.UNAVAILABLE);
-        vehicleRegistry.registerVehicle(kernelVehicle);
+        vehicleRegistry.registerVehicleDomain(kernelVehicle);
 
         // 3. 配置驱动连接（延迟连接）
         if (driverConfig != null) {
@@ -92,7 +137,7 @@ public class VehicleApplicationService {
         }
 
         // 1. 从内核注销
-        vehicleRegistry.unregisterVehicle(entity.getName());
+        vehicleRegistry.unregisterVehicleDomain(entity.getName());
 
         // 2. 从驱动注销
         driverRegistry.unregisterVehicle(entity.getName());
@@ -119,7 +164,7 @@ public class VehicleApplicationService {
         vehicleService.updateById(entity);
 
         // 更新内核状态
-        vehicleRegistry.updateVehicleState(entity.getName(), VehicleState.IDLE);
+        vehicleRegistry.updateVehicleStateDomain(entity.getName(), VehicleState.IDLE);
 
         log.info("车辆激活成功: {}", entity.getName());
         return true;
@@ -135,7 +180,7 @@ public class VehicleApplicationService {
         }
 
         // 检查是否有未完成的订单
-        Vehicle kernelVehicle = vehicleRegistry.getVehicle(entity.getName());
+        Vehicle kernelVehicle = vehicleRegistry.getVehicleDomain(entity.getName());
         if (kernelVehicle != null && kernelVehicle.getCurrentOrderId() != null) {
             throw new RuntimeException("车辆有未完成的订单，无法停用");
         }
@@ -146,7 +191,7 @@ public class VehicleApplicationService {
         vehicleService.updateById(entity);
 
         // 更新内核状态
-        vehicleRegistry.updateVehicleState(entity.getName(), VehicleState.UNAVAILABLE);
+        vehicleRegistry.updateVehicleStateDomain(entity.getName(), VehicleState.UNAVAILABLE);
 
         log.info("车辆停用成功: {}", entity.getName());
         return true;
@@ -156,7 +201,7 @@ public class VehicleApplicationService {
      * 获取车辆实时状态（从内核）
      */
     public VehicleDTO getVehicleRuntimeStatus(String vehicleId) {
-        Vehicle kernelVehicle = vehicleRegistry.getVehicle(vehicleId);
+        Vehicle kernelVehicle = vehicleRegistry.getVehicleDomain(vehicleId);
         if (kernelVehicle == null) {
             return null;
         }
@@ -168,7 +213,7 @@ public class VehicleApplicationService {
      * 获取所有车辆实时状态
      */
     public List<VehicleDTO> getAllVehicleRuntimeStatus() {
-        return vehicleRegistry.getAllVehicles().stream()
+        return vehicleRegistry.getAllVehicleDomains().stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
@@ -177,7 +222,7 @@ public class VehicleApplicationService {
      * 获取可用车辆
      */
     public List<VehicleDTO> getAvailableVehicles() {
-        return vehicleRegistry.getAvailableVehicles().stream()
+        return vehicleRegistry.getAvailableVehicleDomains().stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
@@ -187,7 +232,7 @@ public class VehicleApplicationService {
      */
     public void sendInstantAction(String vehicleId, InstantAction action) {
         // 检查车辆是否在线
-        if (!vehicleRegistry.isOnline(vehicleId)) {
+        if (!vehicleRegistry.isOnline(vehicleId)) {  // domain helper
             throw new RuntimeException("车辆离线: " + vehicleId);
         }
 
@@ -204,7 +249,7 @@ public class VehicleApplicationService {
         String vehicleId = status.getVehicleId();
 
         // 从内核获取车辆
-        Vehicle kernelVehicle = vehicleRegistry.getVehicle(vehicleId);
+        Vehicle kernelVehicle = vehicleRegistry.getVehicleDomain(vehicleId);
         if (kernelVehicle == null) {
             log.warn("状态变更ignored - 车辆未注册: {}", vehicleId);
             return;
@@ -212,7 +257,7 @@ public class VehicleApplicationService {
 
         // 更新内核状态
         VehicleState newState = mapToVehicleState(status.getAgvState());
-        vehicleRegistry.updateVehicleState(vehicleId, newState);
+        vehicleRegistry.updateVehicleStateDomain(vehicleId, newState);
 
         // 更新位置信息
         VehiclePosition position = new VehiclePosition(
@@ -223,38 +268,36 @@ public class VehicleApplicationService {
                 0,
                 status.getTheta() != null ? status.getTheta() : 0
         );
-        vehicleRegistry.updateVehiclePosition(vehicleId, position);
+        vehicleRegistry.updateVehiclePositionDomain(vehicleId, position);
 
         // 更新能量
         if (status.getBatteryState() != null) {
-            vehicleRegistry.updateVehicleEnergy(vehicleId, status.getBatteryState());
+            vehicleRegistry.updateVehicleEnergyDomain(vehicleId, status.getBatteryState());
         }
 
         log.debug("车辆状态已更新: {} -> {}", vehicleId, newState);
     }
 
     /**
-     * 车辆完成订单
+     * 车辆完成订单——通过 OrderLifecycleApi 统一回调，由 OrderLifecycleService 负责调度状态更新。
      */
     public void onVehicleOrderCompleted(String vehicleId) {
         String orderId = vehicleRegistry.getVehicleCurrentOrder(vehicleId);
-        dispatcherService.vehicleCompletedOrder(vehicleId);
         if (orderId != null) {
             orderLifecycleApi.onOrderExecutionResult(orderId, vehicleId, true, null);
         }
-        log.info("车辆订单完成: {}", vehicleId);
+        log.info("车辆订单完成: vehicleId={}, orderId={}", vehicleId, orderId);
     }
 
     /**
-     * 车辆订单取消
+     * 车辆订单取消——通过 OrderLifecycleApi 统一回调。
      */
     public void onVehicleOrderCancelled(String vehicleId) {
         String orderId = vehicleRegistry.getVehicleCurrentOrder(vehicleId);
-        dispatcherService.vehicleCancelledOrder(vehicleId);
         if (orderId != null) {
             orderLifecycleApi.onOrderExecutionResult(orderId, vehicleId, false, "车辆侧取消订单");
         }
-        log.info("车辆订单取消: {}", vehicleId);
+        log.info("车辆订单取消: vehicleId={}, orderId={}", vehicleId, orderId);
     }
 
     /**
@@ -285,7 +328,7 @@ public class VehicleApplicationService {
         stats.put("totalVehicles", totalVehicles);
 
         // 内核运行时统计
-        List<Vehicle> allVehicles = vehicleRegistry.getAllVehicles();
+        List<Vehicle> allVehicles = vehicleRegistry.getAllVehicleDomains();
         long idleCount = allVehicles.stream()
                 .filter(v -> v.getState() == VehicleState.IDLE)
                 .count();
@@ -317,6 +360,52 @@ public class VehicleApplicationService {
         stats.put("utilizationRate", utilizationRate);
 
         return stats;
+    }
+
+    // ===== CRUD 委托方法（供 Controller 调用，屏蔽 persistence 层） =====
+
+    public TableDataInfo<VehicleCrudDTO> listVehicles(VehicleEntityDTO query, PageQuery pageQuery) {
+        return vehicleService.selectPageVehicleDTO(toEntity(query), pageQuery);
+    }
+
+    public List<VehicleCrudDTO> getAllVehicles() {
+        return vehicleService.list().stream()
+                .map(entity -> vehicleService.getVehicleDTOById(entity.getId()))
+                .collect(Collectors.toList());
+    }
+
+    public VehicleCrudDTO getVehicleCrudById(Long id) {
+        return vehicleService.getVehicleDTOById(id);
+    }
+
+    @Transactional
+    public boolean createVehicle(VehicleEntityDTO vehicle) {
+        return vehicleService.save(toEntity(vehicle));
+    }
+
+    @Transactional
+    public boolean updateVehicle(VehicleEntityDTO vehicle) {
+        return vehicleService.updateById(toEntity(vehicle));
+    }
+
+    @Transactional
+    public boolean deleteVehicle(Long id) {
+        return vehicleService.removeById(id);
+    }
+
+    public VehicleEntityDTO getVehicleStatus(Long id) {
+        VehicleEntity entity = vehicleService.getVehicleStatus(id);
+        return toDTO(entity);
+    }
+
+    public List<VehicleEntityDTO> getAllVehicleStatus() {
+        List<VehicleEntity> list = vehicleService.getAllVehicleStatus();
+        if (list == null) return new ArrayList<>();
+        return list.stream().map(this::toDTO).collect(Collectors.toList());
+    }
+
+    public TableDataInfo<Map<String, Object>> getVehicleHistory(Long id, PageQuery pageQuery) {
+        return vehicleService.getVehicleHistory(id, pageQuery);
     }
 
     // ===== 辅助方法 =====
@@ -376,6 +465,25 @@ public class VehicleApplicationService {
             default:
                 return VehicleState.UNKNOWN;
         }
+    }
+
+    private VehicleEntityDTO toDTO(VehicleEntity entity) {
+        if (entity == null) return null;
+        VehicleEntityDTO dto = new VehicleEntityDTO();
+        dto.setId(entity.getId());
+        dto.setName(entity.getName());
+        dto.setVinCode(entity.getVinCode());
+        dto.setVehicleTypeId(entity.getVehicleTypeId());
+        dto.setCurrentPosition(entity.getCurrentPosition());
+        dto.setNextPosition(entity.getNextPosition());
+        dto.setState(entity.getState());
+        dto.setIntegrationLevel(entity.getIntegrationLevel());
+        dto.setEnergyLevel(entity.getEnergyLevel());
+        dto.setCurrentTransportOrder(entity.getCurrentTransportOrder());
+        dto.setProperties(entity.getProperties());
+        dto.setCreateTime(entity.getCreateTime());
+        dto.setUpdateTime(entity.getUpdateTime());
+        return dto;
     }
 
     private VehicleEntity toEntity(VehicleEntityDTO dto) {

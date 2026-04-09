@@ -21,8 +21,8 @@
         <module>opentcs-driver</module>
         <!-- 安全模块 -->
         <module>opentcs-security</module>
-        <!-- 策略模块 - 调度/路由/资源分配算法实现 -->
-        <module>opentcs-strategies-default</module>
+        <!-- 算法层（内置策略 + SPI + 加载器 + gRPC桥接） -->
+        <module>opentcs-algorithm</module>
         <!-- 接口层 (依赖于上面所有模块) -->
         <module>opentcs-admin</module>
     </modules>
@@ -72,6 +72,8 @@
         <flatten-maven-plugin.version>1.3.0</flatten-maven-plugin.version>
         <!-- 打包默认跳过测试 -->
         <skipTests>true</skipTests>
+        <!-- 测试框架版本 -->
+        <mockito.version>5.14.0</mockito.version>
     </properties>
 
     <profiles>
@@ -122,10 +124,19 @@
                 <scope>import</scope>
             </dependency>
 
-            <!-- common 的依赖配置-->
+            <!-- common 核心基础设施 BOM（持久化/缓存/Web/认证/消息等）-->
             <dependency>
                 <groupId>org.opentcs</groupId>
                 <artifactId>opentcs-common-bom</artifactId>
+                <version>${revision}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- common 可选扩展 BOM（短信/邮件/OSS/社交登录/Excel 等，按需引入）-->
+            <dependency>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-common-extensions-bom</artifactId>
                 <version>${revision}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -162,9 +173,10 @@
                 <artifactId>opentcs-order-persistence</artifactId>
                 <version>${revision}</version>
             </dependency>
+            <!-- 算法层（内置策略 + 插件化框架） -->
             <dependency>
                 <groupId>org.opentcs</groupId>
-                <artifactId>opentcs-strategies-default</artifactId>
+                <artifactId>opentcs-algorithm</artifactId>
                 <version>${revision}</version>
             </dependency>
 

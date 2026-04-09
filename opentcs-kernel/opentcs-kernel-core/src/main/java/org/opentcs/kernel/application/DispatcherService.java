@@ -1,310 +1,298 @@
 package org.opentcs.kernel.application;
 
-import org.opentcs.kernel.domain.order.TransportOrder;
+import org.opentcs.kernel.api.algorithm.Dispatcher;
 import org.opentcs.kernel.domain.order.OrderState;
-import org.opentcs.kernel.domain.vehicle.Vehicle;
-import org.opentcs.kernel.domain.vehicle.VehicleState;
-import org.opentcs.kernel.domain.routing.Point;
-import org.opentcs.kernel.domain.routing.Path;
+import org.opentcs.kernel.domain.order.TransportOrder;
 import org.opentcs.kernel.domain.event.OrderCreatedEvent;
 import org.opentcs.kernel.domain.event.VehicleStateChangedEvent;
+import org.opentcs.kernel.domain.routing.Point;
+import org.opentcs.kernel.domain.vehicle.Vehicle;
+import org.opentcs.kernel.domain.vehicle.VehicleState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import jakarta.annotation.PostConstruct;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 调度服务 - 负责将运输订单分配给车辆
+ * 调度服务——将运输订单分配给最优可用车辆，同时实现 {@link Dispatcher} 端口接口。
+ * <p>
+ * 依赖：
+ * <ul>
+ *   <li>{@link VehicleRegistry} — 车辆运行时状态</li>
+ *   <li>{@link TransportOrderRegistry} — 订单内存库</li>
+ *   <li>{@link RoutePlannerImpl} — 路径规划</li>
+ *   <li>{@link ApplicationEventPublisher} — Spring 事件发布</li>
+ * </ul>
+ * </p>
  */
-public class DispatcherService {
+public class DispatcherService implements Dispatcher {
+
+    private static final Logger log = LoggerFactory.getLogger(DispatcherService.class);
 
     private final VehicleRegistry vehicleRegistry;
     private final TransportOrderRegistry orderRegistry;
     private final RoutePlannerImpl routePlanner;
+    private final ApplicationEventPublisher eventPublisher;
 
-    // 事件监听器
-    private final List<EventListener> eventListeners = new ArrayList<>();
+    private volatile boolean initialized = false;
 
     public DispatcherService(VehicleRegistry vehicleRegistry,
-                            TransportOrderRegistry orderRegistry,
-                            RoutePlannerImpl routePlanner) {
+                             TransportOrderRegistry orderRegistry,
+                             RoutePlannerImpl routePlanner,
+                             ApplicationEventPublisher eventPublisher) {
         this.vehicleRegistry = vehicleRegistry;
         this.orderRegistry = orderRegistry;
         this.routePlanner = routePlanner;
+        this.eventPublisher = eventPublisher;
+    }
+
+    // ===== Lifecycle =====
+
+    @PostConstruct
+    @Override
+    public void initialize() {
+        initialized = true;
+        log.info("DispatcherService 已初始化");
+    }
+
+    @Override
+    public void terminate() {
+        initialized = false;
+        log.info("DispatcherService 已终止");
+    }
+
+    @Override
+    public boolean isInitialized() {
+        return initialized;
+    }
+
+    // ===== Dispatcher 端口接口实现 =====
+
+    /**
+     * 触发全量调度：扫描所有等待中的订单，逐一尝试分配。
+     */
+    @Override
+    public void dispatch() {
+        List<TransportOrder> waiting = orderRegistry.getWaitingOrders();
+        log.debug("触发全量调度，待处理订单数: {}", waiting.size());
+        waiting.forEach(this::dispatchOrder);
     }
 
     /**
-     * 创建运输订单并尝试分配
+     * 撤回指定订单。若订单正在被车辆执行，同时触发车辆侧取消。
+     */
+    @Override
+    public void withdrawOrder(String orderId, boolean immediateAbort) {
+        TransportOrder order = orderRegistry.getOrder(orderId);
+        if (order == null) {
+            log.warn("withdrawOrder: 订单 {} 不存在", orderId);
+            return;
+        }
+        String vehicleId = order.getProcessingVehicle();
+        if (vehicleId != null) {
+            vehicleCancelledOrder(vehicleId);
+        } else {
+            order.cancel();
+        }
+    }
+
+    /**
+     * 撤回指定车辆当前执行的订单。
+     */
+    @Override
+    public void withdrawOrderByVehicle(String vehicleId, boolean immediateAbort) {
+        vehicleCancelledOrder(vehicleId);
+    }
+
+    /**
+     * 重新路由指定车辆（当前为占位实现，待驱动层支持后补全）。
+     */
+    @Override
+    public void reroute(String vehicleId, ReroutingType reroutingType) {
+        log.warn("reroute 尚未实现: vehicleId={}, type={}", vehicleId, reroutingType);
+    }
+
+    /**
+     * 重新路由所有车辆（占位实现）。
+     */
+    @Override
+    public void rerouteAll(ReroutingType reroutingType) {
+        log.warn("rerouteAll 尚未实现: type={}", reroutingType);
+    }
+
+    /**
+     * 立即强制分配指定订单，无可用车辆时抛出异常。
+     */
+    @Override
+    public void assignNow(String orderId) throws TransportOrderAssignmentException {
+        TransportOrder order = orderRegistry.getOrder(orderId);
+        if (order == null) {
+            throw new TransportOrderAssignmentException("订单不存在: " + orderId);
+        }
+        boolean assigned = dispatchOrder(order);
+        if (!assigned) {
+            throw new TransportOrderAssignmentException(
+                    "订单 " + orderId + " 分配失败，当前无可用车辆");
+        }
+    }
+
+    // ===== 应用服务内部方法 =====
+
+    /**
+     * 创建订单并立即尝试调度。
      */
     public TransportOrder createAndDispatchOrder(String orderId, String sourcePointId,
-                                                  String destPointId, String orderName) {
-        // 查找路径
-        List<Path> route = routePlanner.findPath(sourcePointId, destPointId);
+                                                 String destPointId, String orderName) {
+        var route = routePlanner.findPath(sourcePointId, destPointId);
         if (route.isEmpty()) {
-            throw new IllegalStateException("无法找到从 " + sourcePointId + " 到 " + destPointId + " 的路径");
+            throw new IllegalStateException(
+                    "无法找到从 %s 到 %s 的路径".formatted(sourcePointId, destPointId));
         }
 
-        // 创建订单
-        TransportOrder order = new TransportOrder(orderId, orderName, sourcePointId, destPointId, route);
+        var order = new TransportOrder(orderId, orderName, sourcePointId, destPointId, route);
         orderRegistry.createOrder(order);
 
-        // 发布订单创建事件
-        publishEvent(new OrderCreatedEvent(orderId, orderName, null, route.size()));
+        eventPublisher.publishEvent(
+                new OrderCreatedEvent(orderId, orderName, null, route.size()));
 
-        // 尝试分配订单（会激活订单并分配给车辆）
         dispatchOrder(order);
-
         return order;
     }
 
     /**
-     * 调度订单 - 为订单分配可用车辆
+     * 为订单分配可用车辆。
+     *
+     * @return {@code true} 表示成功分配
      */
     public boolean dispatchOrder(TransportOrder order) {
-        if (order.getState() != OrderState.RAW) {
+        if (order.getState() != OrderState.RAW && order.getState() != OrderState.ACTIVE) {
             return false;
         }
 
-        // 激活订单
-        try {
-            order.activate();
-        } catch (IllegalStateException e) {
-            // 订单可能已经是激活状态
-            if (order.getState() != OrderState.ACTIVE) {
+        if (order.getState() == OrderState.RAW) {
+            try {
+                order.activate();
+            } catch (IllegalStateException e) {
+                log.warn("订单 {} 激活失败: {}", order.getOrderId(), e.getMessage());
                 return false;
             }
         }
 
-        // 查找可用车辆
-        List<Vehicle> availableVehicles = findAvailableVehiclesForOrder(order);
+        List<Vehicle> candidates = vehicleRegistry.getAvailableVehicleDomains().stream()
+                .filter(v -> canReach(v, order.getSourcePointId()))
+                .collect(Collectors.toList());
 
-        if (availableVehicles.isEmpty()) {
+        if (candidates.isEmpty()) {
+            log.debug("订单 {} 暂无可用车辆", order.getOrderId());
             return false;
         }
 
-        // 选择最佳车辆（选择离订单起点最近的车辆）
-        Vehicle selectedVehicle = selectBestVehicle(availableVehicles, order.getSourcePointId());
+        Vehicle selected = selectNearest(candidates, order.getSourcePointId());
+        if (selected == null) return false;
 
-        if (selectedVehicle == null) {
-            return false;
-        }
-
-        // 分配订单给车辆
-        assignOrderToVehicle(order, selectedVehicle);
-
+        assignOrderToVehicle(order, selected);
         return true;
     }
 
     /**
-     * 查找适合订单的可用车辆
-     */
-    private List<Vehicle> findAvailableVehiclesForOrder(TransportOrder order) {
-        String orderSourcePointId = order.getSourcePointId();
-
-        return vehicleRegistry.getAvailableVehicles().stream()
-                .filter(vehicle -> canVehicleReachOrder(vehicle, orderSourcePointId))
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * 检查车辆是否能到达订单起点
-     */
-    private boolean canVehicleReachOrder(Vehicle vehicle, String orderSourcePointId) {
-        String vehicleCurrentPointId = vehicle.getPosition().getPointId();
-
-        // 如果车辆已经在订单起点，直接返回
-        if (vehicleCurrentPointId.equals(orderSourcePointId)) {
-            return true;
-        }
-
-        // 检查是否有路径可达
-        List<Point> route = routePlanner.findRoute(vehicleCurrentPointId, orderSourcePointId);
-        return !route.isEmpty();
-    }
-
-    /**
-     * 选择最佳车辆（离订单起点最近的）
-     */
-    private Vehicle selectBestVehicle(List<Vehicle> vehicles, String destPointId) {
-        Vehicle bestVehicle = null;
-        double minDistance = Double.MAX_VALUE;
-
-        Point destPoint = routePlanner.getPoint(destPointId);
-        if (destPoint == null) {
-            return vehicles.isEmpty() ? null : vehicles.get(0);
-        }
-
-        for (Vehicle vehicle : vehicles) {
-            Point vehiclePoint = routePlanner.getPoint(vehicle.getPosition().getPointId());
-            if (vehiclePoint == null) {
-                continue;
-            }
-
-            double distance = calculateDistance(vehiclePoint, destPoint);
-            if (distance < minDistance) {
-                minDistance = distance;
-                bestVehicle = vehicle;
-            }
-        }
-
-        return bestVehicle;
-    }
-
-    /**
-     * 计算两点之间的距离
-     */
-    private double calculateDistance(Point p1, Point p2) {
-        double dx = p1.getX() - p2.getX();
-        double dy = p1.getY() - p2.getY();
-        return Math.sqrt(dx * dx + dy * dy);
-    }
-
-    /**
-     * 将订单分配给车辆
-     */
-    private void assignOrderToVehicle(TransportOrder order, Vehicle vehicle) {
-        String orderId = order.getOrderId();
-        String vehicleId = vehicle.getVehicleId();
-
-        // 更新订单状态
-        order.assignTo(vehicleId);
-        orderRegistry.assignOrder(orderId, vehicleId);
-
-        // 更新车辆状态
-        vehicle.assignOrder(orderId);
-        vehicle.updateState(VehicleState.EXECUTING);
-        vehicleRegistry.updateVehicleState(vehicleId, VehicleState.EXECUTING);
-
-        // 发布车辆状态变更事件
-        publishEvent(new VehicleStateChangedEvent(
-                vehicleId,
-                VehicleState.IDLE,
-                VehicleState.EXECUTING,
-                orderId
-        ));
-    }
-
-    /**
-     * 车辆完成订单
+     * 车辆完成订单回调。
      */
     public void vehicleCompletedOrder(String vehicleId) {
-        Vehicle vehicle = vehicleRegistry.getVehicle(vehicleId);
-        if (vehicle == null) {
-            return;
-        }
+        Vehicle vehicle = vehicleRegistry.getVehicleDomain(vehicleId);
+        if (vehicle == null) return;
 
         String orderId = vehicle.getCurrentOrderId();
-        if (orderId == null) {
-            return;
+        if (orderId != null) {
+            TransportOrder order = orderRegistry.getOrder(orderId);
+            if (order != null) order.complete();
         }
 
-        TransportOrder order = orderRegistry.getOrder(orderId);
-        if (order != null) {
-            order.complete();
-            orderRegistry.completeOrder(orderId);
-        }
-
-        // 更新车辆状态
-        VehicleState oldState = vehicle.getState();
+        VehicleState old = vehicle.getState();
         vehicle.completeOrder();
-        vehicleRegistry.updateVehicleState(vehicleId, VehicleState.IDLE);
+        vehicleRegistry.updateVehicleStateDomain(vehicleId, VehicleState.IDLE);
 
-        // 发布车辆状态变更事件
-        publishEvent(new VehicleStateChangedEvent(
-                vehicleId,
-                oldState,
-                VehicleState.IDLE,
-                null
-        ));
+        eventPublisher.publishEvent(
+                new VehicleStateChangedEvent(vehicleId, old, VehicleState.IDLE, null));
+
+        processWaitingOrders(vehicleId);
     }
 
     /**
-     * 车辆取消订单
+     * 车辆取消/放弃订单回调。
      */
     public void vehicleCancelledOrder(String vehicleId) {
-        Vehicle vehicle = vehicleRegistry.getVehicle(vehicleId);
-        if (vehicle == null) {
-            return;
-        }
+        Vehicle vehicle = vehicleRegistry.getVehicleDomain(vehicleId);
+        if (vehicle == null) return;
 
         String orderId = vehicle.getCurrentOrderId();
-        if (orderId == null) {
-            return;
-        }
+        TransportOrder order = orderId != null ? orderRegistry.getOrder(orderId) : null;
 
-        TransportOrder order = orderRegistry.getOrder(orderId);
-        if (order != null) {
-            order.cancel();
-            orderRegistry.cancelOrder(orderId);
-        }
+        if (order != null) order.cancel();
 
-        // 更新车辆状态
-        VehicleState oldState = vehicle.getState();
+        VehicleState old = vehicle.getState();
         vehicle.cancelOrder();
-        vehicleRegistry.updateVehicleState(vehicleId, VehicleState.IDLE);
+        vehicleRegistry.updateVehicleStateDomain(vehicleId, VehicleState.IDLE);
 
-        // 发布车辆状态变更事件
-        publishEvent(new VehicleStateChangedEvent(
-                vehicleId,
-                oldState,
-                VehicleState.IDLE,
-                null
-        ));
+        eventPublisher.publishEvent(
+                new VehicleStateChangedEvent(vehicleId, old, VehicleState.IDLE, null));
 
-        // 尝试将订单重新分配给其他车辆
         if (order != null && order.getState() == OrderState.RAW) {
             dispatchOrder(order);
         }
     }
 
-    /**
-     * 处理新的可用车辆
-     */
-    public void processAvailableVehicle(String vehicleId) {
-        Vehicle vehicle = vehicleRegistry.getVehicle(vehicleId);
-        if (vehicle == null || !vehicle.canAcceptOrder()) {
-            return;
-        }
+    // ===== 内部方法 =====
 
-        // 查找等待中的订单
-        List<TransportOrder> waitingOrders = orderRegistry.getWaitingOrders();
-
-        for (TransportOrder order : waitingOrders) {
-            if (canVehicleReachOrder(vehicle, order.getSourcePointId())) {
-                if (dispatchOrder(order)) {
-                    break;
-                }
-            }
-        }
+    private boolean canReach(Vehicle vehicle, String targetPointId) {
+        String current = vehicle.getPosition().getPointId();
+        if (current == null) return false;
+        if (current.equals(targetPointId)) return true;
+        return !routePlanner.findRouteDomain(current, targetPointId).isEmpty();
     }
 
-    /**
-     * 添加事件监听器
-     */
-    public void addEventListener(EventListener listener) {
-        eventListeners.add(listener);
+    private Vehicle selectNearest(List<Vehicle> candidates, String targetPointId) {
+        Point target = routePlanner.getPoint(targetPointId);
+        if (target == null) return candidates.get(0);
+
+        return candidates.stream().min((a, b) -> {
+            Point pa = routePlanner.getPoint(a.getPosition().getPointId());
+            Point pb = routePlanner.getPoint(b.getPosition().getPointId());
+            double da = pa != null ? distance(pa, target) : Double.MAX_VALUE;
+            double db = pb != null ? distance(pb, target) : Double.MAX_VALUE;
+            return Double.compare(da, db);
+        }).orElse(null);
     }
 
-    /**
-     * 移除事件监听器
-     */
-    public void removeEventListener(EventListener listener) {
-        eventListeners.remove(listener);
+    private void assignOrderToVehicle(TransportOrder order, Vehicle vehicle) {
+        order.assignTo(vehicle.getVehicleId());
+
+        VehicleState old = vehicle.getState();
+        vehicle.assignOrder(order.getOrderId());
+        vehicle.updateState(VehicleState.EXECUTING);
+        vehicleRegistry.updateVehicleStateDomain(vehicle.getVehicleId(), VehicleState.EXECUTING);
+
+        log.info("订单 {} 已分配给车辆 {}", order.getOrderId(), vehicle.getVehicleId());
+
+        eventPublisher.publishEvent(new VehicleStateChangedEvent(
+                vehicle.getVehicleId(), old, VehicleState.EXECUTING, order.getOrderId()));
     }
 
-    /**
-     * 发布事件
-     */
-    private void publishEvent(Object event) {
-        for (EventListener listener : eventListeners) {
-            listener.onEvent(event);
-        }
+    private void processWaitingOrders(String vehicleId) {
+        Vehicle vehicle = vehicleRegistry.getVehicleDomain(vehicleId);
+        if (vehicle == null || !vehicle.canAcceptOrder()) return;
+
+        orderRegistry.getWaitingOrders().stream()
+                .filter(o -> canReach(vehicle, o.getSourcePointId()))
+                .findFirst()
+                .ifPresent(this::dispatchOrder);
     }
 
-    /**
-     * 事件监听器接口
-     */
-    public interface EventListener {
-        void onEvent(Object event);
+    private double distance(Point a, Point b) {
+        double dx = a.getX() - b.getX();
+        double dy = a.getY() - b.getY();
+        return Math.sqrt(dx * dx + dy * dy);
     }
 }

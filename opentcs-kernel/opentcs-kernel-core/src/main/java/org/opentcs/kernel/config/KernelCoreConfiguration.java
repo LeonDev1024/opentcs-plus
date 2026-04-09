@@ -1,50 +1,80 @@
 package org.opentcs.kernel.config;
 
-import org.opentcs.kernel.application.VehicleRegistry;
-import org.opentcs.kernel.application.TransportOrderRegistry;
-import org.opentcs.kernel.application.RoutePlannerImpl;
-import org.opentcs.kernel.application.DispatcherService;
+import org.opentcs.kernel.api.OrderLifecycleApi;
+import org.opentcs.kernel.api.RoutePlannerApi;
+import org.opentcs.kernel.api.TransportOrderApi;
+import org.opentcs.kernel.api.VehicleRegistryApi;
+import org.opentcs.kernel.api.algorithm.Dispatcher;
+import org.opentcs.kernel.application.*;
+import org.opentcs.kernel.domain.routing.RoutingAlgorithm;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * 内核核心配置
- * 初始化内核服务为Spring Bean
+ * 内核核心配置——将 kernel-core 应用服务注册为 Spring Bean 并暴露 kernel-api 端口接口。
  */
 @Configuration
 public class KernelCoreConfiguration {
 
-    /**
-     * 车辆注册表
-     */
     @Bean
     public VehicleRegistry vehicleRegistry() {
         return new VehicleRegistry();
     }
 
-    /**
-     * 运输订单注册表
-     */
+    @Bean
+    public VehicleRegistryApi vehicleRegistryApi(VehicleRegistry vehicleRegistry) {
+        return vehicleRegistry;
+    }
+
     @Bean
     public TransportOrderRegistry transportOrderRegistry() {
         return new TransportOrderRegistry();
     }
 
-    /**
-     * 路由规划器
-     */
     @Bean
-    public RoutePlannerImpl routePlanner() {
-        return new RoutePlannerImpl();
+    public RoutePlannerImpl routePlanner(RoutingAlgorithm routingAlgorithm) {
+        return new RoutePlannerImpl(routingAlgorithm);
     }
 
-    /**
-     * 调度服务
-     */
+    @Bean
+    public RoutePlannerApi routePlannerApi(RoutePlannerImpl routePlanner) {
+        return routePlanner;
+    }
+
     @Bean
     public DispatcherService dispatcherService(VehicleRegistry vehicleRegistry,
-                                              TransportOrderRegistry transportOrderRegistry,
-                                              RoutePlannerImpl routePlanner) {
-        return new DispatcherService(vehicleRegistry, transportOrderRegistry, routePlanner);
+                                               TransportOrderRegistry transportOrderRegistry,
+                                               RoutePlannerImpl routePlanner,
+                                               ApplicationEventPublisher eventPublisher) {
+        return new DispatcherService(vehicleRegistry, transportOrderRegistry,
+                routePlanner, eventPublisher);
+    }
+
+    @Bean
+    public Dispatcher dispatcher(DispatcherService dispatcherService) {
+        return dispatcherService;
+    }
+
+    @Bean
+    public TransportOrderService transportOrderService(TransportOrderRegistry registry,
+                                                       DispatcherService dispatcher,
+                                                       RoutePlannerImpl routePlanner) {
+        return new TransportOrderService(registry, dispatcher, routePlanner);
+    }
+
+    @Bean
+    public TransportOrderApi transportOrderApi(TransportOrderService transportOrderService) {
+        return transportOrderService;
+    }
+
+    @Bean
+    public OrderLifecycleService orderLifecycleService(DispatcherService dispatcher) {
+        return new OrderLifecycleService(dispatcher);
+    }
+
+    @Bean
+    public OrderLifecycleApi orderLifecycleApi(OrderLifecycleService orderLifecycleService) {
+        return orderLifecycleService;
     }
 }
