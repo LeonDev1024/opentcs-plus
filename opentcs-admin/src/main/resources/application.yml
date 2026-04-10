@@ -224,11 +224,24 @@ management:
     web:
       exposure:
         include: '*'
+      base-path: /actuator
   endpoint:
     health:
       show-details: ALWAYS
+      # 自定义健康分组：dispatch 组聚合 AGV 调度核心健康指标
+      group:
+        dispatch:
+          include: dispatchKernel, algorithmPlugin, db, redis
+          show-details: ALWAYS
     logfile:
       external-file: ./logs/sys-console.log
+    prometheus:
+      enabled: true
+  # Micrometer Prometheus 指标暴露
+  prometheus:
+    metrics:
+      export:
+        enabled: true
 
 --- # 默认/推荐使用sse推送
 sse:
@@ -243,6 +256,19 @@ websocket:
   path: /resource/websocket
   # 设置访问源地址
   allowedOrigins: '*'
+
+--- # OpenTCS Plus 算法插件配置
+opentcs:
+  algorithm:
+    routing:
+      # 激活的路径规划算法插件（对应 @AlgorithmMeta#name）
+      # 可选值: astar（内置默认）| grpc-cpp（C++ 外部服务）| 自定义插件名
+      provider: astar
+    grpc:
+      # gRPC 外部算法桥接（C++/Python 等），默认关闭
+      enabled: false
+      client-name: routing-algorithm
+      call-timeout-ms: 10000
 
 --- # OpenTCS Plus 内置策略（与 StrategiesConfiguration 前缀一致）
 opentcs:

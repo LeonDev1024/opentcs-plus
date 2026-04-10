@@ -8,12 +8,22 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * 车辆类型数据传输对象
+ * 车辆类型 DTO（Brand → VehicleType → Vehicle 三级层级的中间层）
  */
 @Data
 public class VehicleTypeDTO {
 
+    /** 数据库主键 */
     private Long id;
+
+    /** 领域 typeId（与 kernel-domain 中 VehicleType.typeId 对应） */
+    private String typeId;
+
+    /** 所属品牌 ID（数据库外键） */
+    private Long brandId;
+
+    /** 品牌名称（冗余展示字段） */
+    private String brandName;
 
     private String name;
 

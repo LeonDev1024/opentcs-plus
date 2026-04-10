@@ -17,7 +17,7 @@ import org.opentcs.common.core.utils.ip.AddressUtils;
 import org.opentcs.common.log.event.LogininforEvent;
 import org.opentcs.common.redis.utils.RedisUtils;
 import org.opentcs.common.satoken.utils.LoginHelper;
-import org.opentcs.web.service.SysLoginService;
+import org.opentcs.system.auth.SysLoginService;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;

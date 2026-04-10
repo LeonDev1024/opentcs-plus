@@ -6,11 +6,14 @@ import org.opentcs.kernel.application.RoutePlannerImpl;
 import org.opentcs.kernel.api.dto.FactoryModelDTO;
 import org.opentcs.kernel.api.dto.PathDTO;
 import org.opentcs.kernel.api.dto.PointDTO;
+import org.opentcs.kernel.api.dto.RouteDTO;
 import org.opentcs.kernel.api.map.MapSceneApi;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 地图应用服务
@@ -97,7 +100,8 @@ public class MapApplicationService {
     /**
      * 查找最短路径
      */
-    public List<org.opentcs.kernel.domain.routing.Point> findRoute(String sourcePointId, String destPointId) {
-        return routePlanner.findRoute(sourcePointId, destPointId);
+    public RouteDTO findRoute(String sourcePointId, String destPointId) {
+        Optional<RouteDTO> route = routePlanner.findRoute(sourcePointId, destPointId);
+        return route.orElse(null);
     }
 }

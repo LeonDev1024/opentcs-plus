@@ -1,0 +1,2 @@
+org.opentcs.strategies.builtin.config.BuiltinStrategiesAutoConfiguration
+org.opentcs.algorithm.loader.config.AlgorithmLoaderAutoConfiguration

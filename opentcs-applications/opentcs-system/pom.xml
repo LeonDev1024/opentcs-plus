@@ -63,6 +63,27 @@
             <artifactId>opentcs-common-security</artifactId>
         </dependency>
 
+        <!-- 认证策略：Sa-Token / Redis / Social / JSON -->
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-satoken</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-redis</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-social</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-json</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.opentcs</groupId>
             <artifactId>opentcs-common-web</artifactId>

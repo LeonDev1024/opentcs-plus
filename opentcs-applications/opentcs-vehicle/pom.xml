@@ -69,5 +69,11 @@
             <artifactId>opentcs-driver-adapter-vda5050</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <!-- ArchUnit 架构约束测试 -->
+        <dependency>
+            <groupId>com.tngtech.archunit</groupId>
+            <artifactId>archunit-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

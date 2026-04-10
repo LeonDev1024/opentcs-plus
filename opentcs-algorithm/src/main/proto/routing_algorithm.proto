@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package opentcs.algorithm;
+
+option java_package = "org.opentcs.algorithm.grpc.proto";
+option java_outer_classname = "RoutingAlgorithmProto";
+option java_multiple_files = true;
+
+// ============================================================
+// 路径规划算法 gRPC 服务接口
+// 外部算法服务（C++/Python/Go 等）实现此服务，Java 端作为客户端调用
+// ============================================================
+service RoutingAlgorithmService {
+    // 查找从 start 到 end 的最优路径
+    rpc FindRoute(FindRouteRequest) returns (FindRouteResponse);
+
+    // 查询服务健康状态及算法信息
+    rpc GetInfo(GetInfoRequest) returns (GetInfoResponse);
+}
+
+// ============================================================
+// 点位
+// ============================================================
+message GrpcPoint {
+    string point_id = 1;
+    double x = 2;
+    double y = 3;
+    double z = 4;
+    string type = 5;  // HALT_POSITION / REPORT_POSITION / PARK_POSITION / PLAIN
+}
+
+// ============================================================
+// 路径段
+// ============================================================
+message GrpcPath {
+    string path_id = 1;
+    string source_point_id = 2;
+    string dest_point_id = 3;
+    double length = 4;
+    bool traversable = 5;
+    int32 max_velocity = 6;
+    int32 max_reverse_velocity = 7;
+}
+
+// ============================================================
+// FindRoute 请求 / 响应
+// ============================================================
+message FindRouteRequest {
+    repeated GrpcPoint points = 1;       // 所有可用点位
+    repeated GrpcPath paths = 2;         // 所有路径段
+    string start_point_id = 3;           // 起点 ID
+    string end_point_id = 4;             // 终点 ID
+    map<string, string> options = 5;     // 扩展选项（如 vehicle_type 等）
+}
+
+message FindRouteResponse {
+    bool success = 1;
+    repeated string point_ids = 2;       // 路径经过的点位 ID 列表（按顺序）
+    double total_length = 3;             // 路径总长度
+    string error_message = 4;            // 失败时的错误信息
+}
+
+// ============================================================
+// GetInfo 请求 / 响应
+// ============================================================
+message GetInfoRequest {}
+
+message GetInfoResponse {
+    string name = 1;
+    string version = 2;
+    string description = 3;
+    string author = 4;
+    bool healthy = 5;
+}

@@ -131,15 +131,35 @@
             <version>${revision}</version>
         </dependency>
 
+        <!-- 算法插件化框架（SPI + 加载器 + gRPC桥接） -->
         <dependency>
             <groupId>org.opentcs</groupId>
-            <artifactId>opentcs-strategies-default</artifactId>
+            <artifactId>opentcs-algorithm</artifactId>
             <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>de.codecentric</groupId>
             <artifactId>spring-boot-admin-starter-client</artifactId>
+        </dependency>
+
+        <!-- 可观测性：Actuator + Micrometer -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+            <version>${spring-boot.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+            <version>1.14.6</version>
+        </dependency>
+
+        <!-- ArchUnit 架构约束测试（admin 全局约束）-->
+        <dependency>
+            <groupId>com.tngtech.archunit</groupId>
+            <artifactId>archunit-junit5</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
