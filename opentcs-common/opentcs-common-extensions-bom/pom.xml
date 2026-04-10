@@ -1,0 +1,77 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.opentcs</groupId>
+    <artifactId>opentcs-common-extensions-bom</artifactId>
+    <version>${revision}</version>
+    <packaging>pom</packaging>
+
+    <description>
+        opentcs-common 可选扩展能力 BOM。
+        包含非核心功能模块，按需引入：
+        - 短信（sms）
+        - 邮件（mail）
+        - 第三方社交登录（social）
+        - 国际化翻译（translation）
+        - 对象存储（oss）
+        - Excel 导入导出（excel）
+
+        引入方式：
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.opentcs&lt;/groupId&gt;
+            &lt;artifactId&gt;opentcs-common-extensions-bom&lt;/artifactId&gt;
+            &lt;type&gt;pom&lt;/type&gt;
+            &lt;scope&gt;import&lt;/scope&gt;
+        &lt;/dependency&gt;
+    </description>
+
+    <properties>
+        <revision>1.0-SNAPSHOT</revision>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- 短信（sms4j）-->
+            <dependency>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-common-sms</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- 邮件（Spring Mail）-->
+            <dependency>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-common-mail</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- 第三方社交登录（JustAuth）-->
+            <dependency>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-common-social</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- 国际化翻译（i18n / 第三方翻译 API）-->
+            <dependency>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-common-translation</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- 对象存储（AWS S3 / MinIO / 阿里云 OSS）-->
+            <dependency>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-common-oss</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- Excel 导入导出（FastExcel）-->
+            <dependency>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-common-excel</artifactId>
+                <version>${revision}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>

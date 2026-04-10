@@ -25,7 +25,7 @@ import org.opentcs.common.web.enums.CaptchaType;
 import org.dromara.sms4j.api.SmsBlend;
 import org.dromara.sms4j.api.entity.SmsResponse;
 import org.dromara.sms4j.core.factory.SmsFactory;
-import org.opentcs.web.domain.vo.CaptchaVo;
+import org.opentcs.system.auth.vo.CaptchaVo;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;

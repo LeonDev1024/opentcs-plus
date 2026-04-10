@@ -13,6 +13,11 @@ public class VehicleDTO {
 
     private String name;
 
+    /** 车辆类型 ID（对应 VehicleType.typeId） */
+    private String typeId;
+
+    /** @deprecated 使用 {@link #typeId} 替代 */
+    @Deprecated
     private String vehicleType;
 
     private VehicleStateDTO state;
@@ -46,12 +51,24 @@ public class VehicleDTO {
         this.name = name;
     }
 
-    public String getVehicleType() {
-        return vehicleType;
+    public String getTypeId() {
+        return typeId;
     }
 
+    public void setTypeId(String typeId) {
+        this.typeId = typeId;
+    }
+
+    /** @deprecated 使用 {@link #getTypeId()} */
+    @Deprecated
+    public String getVehicleType() {
+        return typeId;
+    }
+
+    /** @deprecated 使用 {@link #setTypeId(String)} */
+    @Deprecated
     public void setVehicleType(String vehicleType) {
-        this.vehicleType = vehicleType;
+        this.typeId = vehicleType;
     }
 
     public VehicleStateDTO getState() {

@@ -82,25 +82,43 @@ opentcs-plus/
 │   ├── opentcs-map-persistence/            # 地图持久化
 │   ├── opentcs-order-persistence/          # 订单持久化
 │   └── opentcs-vehicle-persistence/        # 车辆持久化（BrandDomainService 等接口实现）
-├── opentcs-strategies-default/             # 策略层 - 可替换的默认算法实现
-│   └── AStarRoutingAlgorithm               # 实现 RoutingAlgorithm 接口，依赖 kernel-domain
+├── opentcs-algorithm/                      # 算法层（内置策略 + SPI + 加载器 + gRPC桥接）
+│   ├── strategies/builtin/                 # 内置算法：AStarRoutingAlgorithm、BuiltinRouter
+│   ├── spi/                                # 插件接口：AlgorithmPlugin、RoutingAlgorithmPlugin、@AlgorithmMeta
+│   ├── loader/                             # 加载器：AlgorithmPluginRegistry，按配置激活算法
+│   └── grpc/                              # gRPC桥接：GrpcRoutingAlgorithmPlugin（ConditionalOnProperty）
 ├── opentcs-driver/                         # 基础设施层 - AGV 驱动适配
 │   ├── opentcs-driver-api/                 # 驱动接口契约
 │   └── opentcs-driver-adapter-vda5050/     # VDA5050 协议适配器
 ├── opentcs-security/                       # 安全领域模块
 │   ├── opentcs-security-api/               # AuthApi / PermissionApi
 │   └── opentcs-security-core/              # 安全实现（待与 common-security/satoken 整合）
-├── opentcs-common/                         # 通用基础模块（共 23 个子模块）
+├── opentcs-common/                         # 通用基础模块（共 25 个子模块）
+│   ├── opentcs-common-bom/                 # 核心基础 BOM（必选）：持久化/缓存/Web/认证/消息/安全等
+│   ├── opentcs-common-extensions-bom/      # 可选扩展 BOM（按需引入）：sms/mail/oss/social/excel/translation
 │   ├── opentcs-common-core/                # 核心：DTO、枚举、异常、R
 │   ├── opentcs-common-mybatis/             # MyBatis Plus 封装
 │   ├── opentcs-common-redis/               # Redisson 缓存
-│   ├── opentcs-common-security/            # 安全配置
+│   ├── opentcs-common-security/            # Spring Security 配置
 │   ├── opentcs-common-satoken/             # Sa-Token JWT
-│   ├── opentcs-common-websocket/           # WebSocket
-│   ├── opentcs-common-mqtt/                # MQTT 集成
-│   ├── opentcs-common-oss/                 # 文件存储
-│   ├── opentcs-common-sms/                 # 短信
-│   └── ... (其余扩展模块)
+│   ├── opentcs-common-websocket/           # WebSocket（AGV 实时推送）
+│   ├── opentcs-common-mqtt/                # MQTT（设备通信）
+│   ├── opentcs-common-sse/                 # Server-Sent Events
+│   ├── opentcs-common-job/                 # 定时任务（XXL-Job）
+│   ├── opentcs-common-ratelimiter/         # 限流
+│   ├── opentcs-common-idempotent/          # 幂等（防重提交）
+│   ├── opentcs-common-sensitive/           # 脱敏
+│   ├── opentcs-common-encrypt/             # 数据库字段加解密
+│   ├── opentcs-common-json/                # JSON 序列化
+│   ├── opentcs-common-log/                 # 操作日志
+│   ├── opentcs-common-web/                 # Web 公共配置
+│   ├── opentcs-common-doc/                 # API 文档（Springdoc）
+│   │── [扩展模块] opentcs-common-sms/      # 短信（按需引入）
+│   │── [扩展模块] opentcs-common-mail/     # 邮件（按需引入）
+│   │── [扩展模块] opentcs-common-oss/      # 对象存储（按需引入）
+│   │── [扩展模块] opentcs-common-social/   # 社交登录（按需引入）
+│   │── [扩展模块] opentcs-common-excel/    # Excel 导入导出（按需引入）
+│   └── [扩展模块] opentcs-common-translation/ # 国际化翻译（按需引入）
 └── pom.xml
 ```
 
@@ -116,7 +134,42 @@ opentcs-plus/
 ❌ 领域层 → 基础设施层
 ❌ 接口层/应用层 → persistence 实体/Mapper（必须通过应用服务）
 ❌ 领域层 → Spring / common-infra
+
+### 算法插件化规范
+
+新算法插件：
+1. 实现 `RoutingAlgorithmPlugin` 接口（in opentcs-algorithm-spi）
+2. 在类上标注 `@AlgorithmMeta(name = "my-algo", version = "1.0", description = "...")`
+3. 注册为 Spring Bean（`@Component` 或 `@Bean`）
+4. 在 `application.yml` 中配置 `opentcs.algorithm.routing.provider: my-algo`
+
+gRPC 外部算法（C++/Python 等）：
+1. 实现 `routing_algorithm.proto` 中的 `RoutingAlgorithmService` gRPC 服务
+2. 在 `application.yml` 中开启：`opentcs.algorithm.grpc.enabled: true`
+3. 配置远端地址：`grpc.client.routing-algorithm.address: static://localhost:50051`
+4. 配置激活：`opentcs.algorithm.routing.provider: grpc-cpp`
 ```
+
+### 架构约束测试（ArchUnit）
+
+各模块含 ArchUnit 测试，防止架构退化：
+
+| 测试文件 | 覆盖范围 |
+|----------|---------|
+| `opentcs-kernel-core/.../KernelLayerArchitectureTest` | kernel-domain/core 不引用 MyBatis/Spring/Redisson/算法实现 |
+| `opentcs-applications/opentcs-vehicle/.../VehicleLayerArchitectureTest` | controller/application 不直接引用 persistence Entity/Mapper |
+| `opentcs-applications/opentcs-order/.../OrderLayerArchitectureTest` | 同上（order 模块） |
+| `opentcs-applications/opentcs-map-editor/.../ApplicationPersistenceBoundaryArchitectureTest` | 同上（map 模块）|
+| `opentcs-admin/.../GlobalLayerArchitectureTest` | 接口层不引用 persistence 和算法实现 |
+
+运行架构测试：`mvn test -Pdev` 或 `mvn test -Dtest=*ArchitectureTest -Pdev`
+
+### 可观测性
+
+- Actuator 端点：`GET /actuator/health`
+- 调度专属分组：`GET /actuator/health/dispatch`（含内核、算法插件、db、redis 状态）
+- Prometheus 指标：`GET /actuator/prometheus`
+- Spring Boot Admin：在 `application-dev.yml` 中配置 `spring.boot.admin.client.enabled=true`
 
 ### 核心技术栈
 
@@ -124,16 +177,17 @@ opentcs-plus/
 - **数据库**：MyBatis Plus 3.5.14 + MySQL 8.0
 - **缓存**：Redisson 3.51.0 (Redis 7.0)
 - **认证**：Sa-Token 1.44.0 (JWT)
-- **消息**：MQTT, SSE
-- **AI 集成**：Spring AI 1.0.0-M4
+- **消息**：MQTT, SSE, WebSocket
+- **算法插件**：SPI + Spring AutoConfiguration + gRPC Bridge（支持 C++/Python/Go）
+- **AI 集成**：Spring AI 1.0.0
 
 ### 核心领域模型 (opentcs-kernel)
 
-Kernel 模块是调度核心实现（不依赖外部 OpenTCS 工程，自洽领域模型）：
-- **kernel-api**：端口与 DTO、算法接口（`Router`/`Scheduler` 等）
-- **kernel-domain**：领域模型（Point, Path, Vehicle, TransportOrder 等，无基础设施依赖）
-- **kernel-core**：应用服务（注册表、调度、路由规划装配）
-- **opentcs-infrastructure-kernel-persistence**：MyBatis 持久化实现（基础设施层）
+Kernel 模块是调度核心实现（自洽领域模型，不依赖外部 OpenTCS 工程）：
+- **kernel-api**：端口接口与 DTO（VehicleTypeApi, VehicleBrandApi, Router, Scheduler 等）
+- **kernel-domain**：纯领域模型（Point, Path, Vehicle, VehicleBrand, VehicleType, TransportOrder, Domain Events，无 Spring/MyBatis 依赖）
+- **kernel-core**：应用服务（DispatcherService, VehicleRegistry, RoutePlannerImpl）
+- **opentcs-vehicle-persistence** 等：MyBatis 持久化实现（基础设施层，实现 kernel-api 端口）
 
 ### API 入口
 

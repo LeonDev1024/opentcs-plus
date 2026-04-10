@@ -30,10 +30,10 @@ import org.opentcs.system.domain.vo.SysClientVo;
 import org.opentcs.system.service.ISysClientService;
 import org.opentcs.system.service.ISysConfigService;
 import org.opentcs.system.service.ISysSocialService;
-import org.opentcs.web.domain.vo.LoginVo;
-import org.opentcs.web.service.IAuthStrategy;
-import org.opentcs.web.service.SysLoginService;
-import org.opentcs.web.service.SysRegisterService;
+import org.opentcs.system.auth.IAuthStrategy;
+import org.opentcs.system.auth.SysLoginService;
+import org.opentcs.system.auth.SysRegisterService;
+import org.opentcs.system.auth.vo.LoginVo;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 

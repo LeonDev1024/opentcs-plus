@@ -1,0 +1,3 @@
+org.opentcs.strategies.builtin.config.BuiltinStrategiesAutoConfiguration
+org.opentcs.algorithm.loader.config.AlgorithmLoaderAutoConfiguration
+org.opentcs.algorithm.grpc.config.GrpcAlgorithmAutoConfiguration

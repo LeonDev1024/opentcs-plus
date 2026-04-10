@@ -11,7 +11,11 @@ public class Vehicle {
 
     private final String vehicleId;
     private String name;
-    private String vehicleType;
+    /**
+     * 车辆类型 ID（引用 VehicleType.typeId）。
+     * 通过此 ID 可查询到类型的规格（VehicleTypeSpec）和品牌（VehicleBrand）。
+     */
+    private String typeId;
     private VehicleState state;
     private VehiclePosition position;
     private String currentOrderId;
@@ -133,12 +137,24 @@ public class Vehicle {
         this.name = name;
     }
 
-    public String getVehicleType() {
-        return vehicleType;
+    public String getTypeId() {
+        return typeId;
     }
 
+    public void setTypeId(String typeId) {
+        this.typeId = typeId;
+    }
+
+    /** @deprecated 使用 {@link #getTypeId()} 替代 */
+    @Deprecated
+    public String getVehicleType() {
+        return typeId;
+    }
+
+    /** @deprecated 使用 {@link #setTypeId(String)} 替代 */
+    @Deprecated
     public void setVehicleType(String vehicleType) {
-        this.vehicleType = vehicleType;
+        this.typeId = vehicleType;
     }
 
     public VehicleState getState() {
@@ -217,8 +233,15 @@ public class Vehicle {
             return this;
         }
 
+        public Builder typeId(String typeId) {
+            vehicle.typeId = typeId;
+            return this;
+        }
+
+        /** @deprecated 使用 {@link #typeId(String)} 替代 */
+        @Deprecated
         public Builder vehicleType(String vehicleType) {
-            vehicle.vehicleType = vehicleType;
+            vehicle.typeId = vehicleType;
             return this;
         }
 

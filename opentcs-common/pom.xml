@@ -11,6 +11,7 @@
     <name>opentcs-common</name>
     <modules>
         <module>opentcs-common-bom</module>
+        <module>opentcs-common-extensions-bom</module>
         <module>opentcs-common-core</module>
         <module>opentcs-common-doc</module>
         <module>opentcs-common-encrypt</module>
