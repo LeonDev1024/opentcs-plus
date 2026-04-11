@@ -6,7 +6,7 @@ import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.common.web.core.BaseController;
 import org.opentcs.vehicle.application.BrandApplicationService;
-import org.opentcs.vehicle.persistence.entity.BrandEntity;
+import org.opentcs.vehicle.application.bo.BrandBO;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,27 +22,27 @@ public class BrandController extends BaseController {
     private final BrandApplicationService brandApplicationService;
 
     @GetMapping("/list")
-    public TableDataInfo<BrandEntity> listBrands(BrandEntity brand, PageQuery pageQuery) {
+    public TableDataInfo<BrandBO> listBrands(BrandBO brand, PageQuery pageQuery) {
         return brandApplicationService.listBrands(brand, pageQuery);
     }
 
     @GetMapping("/all")
-    public R<List<BrandEntity>> getAllBrands() {
+    public R<List<BrandBO>> getAllBrands() {
         return R.ok(brandApplicationService.getAllEnabledBrands());
     }
 
     @GetMapping("/{id}")
-    public R<BrandEntity> getBrandById(@PathVariable Long id) {
+    public R<BrandBO> getBrandById(@PathVariable Long id) {
         return R.ok(brandApplicationService.getById(id));
     }
 
     @PostMapping("/add")
-    public R<Boolean> createBrand(@RequestBody BrandEntity brand) {
+    public R<Boolean> createBrand(@RequestBody BrandBO brand) {
         return R.ok(brandApplicationService.create(brand));
     }
 
     @PutMapping("/edit")
-    public R<Boolean> updateBrand(@RequestBody BrandEntity brand) {
+    public R<Boolean> updateBrand(@RequestBody BrandBO brand) {
         return R.ok(brandApplicationService.update(brand));
     }
 
@@ -52,7 +52,7 @@ public class BrandController extends BaseController {
     }
 
     @PutMapping("/changeStatus")
-    public R<Boolean> changeStatus(@RequestBody BrandEntity brand) {
+    public R<Boolean> changeStatus(@RequestBody BrandBO brand) {
         return R.ok(brandApplicationService.changeStatus(brand.getId(), brand.getEnabled()));
     }
 }

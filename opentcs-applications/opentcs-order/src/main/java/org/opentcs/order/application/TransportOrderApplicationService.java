@@ -1,19 +1,22 @@
 package org.opentcs.order.application;
 
+import org.opentcs.common.json.utils.JsonUtils;
+import org.opentcs.common.mybatis.core.page.PageQuery;
+import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.kernel.api.TransportOrderApi;
 import org.opentcs.kernel.api.dto.OrderSpecDTO;
 import org.opentcs.kernel.application.TransportOrderRegistry;
 import org.opentcs.kernel.application.VehicleRegistry;
-import org.opentcs.kernel.api.dto.TransportOrderEntityDTO;
 import org.opentcs.kernel.domain.order.TransportOrder;
 import org.opentcs.kernel.domain.order.OrderState;
 import org.opentcs.kernel.domain.vehicle.Vehicle;
 import org.opentcs.kernel.api.dto.TransportOrderDTO;
 import org.opentcs.kernel.api.dto.OrderStateDTO;
+import org.opentcs.order.application.bo.CreateOrderCommand;
+import org.opentcs.order.application.bo.TransportOrderQueryBO;
 import org.opentcs.order.persistence.service.TransportOrderDomainService;
 import org.opentcs.order.persistence.entity.TransportOrderEntity;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,7 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -41,53 +43,37 @@ public class TransportOrderApplicationService {
 
     /**
      * 创建运输订单
-     * 1. 保存到数据库
-     * 2. 注册到内核
-     * 3. 自动分配车辆
+     * 1. 先执行内核操作（路径规划、状态管理），确保业务可行
+     * 2. 内核成功后一次性写入 DB（@Transactional 负责回滚）
      */
     @Transactional
-    public boolean createTransportOrder(TransportOrderEntityDTO command) {
-        TransportOrderEntity entity = toEntity(command);
-        // 1. 生成订单ID
-        String orderId = entity.getOrderNo() != null ? entity.getOrderNo() : UUID.randomUUID().toString();
+    public boolean createTransportOrder(CreateOrderCommand command) {
+        // 1. 先执行内核操作（路径规划、状态管理），确保业务可行后再写 DB
+        OrderSpecDTO orderSpec = new OrderSpecDTO();
+        orderSpec.setName(command.getName());
+        orderSpec.setSourcePointId(command.getSourcePoint());
+        orderSpec.setDestPointId(command.getDestPoint());
 
-        // 2. 保存到数据库
-        entity.setOrderNo(orderId);
-        entity.setState("RAW");
-        orderService.save(entity);
-
-        // 3. 创建并分配订单（内核自动处理）
+        String createdOrderId;
         try {
-            // 从destinations字段解析起点和终点
-            String sourcePoint = entity.getDestinations() != null && entity.getDestinations().contains(",")
-                    ? entity.getDestinations().split(",")[0]
-                    : "";
-            String destPoint = entity.getDestinations() != null && entity.getDestinations().contains(",")
-                    ? entity.getDestinations().split(",")[1]
-                    : (entity.getDestinations() != null ? entity.getDestinations() : "");
-
-            // 使用统一 API 创建订单（自动进行路径规划）
-            OrderSpecDTO orderSpec = new OrderSpecDTO();
-            orderSpec.setName(entity.getName());
-            orderSpec.setSourcePointId(sourcePoint);
-            orderSpec.setDestPointId(destPoint);
-
-            String createdOrderId = transportOrderApi.createOrder(orderSpec);
+            createdOrderId = transportOrderApi.createOrder(orderSpec);
             transportOrderApi.activateOrder(createdOrderId);
-
-            // 更新数据库状态
-            entity.setOrderNo(createdOrderId);
-            entity.setState("ACTIVE");
-            orderService.updateById(entity);
-
-            log.info("运输订单创建成功: {} -> {}", sourcePoint, destPoint);
-            return true;
         } catch (Exception e) {
-            log.error("订单创建失败: {}", e.getMessage());
-            // 回滚数据库
-            orderService.removeById(entity.getId());
+            log.error("内核创建订单失败: {}", e.getMessage());
             throw new RuntimeException("订单创建失败: " + e.getMessage());
         }
+
+        // 2. 内核成功后，一次性写入 DB（@Transactional 负责回滚）
+        TransportOrderEntity entity = new TransportOrderEntity();
+        entity.setOrderNo(createdOrderId);
+        entity.setName(command.getName());
+        entity.setIntendedVehicle(command.getIntendedVehicle());
+        entity.setDestinations(command.getSourcePoint() + "," + command.getDestPoint());
+        entity.setState("ACTIVE");
+        orderService.save(entity);
+
+        log.info("运输订单创建成功: {} -> {}", command.getSourcePoint(), command.getDestPoint());
+        return true;
     }
 
     /**
@@ -225,7 +211,7 @@ public class TransportOrderApplicationService {
             TransportOrderEntity entity = orderService.getByOrderNo(orderId);
             if (entity != null) {
                 entity.setState("FAILED");
-                entity.setProperties("{\"remark\":\"" + reason + "\"}");
+                entity.setProperties(JsonUtils.toJsonString(Map.of("remark", reason != null ? reason : "")));
                 orderService.updateById(entity);
             }
             log.info("订单失败: {}, 原因: {}", orderId, reason);
@@ -252,7 +238,7 @@ public class TransportOrderApplicationService {
             if (entity != null) {
                 entity.setState("FAILED");
                 entity.setProcessingVehicle(vehicleId);
-                entity.setProperties("{\"remark\":\"" + (reason != null ? reason : "车辆执行失败") + "\"}");
+                entity.setProperties(JsonUtils.toJsonString(Map.of("remark", reason != null ? reason : "车辆执行失败")));
                 orderService.updateById(entity);
             }
             log.info("订单执行失败: orderId={}, vehicleId={}, reason={}", orderId, vehicleId, reason);
@@ -302,7 +288,78 @@ public class TransportOrderApplicationService {
         return stats;
     }
 
+    // ===== 查询/持久化方法 =====
+
+    public TableDataInfo<TransportOrderQueryBO> listOrders(TransportOrderQueryBO query, PageQuery pageQuery) {
+        TableDataInfo<TransportOrderEntity> entityPage = orderService.selectPageTransportOrder(toEntity(query), pageQuery);
+        TableDataInfo<TransportOrderQueryBO> result = new TableDataInfo<>();
+        result.setTotal(entityPage.getTotal());
+        result.setCode(entityPage.getCode());
+        result.setMsg(entityPage.getMsg());
+        result.setRows(entityPage.getRows() == null ? List.of()
+                : entityPage.getRows().stream().map(this::toQueryBO).collect(Collectors.toList()));
+        return result;
+    }
+
+    public List<TransportOrderQueryBO> getAllOrders() {
+        return orderService.list().stream().map(this::toQueryBO).collect(Collectors.toList());
+    }
+
+    public TransportOrderQueryBO getOrderById(Long id) {
+        return toQueryBO(orderService.getById(id));
+    }
+
+    @Transactional
+    public boolean updateOrder(TransportOrderQueryBO bo) {
+        return orderService.updateById(toEntity(bo));
+    }
+
+    @Transactional
+    public boolean batchCreate(List<TransportOrderQueryBO> orders) {
+        List<TransportOrderEntity> entities = orders.stream().map(this::toEntity).collect(Collectors.toList());
+        return orderService.batchCreateTransportOrder(entities);
+    }
+
     // ===== 辅助方法 =====
+
+    private TransportOrderQueryBO toQueryBO(TransportOrderEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+        TransportOrderQueryBO bo = new TransportOrderQueryBO();
+        bo.setId(entity.getId());
+        bo.setName(entity.getName());
+        bo.setOrderNo(entity.getOrderNo());
+        bo.setState(entity.getState());
+        bo.setIntendedVehicle(entity.getIntendedVehicle());
+        bo.setProcessingVehicle(entity.getProcessingVehicle());
+        bo.setVehicleVin(entity.getVehicleVin());
+        bo.setDestinations(entity.getDestinations());
+        bo.setCreationTime(entity.getCreationTime());
+        bo.setFinishedTime(entity.getFinishedTime());
+        bo.setDeadline(entity.getDeadline());
+        bo.setProperties(entity.getProperties());
+        return bo;
+    }
+
+    private TransportOrderEntity toEntity(TransportOrderQueryBO bo) {
+        if (bo == null) {
+            return null;
+        }
+        TransportOrderEntity entity = new TransportOrderEntity();
+        entity.setId(bo.getId());
+        entity.setName(bo.getName());
+        entity.setOrderNo(bo.getOrderNo());
+        entity.setState(bo.getState());
+        entity.setIntendedVehicle(bo.getIntendedVehicle());
+        entity.setProcessingVehicle(bo.getProcessingVehicle());
+        entity.setDestinations(bo.getDestinations());
+        entity.setCreationTime(bo.getCreationTime());
+        entity.setFinishedTime(bo.getFinishedTime());
+        entity.setDeadline(bo.getDeadline());
+        entity.setProperties(bo.getProperties());
+        return entity;
+    }
 
     private TransportOrderDTO toDTO(TransportOrder order) {
         TransportOrderDTO dto = new TransportOrderDTO();
@@ -318,21 +375,4 @@ public class TransportOrderApplicationService {
         return dto;
     }
 
-    private TransportOrderEntity toEntity(TransportOrderEntityDTO dto) {
-        TransportOrderEntity entity = new TransportOrderEntity();
-        entity.setId(dto.getId());
-        entity.setName(dto.getName());
-        entity.setOrderNo(dto.getOrderNo());
-        entity.setState(dto.getState());
-        entity.setIntendedVehicle(dto.getIntendedVehicle());
-        entity.setProcessingVehicle(dto.getProcessingVehicle());
-        entity.setDestinations(dto.getDestinations());
-        entity.setCreationTime(dto.getCreationTime());
-        entity.setFinishedTime(dto.getFinishedTime());
-        entity.setDeadline(dto.getDeadline());
-        entity.setProperties(dto.getProperties());
-        entity.setCreateTime(dto.getCreateTime());
-        entity.setUpdateTime(dto.getUpdateTime());
-        return entity;
-    }
 }

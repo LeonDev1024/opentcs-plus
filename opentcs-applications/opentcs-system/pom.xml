@@ -63,6 +63,12 @@
             <artifactId>opentcs-common-security</artifactId>
         </dependency>
 
+        <!-- Security API：AuthApi / PermissionApi 接口契约 -->
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-security-api</artifactId>
+        </dependency>
+
         <!-- 认证策略：Sa-Token / Redis / Social / JSON -->
         <dependency>
             <groupId>org.opentcs</groupId>

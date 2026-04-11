@@ -1,7 +1,6 @@
 package org.opentcs.system.auth;
 
 import cn.dev33.satoken.exception.NotLoginException;
-import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Opt;
@@ -23,6 +22,7 @@ import org.opentcs.common.log.event.LogininforEvent;
 import org.opentcs.common.mybatis.helper.DataPermissionHelper;
 import org.opentcs.common.redis.utils.RedisUtils;
 import org.opentcs.common.satoken.utils.LoginHelper;
+import org.opentcs.security.api.AuthApi;
 import org.opentcs.system.domain.SysUser;
 import org.opentcs.system.domain.bo.SysSocialBo;
 import org.opentcs.system.domain.vo.*;
@@ -56,6 +56,7 @@ public class SysLoginService {
     private final ISysDeptService deptService;
     private final ISysPostService postService;
     private final SysUserMapper userMapper;
+    private final AuthApi authApi;
 
     @Lock4j
     public void socialRegister(AuthUser authUserData) {
@@ -87,16 +88,12 @@ public class SysLoginService {
     public void logout() {
         try {
             LoginUser loginUser = LoginHelper.getLoginUser();
-            if (ObjectUtil.isNull(loginUser)) {
-                return;
+            if (ObjectUtil.isNotNull(loginUser)) {
+                recordLogininfor(loginUser.getUsername(), Constants.LOGOUT, MessageUtils.message("user.logout.success"));
             }
-            recordLogininfor(loginUser.getUsername(), Constants.LOGOUT, MessageUtils.message("user.logout.success"));
         } catch (NotLoginException ignored) {
         } finally {
-            try {
-                StpUtil.logout();
-            } catch (NotLoginException ignored) {
-            }
+            authApi.revokeToken();
         }
     }
 

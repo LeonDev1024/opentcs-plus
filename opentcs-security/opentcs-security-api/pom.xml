@@ -15,6 +15,13 @@
     <description>安全认证 API 接口定义</description>
 
     <dependencies>
+        <!-- common-core：LoginUser / RoleDTO 等基础模型 -->
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
         <!-- Spring Context -->
         <dependency>
             <groupId>org.springframework</groupId>

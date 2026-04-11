@@ -1,7 +1,5 @@
 package org.opentcs.system.auth.impl;
 
-import cn.dev33.satoken.stp.StpUtil;
-import cn.dev33.satoken.stp.parameter.SaLoginParameter;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.crypto.digest.BCrypt;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -21,21 +19,21 @@ import org.opentcs.common.core.utils.StringUtils;
 import org.opentcs.common.core.utils.ValidatorUtils;
 import org.opentcs.common.json.utils.JsonUtils;
 import org.opentcs.common.redis.utils.RedisUtils;
-import org.opentcs.common.satoken.utils.LoginHelper;
 import org.opentcs.common.web.config.properties.CaptchaProperties;
+import org.opentcs.security.api.AuthApi;
+import org.opentcs.security.api.dto.TokenConfig;
+import org.opentcs.security.api.dto.TokenInfo;
+import org.opentcs.system.auth.IAuthStrategy;
+import org.opentcs.system.auth.SysLoginService;
+import org.opentcs.system.auth.vo.LoginVo;
 import org.opentcs.system.domain.SysUser;
 import org.opentcs.system.domain.vo.SysClientVo;
 import org.opentcs.system.domain.vo.SysUserVo;
 import org.opentcs.system.mapper.SysUserMapper;
-import org.opentcs.system.auth.vo.LoginVo;
-import org.opentcs.system.auth.IAuthStrategy;
-import org.opentcs.system.auth.SysLoginService;
 import org.springframework.stereotype.Service;
 
 /**
  * 密码认证策略
- *
- * @author Michelle.Chung
  */
 @Slf4j
 @Service("password" + IAuthStrategy.BASE_NAME)
@@ -45,6 +43,7 @@ public class PasswordAuthStrategy implements IAuthStrategy {
     private final CaptchaProperties captchaProperties;
     private final SysLoginService loginService;
     private final SysUserMapper userMapper;
+    private final AuthApi authApi;
 
     @Override
     public LoginVo login(String body, SysClientVo client) {
@@ -52,44 +51,33 @@ public class PasswordAuthStrategy implements IAuthStrategy {
         ValidatorUtils.validate(loginBody);
         String username = loginBody.getUsername();
         String password = loginBody.getPassword();
-        String code = loginBody.getCode();
-        String uuid = loginBody.getUuid();
 
-        boolean captchaEnabled = captchaProperties.getEnable();
-        // 验证码开关
-        if (captchaEnabled) {
-            validateCaptcha(username, code, uuid);
+        if (captchaProperties.getEnable()) {
+            validateCaptcha(username, loginBody.getCode(), loginBody.getUuid());
         }
         SysUserVo user = loadUserByUsername(username);
         loginService.checkLogin(LoginType.PASSWORD, username, () -> !BCrypt.checkpw(password, user.getPassword()));
-        // 此处可根据登录用户的数据不同 自行创建 loginUser
+
         LoginUser loginUser = loginService.buildLoginUser(user);
         loginUser.setClientKey(client.getClientKey());
         loginUser.setDeviceType(client.getDeviceType());
-        SaLoginParameter model = new SaLoginParameter();
-        model.setDeviceType(client.getDeviceType());
-        // 自定义分配 不同用户体系 不同 token 授权时间 不设置默认走全局 yml 配置
-        // 例如: 后台用户30分钟过期 app用户1天过期
-        model.setTimeout(client.getTimeout());
-        model.setActiveTimeout(client.getActiveTimeout());
-        model.setExtra(LoginHelper.CLIENT_KEY, client.getClientId());
-        // 生成token
-        LoginHelper.login(loginUser, model);
+
+        TokenConfig config = TokenConfig.builder()
+            .deviceType(client.getDeviceType())
+            .clientId(client.getClientId())
+            .clientKey(client.getClientKey())
+            .timeout(client.getTimeout())
+            .activeTimeout(client.getActiveTimeout())
+            .build();
+        TokenInfo tokenInfo = authApi.issueToken(loginUser, config);
 
         LoginVo loginVo = new LoginVo();
-        loginVo.setAccessToken(StpUtil.getTokenValue());
-        loginVo.setExpireIn(StpUtil.getTokenTimeout());
+        loginVo.setAccessToken(tokenInfo.getToken());
+        loginVo.setExpireIn(tokenInfo.getExpireTime());
         loginVo.setClientId(client.getClientId());
         return loginVo;
     }
 
-    /**
-     * 校验验证码
-     *
-     * @param username 用户名
-     * @param code     验证码
-     * @param uuid     唯一标识
-     */
     private void validateCaptcha(String username, String code, String uuid) {
         String verifyKey = GlobalConstants.CAPTCHA_CODE_KEY + StringUtils.blankToDefault(uuid, "");
         String captcha = RedisUtils.getCacheObject(verifyKey);
@@ -115,5 +103,4 @@ public class PasswordAuthStrategy implements IAuthStrategy {
         }
         return user;
     }
-
 }

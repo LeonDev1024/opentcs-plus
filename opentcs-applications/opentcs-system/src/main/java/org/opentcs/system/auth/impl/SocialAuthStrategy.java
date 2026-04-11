@@ -1,7 +1,5 @@
 package org.opentcs.system.auth.impl;
 
-import cn.dev33.satoken.stp.StpUtil;
-import cn.dev33.satoken.stp.parameter.SaLoginParameter;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import lombok.RequiredArgsConstructor;
@@ -15,25 +13,25 @@ import org.opentcs.common.core.exception.ServiceException;
 import org.opentcs.common.core.exception.user.UserException;
 import org.opentcs.common.core.utils.ValidatorUtils;
 import org.opentcs.common.json.utils.JsonUtils;
-import org.opentcs.common.satoken.utils.LoginHelper;
 import org.opentcs.common.social.config.properties.SocialProperties;
 import org.opentcs.common.social.utils.SocialUtils;
+import org.opentcs.security.api.AuthApi;
+import org.opentcs.security.api.dto.TokenConfig;
+import org.opentcs.security.api.dto.TokenInfo;
+import org.opentcs.system.auth.IAuthStrategy;
+import org.opentcs.system.auth.SysLoginService;
+import org.opentcs.system.auth.vo.LoginVo;
 import org.opentcs.system.domain.vo.SysClientVo;
 import org.opentcs.system.domain.vo.SysSocialVo;
 import org.opentcs.system.domain.vo.SysUserVo;
 import org.opentcs.system.mapper.SysUserMapper;
 import org.opentcs.system.service.ISysSocialService;
-import org.opentcs.system.auth.vo.LoginVo;
-import org.opentcs.system.auth.IAuthStrategy;
-import org.opentcs.system.auth.SysLoginService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 /**
  * 第三方授权策略
- *
- * @author thiszhc is 三三
  */
 @Slf4j
 @Service("social" + IAuthStrategy.BASE_NAME)
@@ -44,20 +42,16 @@ public class SocialAuthStrategy implements IAuthStrategy {
     private final ISysSocialService sysSocialService;
     private final SysUserMapper userMapper;
     private final SysLoginService loginService;
+    private final AuthApi authApi;
 
-    /**
-     * 登录-第三方授权登录
-     *
-     * @param body     登录信息
-     * @param client   客户端信息
-     */
     @Override
     public LoginVo login(String body, SysClientVo client) {
         SocialLoginBody loginBody = JsonUtils.parseObject(body, SocialLoginBody.class);
         ValidatorUtils.validate(loginBody);
+
         AuthResponse<AuthUser> response = SocialUtils.loginAuth(
-                loginBody.getSource(), loginBody.getSocialCode(),
-                loginBody.getSocialState(), socialProperties);
+            loginBody.getSource(), loginBody.getSocialCode(),
+            loginBody.getSocialState(), socialProperties);
         if (!response.ok()) {
             throw new ServiceException(response.getMsg());
         }
@@ -67,25 +61,24 @@ public class SocialAuthStrategy implements IAuthStrategy {
         if (CollUtil.isEmpty(list)) {
             throw new ServiceException("你还没有绑定第三方账号，绑定后才可以登录！");
         }
-        SysSocialVo social = list.get(0);
-        SysUserVo user = loadUser(social.getUserId());
-        // 此处可根据登录用户的数据不同 自行创建 loginUser 属性不够用继承扩展就行了
+        SysUserVo user = loadUser(list.get(0).getUserId());
+
         LoginUser loginUser = loginService.buildLoginUser(user);
         loginUser.setClientKey(client.getClientKey());
         loginUser.setDeviceType(client.getDeviceType());
-        SaLoginParameter model = new SaLoginParameter();
-        model.setDeviceType(client.getDeviceType());
-        // 自定义分配 不同用户体系 不同 token 授权时间 不设置默认走全局 yml 配置
-        // 例如: 后台用户30分钟过期 app用户1天过期
-        model.setTimeout(client.getTimeout());
-        model.setActiveTimeout(client.getActiveTimeout());
-        model.setExtra(LoginHelper.CLIENT_KEY, client.getClientId());
-        // 生成token
-        LoginHelper.login(loginUser, model);
+
+        TokenConfig config = TokenConfig.builder()
+            .deviceType(client.getDeviceType())
+            .clientId(client.getClientId())
+            .clientKey(client.getClientKey())
+            .timeout(client.getTimeout())
+            .activeTimeout(client.getActiveTimeout())
+            .build();
+        TokenInfo tokenInfo = authApi.issueToken(loginUser, config);
 
         LoginVo loginVo = new LoginVo();
-        loginVo.setAccessToken(StpUtil.getTokenValue());
-        loginVo.setExpireIn(StpUtil.getTokenTimeout());
+        loginVo.setAccessToken(tokenInfo.getToken());
+        loginVo.setExpireIn(tokenInfo.getExpireTime());
         loginVo.setClientId(client.getClientId());
         return loginVo;
     }
@@ -93,13 +86,12 @@ public class SocialAuthStrategy implements IAuthStrategy {
     private SysUserVo loadUser(Long userId) {
         SysUserVo user = userMapper.selectVoById(userId);
         if (ObjectUtil.isNull(user)) {
-            log.info("登录用户：{} 不存在.", "");
+            log.info("登录用户不存在, userId={}", userId);
             throw new UserException("user.not.exists", "");
         } else if (SystemConstants.DISABLE.equals(user.getStatus())) {
-            log.info("登录用户：{} 已被停用.", "");
+            log.info("登录用户已被停用, userId={}", userId);
             throw new UserException("user.blocked", "");
         }
         return user;
     }
-
 }

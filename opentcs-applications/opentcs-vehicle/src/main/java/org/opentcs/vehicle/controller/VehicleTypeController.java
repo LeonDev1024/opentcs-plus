@@ -6,7 +6,7 @@ import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.common.web.core.BaseController;
 import org.opentcs.vehicle.application.VehicleTypeApplicationService;
-import org.opentcs.vehicle.persistence.entity.VehicleTypeEntity;
+import org.opentcs.vehicle.application.bo.VehicleTypeBO;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,27 +22,27 @@ public class VehicleTypeController extends BaseController {
     private final VehicleTypeApplicationService vehicleTypeApplicationService;
 
     @GetMapping("/list")
-    public TableDataInfo<VehicleTypeEntity> listVehicleTypes(VehicleTypeEntity vehicleType, PageQuery pageQuery) {
+    public TableDataInfo<VehicleTypeBO> listVehicleTypes(VehicleTypeBO vehicleType, PageQuery pageQuery) {
         return vehicleTypeApplicationService.listVehicleTypes(vehicleType, pageQuery);
     }
 
     @GetMapping("/all")
-    public R<List<VehicleTypeEntity>> getAllVehicleTypes() {
+    public R<List<VehicleTypeBO>> getAllVehicleTypes() {
         return R.ok(vehicleTypeApplicationService.getAllVehicleTypes());
     }
 
     @GetMapping("/{id}")
-    public R<VehicleTypeEntity> getVehicleTypeById(@PathVariable Long id) {
+    public R<VehicleTypeBO> getVehicleTypeById(@PathVariable Long id) {
         return R.ok(vehicleTypeApplicationService.getById(id));
     }
 
     @PostMapping("/add")
-    public R<Boolean> createVehicleType(@RequestBody VehicleTypeEntity vehicleType) {
+    public R<Boolean> createVehicleType(@RequestBody VehicleTypeBO vehicleType) {
         return R.ok(vehicleTypeApplicationService.create(vehicleType));
     }
 
     @PutMapping("/edit")
-    public R<Boolean> updateVehicleType(@RequestBody VehicleTypeEntity vehicleType) {
+    public R<Boolean> updateVehicleType(@RequestBody VehicleTypeBO vehicleType) {
         return R.ok(vehicleTypeApplicationService.update(vehicleType));
     }
 
@@ -52,7 +52,7 @@ public class VehicleTypeController extends BaseController {
     }
 
     @GetMapping("/by-brand/{brandId}")
-    public R<List<VehicleTypeEntity>> getVehicleTypesByBrandId(@PathVariable Long brandId) {
+    public R<List<VehicleTypeBO>> getVehicleTypesByBrandId(@PathVariable Long brandId) {
         return R.ok(vehicleTypeApplicationService.getByBrandId(brandId));
     }
 }
