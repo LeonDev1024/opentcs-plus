@@ -78,6 +78,13 @@
             <version>${revision}</version>
         </dependency>
 
+        <!-- Security Core：AuthApi / PermissionApi 的 Sa-Token 实现（运行时） -->
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-security-core</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.opentcs</groupId>
             <artifactId>opentcs-common-core</artifactId>

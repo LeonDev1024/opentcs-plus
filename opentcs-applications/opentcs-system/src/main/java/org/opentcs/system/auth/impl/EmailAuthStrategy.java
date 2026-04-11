@@ -1,7 +1,5 @@
 package org.opentcs.system.auth.impl;
 
-import cn.dev33.satoken.stp.StpUtil;
-import cn.dev33.satoken.stp.parameter.SaLoginParameter;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
@@ -19,20 +17,20 @@ import org.opentcs.common.core.utils.StringUtils;
 import org.opentcs.common.core.utils.ValidatorUtils;
 import org.opentcs.common.json.utils.JsonUtils;
 import org.opentcs.common.redis.utils.RedisUtils;
-import org.opentcs.common.satoken.utils.LoginHelper;
+import org.opentcs.security.api.AuthApi;
+import org.opentcs.security.api.dto.TokenConfig;
+import org.opentcs.security.api.dto.TokenInfo;
+import org.opentcs.system.auth.IAuthStrategy;
+import org.opentcs.system.auth.SysLoginService;
+import org.opentcs.system.auth.vo.LoginVo;
 import org.opentcs.system.domain.SysUser;
 import org.opentcs.system.domain.vo.SysClientVo;
 import org.opentcs.system.domain.vo.SysUserVo;
 import org.opentcs.system.mapper.SysUserMapper;
-import org.opentcs.system.auth.vo.LoginVo;
-import org.opentcs.system.auth.IAuthStrategy;
-import org.opentcs.system.auth.SysLoginService;
 import org.springframework.stereotype.Service;
 
 /**
  * 邮件认证策略
- *
- * @author Michelle.Chung
  */
 @Slf4j
 @Service("email" + IAuthStrategy.BASE_NAME)
@@ -41,6 +39,7 @@ public class EmailAuthStrategy implements IAuthStrategy {
 
     private final SysLoginService loginService;
     private final SysUserMapper userMapper;
+    private final AuthApi authApi;
 
     @Override
     public LoginVo login(String body, SysClientVo client) {
@@ -48,32 +47,30 @@ public class EmailAuthStrategy implements IAuthStrategy {
         ValidatorUtils.validate(loginBody);
         String email = loginBody.getEmail();
         String emailCode = loginBody.getEmailCode();
+
         SysUserVo user = loadUserByEmail(email);
         loginService.checkLogin(LoginType.EMAIL, user.getUserName(), () -> !validateEmailCode(email, emailCode));
-        // 此处可根据登录用户的数据不同 自行创建 loginUser 属性不够用继承扩展就行了
+
         LoginUser loginUser = loginService.buildLoginUser(user);
         loginUser.setClientKey(client.getClientKey());
         loginUser.setDeviceType(client.getDeviceType());
-        SaLoginParameter model = new SaLoginParameter();
-        model.setDeviceType(client.getDeviceType());
-        // 自定义分配 不同用户体系 不同 token 授权时间 不设置默认走全局 yml 配置
-        // 例如: 后台用户30分钟过期 app用户1天过期
-        model.setTimeout(client.getTimeout());
-        model.setActiveTimeout(client.getActiveTimeout());
-        model.setExtra(LoginHelper.CLIENT_KEY, client.getClientId());
-        // 生成token
-        LoginHelper.login(loginUser, model);
+
+        TokenConfig config = TokenConfig.builder()
+            .deviceType(client.getDeviceType())
+            .clientId(client.getClientId())
+            .clientKey(client.getClientKey())
+            .timeout(client.getTimeout())
+            .activeTimeout(client.getActiveTimeout())
+            .build();
+        TokenInfo tokenInfo = authApi.issueToken(loginUser, config);
 
         LoginVo loginVo = new LoginVo();
-        loginVo.setAccessToken(StpUtil.getTokenValue());
-        loginVo.setExpireIn(StpUtil.getTokenTimeout());
+        loginVo.setAccessToken(tokenInfo.getToken());
+        loginVo.setExpireIn(tokenInfo.getExpireTime());
         loginVo.setClientId(client.getClientId());
         return loginVo;
     }
 
-    /**
-     * 校验邮箱验证码
-     */
     private boolean validateEmailCode(String email, String emailCode) {
         String code = RedisUtils.getCacheObject(GlobalConstants.CAPTCHA_CODE_KEY + email);
         if (StringUtils.isBlank(code)) {
@@ -94,5 +91,4 @@ public class EmailAuthStrategy implements IAuthStrategy {
         }
         return user;
     }
-
 }
