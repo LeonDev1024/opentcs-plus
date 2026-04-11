@@ -1,15 +1,15 @@
-package org.opentcs.kernel.api.dto;
+package org.opentcs.order.application.bo;
 
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 /**
- * 运输订单数据传输对象（数据库实体）
+ * 运输订单查询/响应业务对象。
+ * 用于接口层与应用层之间的数据传递，屏蔽 TransportOrderEntity 的持久化注解。
  */
 @Data
-public class TransportOrderEntityDTO {
+public class TransportOrderQueryBO {
 
     private Long id;
 
@@ -17,11 +17,14 @@ public class TransportOrderEntityDTO {
 
     private String orderNo;
 
+    /** 订单状态：RAW, ACTIVE, FINISHED, FAILED, CANCELLED */
     private String state;
 
     private String intendedVehicle;
 
     private String processingVehicle;
+
+    private String vehicleVin;
 
     private String destinations;
 
@@ -32,8 +35,4 @@ public class TransportOrderEntityDTO {
     private LocalDateTime deadline;
 
     private String properties;
-
-    private Date createTime;
-
-    private Date updateTime;
 }
