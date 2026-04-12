@@ -20,7 +20,7 @@ import org.opentcs.kernel.domain.vehicle.Vehicle;
 import org.opentcs.kernel.domain.vehicle.VehiclePosition;
 import org.opentcs.kernel.domain.vehicle.VehicleState;
 import org.opentcs.vehicle.persistence.entity.VehicleEntity;
-import org.opentcs.vehicle.persistence.service.VehicleDomainService;
+import org.opentcs.vehicle.persistence.service.VehicleRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class VehicleApplicationService {
 
-    private final VehicleDomainService vehicleService;
+    private final VehicleRepository vehicleService;
     private final VehicleRegistry vehicleRegistry;
     private final TransportOrderRegistry orderRegistry;
     private final OrderLifecycleApi orderLifecycleApi;

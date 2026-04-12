@@ -12,7 +12,7 @@ import java.util.List;
  * 点位领域服务接口
  * 放在 kernel-persistence 作为领域层接口
  */
-public interface PointDomainService extends IService<PointEntity> {
+public interface PointRepository extends IService<PointEntity> {
 
     /**
      * 分页查询点位列表

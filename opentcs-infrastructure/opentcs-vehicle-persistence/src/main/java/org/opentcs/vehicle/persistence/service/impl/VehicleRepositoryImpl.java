@@ -9,7 +9,7 @@ import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.kernel.api.dto.VehicleCrudDTO;
 import org.opentcs.vehicle.persistence.entity.VehicleEntity;
 import org.opentcs.vehicle.persistence.mapper.VehicleMapper;
-import org.opentcs.vehicle.persistence.service.VehicleDomainService;
+import org.opentcs.vehicle.persistence.service.VehicleRepository;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @CacheConfig(cacheNames = "vehicle")
-public class VehicleDomainServiceImpl extends ServiceImpl<VehicleMapper, VehicleEntity> implements VehicleDomainService {
+public class VehicleRepositoryImpl extends ServiceImpl<VehicleMapper, VehicleEntity> implements VehicleRepository {
 
     @Override
     public TableDataInfo<VehicleEntity> selectPageVehicle(VehicleEntity vehicle, PageQuery pageQuery) {

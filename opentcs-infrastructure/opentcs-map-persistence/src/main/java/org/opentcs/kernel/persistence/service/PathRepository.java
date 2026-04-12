@@ -12,7 +12,7 @@ import java.util.List;
  * 路径领域服务接口
  * 放在 kernel-persistence 作为领域层接口
  */
-public interface PathDomainService extends IService<PathEntity> {
+public interface PathRepository extends IService<PathEntity> {
 
     /**
      * 分页查询路径列表

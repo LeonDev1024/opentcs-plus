@@ -12,7 +12,7 @@ import java.util.Map;
  * 车辆领域服务接口
  * 定义车辆数据的持久化操作，供应用层使用
  */
-public interface VehicleDomainService extends com.baomidou.mybatisplus.extension.service.IService<VehicleEntity> {
+public interface VehicleRepository extends com.baomidou.mybatisplus.extension.service.IService<VehicleEntity> {
 
     /**
      * 分页查询车辆列表

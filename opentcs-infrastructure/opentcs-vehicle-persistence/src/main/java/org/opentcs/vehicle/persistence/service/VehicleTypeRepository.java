@@ -7,7 +7,7 @@ import org.opentcs.vehicle.persistence.entity.VehicleTypeEntity;
 /**
  * 车辆类型领域服务接口
  */
-public interface VehicleTypeDomainService extends com.baomidou.mybatisplus.extension.service.IService<VehicleTypeEntity> {
+public interface VehicleTypeRepository extends com.baomidou.mybatisplus.extension.service.IService<VehicleTypeEntity> {
 
     /**
      * 分页查询车辆类型列表

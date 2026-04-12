@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.opentcs.kernel.api.VehicleTypeApi;
 import org.opentcs.kernel.api.dto.VehicleTypeDTO;
 import org.opentcs.vehicle.persistence.entity.VehicleTypeEntity;
-import org.opentcs.vehicle.persistence.service.VehicleTypeDomainService;
+import org.opentcs.vehicle.persistence.service.VehicleTypeRepository;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -19,18 +19,18 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class VehicleTypeApiAdapter implements VehicleTypeApi {
 
-    private final VehicleTypeDomainService vehicleTypeDomainService;
+    private final VehicleTypeRepository vehicleTypeRepository;
 
     @Override
     public List<VehicleTypeDTO> findAll() {
-        return vehicleTypeDomainService.list().stream()
+        return vehicleTypeRepository.list().stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<VehicleTypeDTO> findByBrandId(Long brandId) {
-        return vehicleTypeDomainService.lambdaQuery()
+        return vehicleTypeRepository.lambdaQuery()
                 .eq(VehicleTypeEntity::getBrandId, brandId)
                 .eq(VehicleTypeEntity::getDelFlag, "0")
                 .list()
@@ -39,13 +39,13 @@ public class VehicleTypeApiAdapter implements VehicleTypeApi {
 
     @Override
     public Optional<VehicleTypeDTO> findById(Long id) {
-        return Optional.ofNullable(vehicleTypeDomainService.getById(id)).map(this::toDTO);
+        return Optional.ofNullable(vehicleTypeRepository.getById(id)).map(this::toDTO);
     }
 
     @Override
     public Optional<VehicleTypeDTO> findByTypeId(String typeId) {
         // typeId 对应 name 字段（唯一名称作为领域标识）
-        return vehicleTypeDomainService.lambdaQuery()
+        return vehicleTypeRepository.lambdaQuery()
                 .eq(VehicleTypeEntity::getName, typeId)
                 .oneOpt()
                 .map(this::toDTO);
@@ -54,20 +54,20 @@ public class VehicleTypeApiAdapter implements VehicleTypeApi {
     @Override
     public VehicleTypeDTO create(VehicleTypeDTO dto) {
         VehicleTypeEntity entity = toEntity(dto);
-        vehicleTypeDomainService.save(entity);
+        vehicleTypeRepository.save(entity);
         return toDTO(entity);
     }
 
     @Override
     public VehicleTypeDTO update(VehicleTypeDTO dto) {
         VehicleTypeEntity entity = toEntity(dto);
-        vehicleTypeDomainService.updateById(entity);
-        return toDTO(vehicleTypeDomainService.getById(entity.getId()));
+        vehicleTypeRepository.updateById(entity);
+        return toDTO(vehicleTypeRepository.getById(entity.getId()));
     }
 
     @Override
     public void delete(Long id) {
-        vehicleTypeDomainService.removeById(id);
+        vehicleTypeRepository.removeById(id);
     }
 
     // ===== 转换方法 =====

@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * 位置类型领域服务接口
  */
-public interface LocationTypeDomainService extends IService<LocationTypeEntity> {
+public interface LocationTypeRepository extends IService<LocationTypeEntity> {
 
     /**
      * 分页查询位置类型列表

@@ -6,7 +6,7 @@ import org.opentcs.kernel.persistence.entity.NavigationMapHistoryEntity;
 /**
  * 导航地图历史版本领域服务接口。
  */
-public interface NavigationMapHistoryDomainService extends IService<NavigationMapHistoryEntity> {
+public interface NavigationMapHistoryRepository extends IService<NavigationMapHistoryEntity> {
 
     /**
      * 记录地图快照历史。

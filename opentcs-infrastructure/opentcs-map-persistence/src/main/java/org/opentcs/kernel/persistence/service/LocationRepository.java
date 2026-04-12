@@ -13,7 +13,7 @@ import java.util.List;
  * 位置/站点领域服务接口
  * 放在 kernel-persistence 作为领域层接口
  */
-public interface LocationDomainService extends IService<LocationEntity> {
+public interface LocationRepository extends IService<LocationEntity> {
 
     /**
      * 分页查询位置列表

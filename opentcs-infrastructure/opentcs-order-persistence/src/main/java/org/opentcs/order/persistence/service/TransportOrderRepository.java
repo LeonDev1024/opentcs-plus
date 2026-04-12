@@ -10,7 +10,7 @@ import java.util.Map;
 /**
  * 运输订单领域服务接口
  */
-public interface TransportOrderDomainService extends com.baomidou.mybatisplus.extension.service.IService<TransportOrderEntity> {
+public interface TransportOrderRepository extends com.baomidou.mybatisplus.extension.service.IService<TransportOrderEntity> {
 
     /**
      * 分页查询运输订单列表

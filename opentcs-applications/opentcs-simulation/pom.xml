@@ -22,36 +22,13 @@
             <version>${project.version}</version>
         </dependency>
 
-        <!-- Vehicle module -->
-        <dependency>
-            <groupId>org.opentcs</groupId>
-            <artifactId>opentcs-vehicle</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        
-        <!-- Order module -->
-        <dependency>
-            <groupId>org.opentcs</groupId>
-            <artifactId>opentcs-order</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        
-        <!-- Map module -->
-        <dependency>
-            <groupId>org.opentcs</groupId>
-            <artifactId>opentcs-map-editor</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        
         <!-- Driver module -->
         <dependency>
             <groupId>org.opentcs</groupId>
             <artifactId>opentcs-driver-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
 
-        
         <!-- Spring Boot dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

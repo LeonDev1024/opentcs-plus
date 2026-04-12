@@ -14,7 +14,9 @@ import org.opentcs.common.mybatis.handler.InjectionMetaObjectHandler;
 import org.opentcs.common.mybatis.handler.MybatisExceptionHandler;
 import org.opentcs.common.mybatis.handler.PlusPostInitTableInfoHandler;
 import org.opentcs.common.mybatis.interceptor.PlusDataPermissionInterceptor;
+import org.opentcs.common.core.spi.CurrentUserProvider;
 import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
@@ -32,6 +34,9 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @PropertySource(value = "classpath:common-mybatis.yml", factory = YmlPropertySourceFactory.class)
 public class MybatisPlusConfig {
 
+    @Autowired
+    private CurrentUserProvider currentUserProvider;
+
     @Bean
     public MybatisPlusInterceptor mybatisPlusInterceptor() {
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
@@ -48,7 +53,7 @@ public class MybatisPlusConfig {
      * 数据权限拦截器
      */
     public PlusDataPermissionInterceptor dataPermissionInterceptor() {
-        return new PlusDataPermissionInterceptor();
+        return new PlusDataPermissionInterceptor(currentUserProvider);
     }
 
     /**
@@ -82,7 +87,7 @@ public class MybatisPlusConfig {
      */
     @Bean
     public MetaObjectHandler metaObjectHandler() {
-        return new InjectionMetaObjectHandler();
+        return new InjectionMetaObjectHandler(currentUserProvider);
     }
 
     /**

@@ -1,6 +1,5 @@
 package org.opentcs.common.mybatis.handler;
 
-import cn.dev33.satoken.exception.NotLoginException;
 import cn.hutool.http.HttpStatus;
 import com.baomidou.dynamic.datasource.exception.CannotFindDataSourceException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,7 +36,7 @@ public class MybatisExceptionHandler {
     public R<Void> handleCannotFindDataSourceException(MyBatisSystemException e, HttpServletRequest request) {
         String requestURI = request.getRequestURI();
         Throwable root = getRootCause(e);
-        if (root instanceof NotLoginException) {
+        if (isNotLoginException(root)) {
             log.error("请求地址'{}',认证失败'{}',无法访问系统资源", requestURI, root.getMessage());
             return R.fail(HttpStatus.HTTP_UNAUTHORIZED, "认证失败，无法访问系统资源");
         }
@@ -60,6 +59,13 @@ public class MybatisExceptionHandler {
      * 2. 如果 e 的 cause 和自身相同（防止循环引用），也返回 e
      * 3. 否则递归调用，继续向下寻找最底层的 cause
      */
+    /**
+     * 通过类名判断是否为 NotLoginException（避免直接依赖 Sa-Token 类型）
+     */
+    private static boolean isNotLoginException(Throwable e) {
+        return e != null && e.getClass().getName().contains("NotLoginException");
+    }
+
     public static Throwable getRootCause(Throwable e) {
         Throwable cause = e.getCause();
         if (cause == null || cause == e) {

@@ -12,7 +12,7 @@ import org.opentcs.kernel.api.dto.LocationDTO;
 import org.opentcs.kernel.persistence.service.DTOConverter;
 import org.opentcs.kernel.persistence.entity.LocationEntity;
 import org.opentcs.kernel.persistence.mapper.LocationMapper;
-import org.opentcs.kernel.persistence.service.LocationDomainService;
+import org.opentcs.kernel.persistence.service.LocationRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -26,7 +26,7 @@ import java.util.Map;
  */
 @Service
 @RequiredArgsConstructor
-public class LocationServiceImpl extends ServiceImpl<LocationMapper, LocationEntity> implements LocationDomainService {
+public class LocationServiceImpl extends ServiceImpl<LocationMapper, LocationEntity> implements LocationRepository {
 
     private final ObjectMapper objectMapper;
 

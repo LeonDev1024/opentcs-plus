@@ -11,7 +11,7 @@ import org.opentcs.kernel.api.dto.PathDTO;
 import org.opentcs.kernel.persistence.service.DTOConverter;
 import org.opentcs.kernel.persistence.entity.PathEntity;
 import org.opentcs.kernel.persistence.mapper.PathMapper;
-import org.opentcs.kernel.persistence.service.PathDomainService;
+import org.opentcs.kernel.persistence.service.PathRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,7 +21,7 @@ import java.util.List;
  */
 @Service
 @RequiredArgsConstructor
-public class PathServiceImpl extends ServiceImpl<PathMapper, PathEntity> implements PathDomainService {
+public class PathServiceImpl extends ServiceImpl<PathMapper, PathEntity> implements PathRepository {
 
     private final ObjectMapper objectMapper;
 

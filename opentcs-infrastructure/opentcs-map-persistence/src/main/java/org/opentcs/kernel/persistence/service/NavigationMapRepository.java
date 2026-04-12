@@ -12,7 +12,7 @@ import java.util.List;
  * 导航地图领域服务接口
  * 放在 kernel-persistence 作为领域层接口
  */
-public interface NavigationMapDomainService extends IService<NavigationMapEntity> {
+public interface NavigationMapRepository extends IService<NavigationMapEntity> {
 
     /**
      * 创建导航地图

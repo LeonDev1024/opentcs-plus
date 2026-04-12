@@ -11,7 +11,7 @@ import org.opentcs.kernel.api.dto.PointDTO;
 import org.opentcs.kernel.persistence.entity.PointEntity;
 import org.opentcs.kernel.persistence.mapper.PointMapper;
 import org.opentcs.kernel.persistence.service.DTOConverter;
-import org.opentcs.kernel.persistence.service.PointDomainService;
+import org.opentcs.kernel.persistence.service.PointRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -24,7 +24,7 @@ import java.util.Map;
  */
 @Service
 @RequiredArgsConstructor
-public class PointServiceImpl extends ServiceImpl<PointMapper, PointEntity> implements PointDomainService {
+public class PointServiceImpl extends ServiceImpl<PointMapper, PointEntity> implements PointRepository {
 
     private final ObjectMapper objectMapper;
 

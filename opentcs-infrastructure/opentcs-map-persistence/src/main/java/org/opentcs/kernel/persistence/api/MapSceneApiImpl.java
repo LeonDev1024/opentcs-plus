@@ -14,15 +14,15 @@ import org.opentcs.kernel.api.dto.PointDTO;
 import org.opentcs.kernel.api.map.MapSceneApi;
 import org.opentcs.kernel.persistence.entity.CrossLayerConnectionEntity;
 import org.opentcs.kernel.persistence.entity.NavigationMapEntity;
-import org.opentcs.kernel.persistence.service.BlockDomainService;
-import org.opentcs.kernel.persistence.service.CrossLayerConnectionDomainService;
+import org.opentcs.kernel.persistence.service.BlockRepository;
+import org.opentcs.kernel.persistence.service.CrossLayerConnectionRepository;
 import org.opentcs.kernel.persistence.service.DTOConverter;
-import org.opentcs.kernel.persistence.service.FactoryModelDomainService;
-import org.opentcs.kernel.persistence.service.LocationDomainService;
-import org.opentcs.kernel.persistence.service.LocationTypeDomainService;
-import org.opentcs.kernel.persistence.service.NavigationMapDomainService;
-import org.opentcs.kernel.persistence.service.PathDomainService;
-import org.opentcs.kernel.persistence.service.PointDomainService;
+import org.opentcs.kernel.persistence.service.FactoryModelRepository;
+import org.opentcs.kernel.persistence.service.LocationRepository;
+import org.opentcs.kernel.persistence.service.LocationTypeRepository;
+import org.opentcs.kernel.persistence.service.NavigationMapRepository;
+import org.opentcs.kernel.persistence.service.PathRepository;
+import org.opentcs.kernel.persistence.service.PointRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,250 +31,250 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MapSceneApiImpl implements MapSceneApi {
 
-    private final NavigationMapDomainService navigationMapDomainService;
-    private final FactoryModelDomainService factoryModelDomainService;
-    private final LocationTypeDomainService locationTypeDomainService;
-    private final PointDomainService pointDomainService;
-    private final PathDomainService pathDomainService;
-    private final LocationDomainService locationDomainService;
-    private final BlockDomainService blockDomainService;
-    private final CrossLayerConnectionDomainService crossLayerConnectionDomainService;
+    private final NavigationMapRepository navigationMapRepository;
+    private final FactoryModelRepository factoryModelRepository;
+    private final LocationTypeRepository locationTypeRepository;
+    private final PointRepository pointRepository;
+    private final PathRepository pathRepository;
+    private final LocationRepository locationRepository;
+    private final BlockRepository blockRepository;
+    private final CrossLayerConnectionRepository crossLayerConnectionRepository;
 
     @Override
     public TableDataInfo<NavigationMapDTO> listNavigationMaps(NavigationMapDTO query, PageQuery pageQuery) {
-        return navigationMapDomainService.selectPageNavigationMap(toEntity(query), pageQuery);
+        return navigationMapRepository.selectPageNavigationMap(toEntity(query), pageQuery);
     }
 
     @Override
     public List<NavigationMapDTO> listNavigationMapsByFactory(Long factoryId) {
-        return navigationMapDomainService.selectByFactoryModelId(factoryId);
+        return navigationMapRepository.selectByFactoryModelId(factoryId);
     }
 
     @Override
     public NavigationMapDTO getNavigationMapById(Long id) {
-        return DTOConverter.toNavigationMapDTO(navigationMapDomainService.getNavigationMapDetail(id));
+        return DTOConverter.toNavigationMapDTO(navigationMapRepository.getNavigationMapDetail(id));
     }
 
     @Override
     public NavigationMapDTO getNavigationMapByFloor(Long factoryId, Integer floorNumber) {
-        return navigationMapDomainService.selectByFactoryModelIdAndFloor(factoryId, floorNumber);
+        return navigationMapRepository.selectByFactoryModelIdAndFloor(factoryId, floorNumber);
     }
 
     @Override
     public NavigationMapDTO getNavigationMapByMapId(String mapId) {
-        return navigationMapDomainService.selectByMapId(mapId);
+        return navigationMapRepository.selectByMapId(mapId);
     }
 
     @Override
     public boolean createNavigationMap(NavigationMapDTO dto) {
-        return navigationMapDomainService.createNavigationMap(toEntity(dto));
+        return navigationMapRepository.createNavigationMap(toEntity(dto));
     }
 
     @Override
     public boolean updateNavigationMap(NavigationMapDTO dto) {
-        return navigationMapDomainService.updateNavigationMap(toEntity(dto));
+        return navigationMapRepository.updateNavigationMap(toEntity(dto));
     }
 
     @Override
     public boolean deleteNavigationMap(Long id) {
-        return navigationMapDomainService.deleteNavigationMap(id);
+        return navigationMapRepository.deleteNavigationMap(id);
     }
 
     @Override
     public TableDataInfo<FactoryModelDTO> listFactoryModels(FactoryModelDTO query, PageQuery pageQuery) {
-        return factoryModelDomainService.selectPageFactoryModelDTO(query, pageQuery);
+        return factoryModelRepository.selectPageFactoryModelDTO(query, pageQuery);
     }
 
     @Override
     public FactoryModelDTO getFactoryModelById(Long id) {
-        return factoryModelDomainService.getFactoryModelDetailDTO(id);
+        return factoryModelRepository.getFactoryModelDetailDTO(id);
     }
 
     @Override
     public boolean createFactoryModel(FactoryModelDTO dto) {
-        return factoryModelDomainService.createFactoryModelDTO(dto);
+        return factoryModelRepository.createFactoryModelDTO(dto);
     }
 
     @Override
     public boolean updateFactoryModel(FactoryModelDTO dto) {
-        return factoryModelDomainService.updateFactoryModelDTO(dto);
+        return factoryModelRepository.updateFactoryModelDTO(dto);
     }
 
     @Override
     public boolean deleteFactoryModel(Long id) {
-        return factoryModelDomainService.deleteFactoryModel(id);
+        return factoryModelRepository.deleteFactoryModel(id);
     }
 
     @Override
     public TableDataInfo<LocationTypeDTO> listLocationTypes(LocationTypeDTO query, PageQuery pageQuery) {
-        return locationTypeDomainService.selectPageDTO(query, pageQuery);
+        return locationTypeRepository.selectPageDTO(query, pageQuery);
     }
 
     @Override
     public LocationTypeDTO getLocationTypeById(Long id) {
-        return locationTypeDomainService.getByIdDTO(id);
+        return locationTypeRepository.getByIdDTO(id);
     }
 
     @Override
     public List<LocationTypeDTO> listAllLocationTypes() {
-        return locationTypeDomainService.listDTO();
+        return locationTypeRepository.listDTO();
     }
 
     @Override
     public boolean createLocationType(LocationTypeDTO dto) {
-        return locationTypeDomainService.saveDTO(dto);
+        return locationTypeRepository.saveDTO(dto);
     }
 
     @Override
     public boolean updateLocationType(LocationTypeDTO dto) {
-        return locationTypeDomainService.updateByIdDTO(dto);
+        return locationTypeRepository.updateByIdDTO(dto);
     }
 
     @Override
     public boolean deleteLocationType(Long id) {
-        return locationTypeDomainService.removeById(id);
+        return locationTypeRepository.removeById(id);
     }
 
     @Override
     public List<PointDTO> listPointsByMap(Long mapId) {
-        return pointDomainService.listByMapDTO(mapId);
+        return pointRepository.listByMapDTO(mapId);
     }
 
     @Override
     public boolean replacePointsByMap(Long mapId, List<PointDTO> points) {
-        pointDomainService.removeByMap(mapId);
+        pointRepository.removeByMap(mapId);
         if (points == null || points.isEmpty()) {
             return true;
         }
         for (PointDTO point : points) {
             point.setId(null);
             point.setNavigationMapId(mapId);
-            pointDomainService.saveDTO(point);
+            pointRepository.saveDTO(point);
         }
         return true;
     }
 
     @Override
     public TableDataInfo<PathDTO> listPaths(PathDTO query, PageQuery pageQuery) {
-        return pathDomainService.selectPageDTO(query, pageQuery);
+        return pathRepository.selectPageDTO(query, pageQuery);
     }
 
     @Override
     public List<PathDTO> listPathsByFactory(Long factoryId) {
-        List<Long> mapIds = navigationMapDomainService.selectByFactoryModelId(factoryId)
+        List<Long> mapIds = navigationMapRepository.selectByFactoryModelId(factoryId)
             .stream()
             .map(NavigationMapDTO::getId)
             .toList();
         if (mapIds.isEmpty()) {
             return List.of();
         }
-        return pathDomainService.listByMapIdsDTO(mapIds);
+        return pathRepository.listByMapIdsDTO(mapIds);
     }
 
     @Override
     public List<PathDTO> listPathsByMap(Long mapId) {
-        return pathDomainService.listByMapDTO(mapId);
+        return pathRepository.listByMapDTO(mapId);
     }
 
     @Override
     public PathDTO getPathById(Long id) {
-        return pathDomainService.getByIdDTO(id);
+        return pathRepository.getByIdDTO(id);
     }
 
     @Override
     public boolean replacePathsByMap(Long mapId, List<PathDTO> paths) {
-        pathDomainService.removeByMap(mapId);
+        pathRepository.removeByMap(mapId);
         if (paths == null || paths.isEmpty()) {
             return true;
         }
         for (PathDTO path : paths) {
             path.setId(null);
             path.setNavigationMapId(mapId);
-            pathDomainService.saveDTO(path);
+            pathRepository.saveDTO(path);
         }
         return true;
     }
 
     @Override
     public TableDataInfo<LocationDTO> listLocations(LocationDTO query, PageQuery pageQuery) {
-        return locationDomainService.selectPageDTO(query, pageQuery);
+        return locationRepository.selectPageDTO(query, pageQuery);
     }
 
     @Override
     public List<LocationDTO> listLocationsByFactory(Long factoryId) {
-        List<Long> mapIds = navigationMapDomainService.selectByFactoryModelId(factoryId)
+        List<Long> mapIds = navigationMapRepository.selectByFactoryModelId(factoryId)
             .stream()
             .map(NavigationMapDTO::getId)
             .toList();
         if (mapIds.isEmpty()) {
             return List.of();
         }
-        return locationDomainService.selectByMapIdsDTO(mapIds);
+        return locationRepository.selectByMapIdsDTO(mapIds);
     }
 
     @Override
     public List<LocationDTO> listLocationsByMap(Long mapId) {
-        return locationDomainService.selectByNavigationMapIdDTO(mapId);
+        return locationRepository.selectByNavigationMapIdDTO(mapId);
     }
 
     @Override
     public LocationDTO getLocationById(Long id) {
-        return locationDomainService.selectByIdDTO(id);
+        return locationRepository.selectByIdDTO(id);
     }
 
     @Override
     public boolean replaceLocationsByMap(Long mapId, List<LocationDTO> locations) {
-        locationDomainService.removeByMap(mapId);
+        locationRepository.removeByMap(mapId);
         if (locations == null || locations.isEmpty()) {
             return true;
         }
         for (LocationDTO location : locations) {
             location.setId(null);
             location.setNavigationMapId(mapId);
-            locationDomainService.saveDTO(location);
+            locationRepository.saveDTO(location);
         }
         return true;
     }
 
     @Override
     public TableDataInfo<BlockDTO> listBlocks(BlockDTO query, PageQuery pageQuery) {
-        return blockDomainService.selectPageDTO(DTOConverter.toBlockEntity(query), pageQuery);
+        return blockRepository.selectPageDTO(DTOConverter.toBlockEntity(query), pageQuery);
     }
 
     @Override
     public List<BlockDTO> listBlocksByFactory(Long factoryId) {
-        return blockDomainService.selectByFactoryModelIdDTO(factoryId);
+        return blockRepository.selectByFactoryModelIdDTO(factoryId);
     }
 
     @Override
     public List<BlockDTO> listBlocksByFactoryAndType(Long factoryId, String type) {
-        return blockDomainService.selectByFactoryModelIdAndTypeDTO(factoryId, type);
+        return blockRepository.selectByFactoryModelIdAndTypeDTO(factoryId, type);
     }
 
     @Override
     public BlockDTO getBlockById(Long id) {
-        return blockDomainService.selectByIdDTO(id);
+        return blockRepository.selectByIdDTO(id);
     }
 
     @Override
     public boolean createBlock(BlockDTO dto) {
-        return blockDomainService.create(DTOConverter.toBlockEntity(dto));
+        return blockRepository.create(DTOConverter.toBlockEntity(dto));
     }
 
     @Override
     public boolean updateBlock(BlockDTO dto) {
-        return blockDomainService.update(DTOConverter.toBlockEntity(dto));
+        return blockRepository.update(DTOConverter.toBlockEntity(dto));
     }
 
     @Override
     public boolean deleteBlock(Long id) {
-        return blockDomainService.delete(id);
+        return blockRepository.delete(id);
     }
 
     @Override
     public TableDataInfo<CrossLayerConnectionDTO> listConnections(CrossLayerConnectionDTO query, PageQuery pageQuery) {
         TableDataInfo<CrossLayerConnectionEntity> entityPage =
-            crossLayerConnectionDomainService.selectPageConnection(DTOConverter.toCrossLayerConnectionEntity(query), pageQuery);
+            crossLayerConnectionRepository.selectPageConnection(DTOConverter.toCrossLayerConnectionEntity(query), pageQuery);
         return new TableDataInfo<>(
             entityPage.getRows().stream().map(DTOConverter::toCrossLayerConnectionDTO).toList(),
             entityPage.getTotal()
@@ -283,42 +283,42 @@ public class MapSceneApiImpl implements MapSceneApi {
 
     @Override
     public List<CrossLayerConnectionDTO> listConnectionsByFactory(Long factoryId) {
-        return DTOConverter.toCrossLayerConnectionDTOList(crossLayerConnectionDomainService.selectByFactoryModelId(factoryId));
+        return DTOConverter.toCrossLayerConnectionDTOList(crossLayerConnectionRepository.selectByFactoryModelId(factoryId));
     }
 
     @Override
     public List<CrossLayerConnectionDTO> listAvailableConnections(Long factoryId) {
-        return DTOConverter.toCrossLayerConnectionDTOList(crossLayerConnectionDomainService.selectAvailableConnections(factoryId));
+        return DTOConverter.toCrossLayerConnectionDTOList(crossLayerConnectionRepository.selectAvailableConnections(factoryId));
     }
 
     @Override
     public CrossLayerConnectionDTO getConnectionById(Long id) {
-        return DTOConverter.toCrossLayerConnectionDTO(crossLayerConnectionDomainService.selectById(id));
+        return DTOConverter.toCrossLayerConnectionDTO(crossLayerConnectionRepository.selectById(id));
     }
 
     @Override
     public boolean createConnection(CrossLayerConnectionDTO dto) {
-        return crossLayerConnectionDomainService.createConnection(DTOConverter.toCrossLayerConnectionEntity(dto));
+        return crossLayerConnectionRepository.createConnection(DTOConverter.toCrossLayerConnectionEntity(dto));
     }
 
     @Override
     public boolean updateConnection(CrossLayerConnectionDTO dto) {
-        return crossLayerConnectionDomainService.updateConnection(DTOConverter.toCrossLayerConnectionEntity(dto));
+        return crossLayerConnectionRepository.updateConnection(DTOConverter.toCrossLayerConnectionEntity(dto));
     }
 
     @Override
     public boolean deleteConnection(Long id) {
-        return crossLayerConnectionDomainService.deleteConnection(id);
+        return crossLayerConnectionRepository.deleteConnection(id);
     }
 
     @Override
     public boolean reserveElevator(String connectionId, Long vehicleId) {
-        return crossLayerConnectionDomainService.reserveElevator(connectionId, vehicleId);
+        return crossLayerConnectionRepository.reserveElevator(connectionId, vehicleId);
     }
 
     @Override
     public boolean releaseElevator(String connectionId, Long vehicleId) {
-        return crossLayerConnectionDomainService.releaseElevator(connectionId, vehicleId);
+        return crossLayerConnectionRepository.releaseElevator(connectionId, vehicleId);
     }
 
     private NavigationMapEntity toEntity(NavigationMapDTO dto) {

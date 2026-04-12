@@ -7,7 +7,7 @@ import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.kernel.persistence.entity.LayerEntity;
 import org.opentcs.kernel.persistence.mapper.LayerMapper;
-import org.opentcs.kernel.persistence.service.LayerDomainService;
+import org.opentcs.kernel.persistence.service.LayerRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,7 +16,7 @@ import java.util.List;
  * 图层领域服务实现
  */
 @Service
-public class LayerServiceImpl extends ServiceImpl<LayerMapper, LayerEntity> implements LayerDomainService {
+public class LayerServiceImpl extends ServiceImpl<LayerMapper, LayerEntity> implements LayerRepository {
 
     @Override
     public TableDataInfo<LayerEntity> selectPageLayer(LayerEntity layer, PageQuery pageQuery) {
