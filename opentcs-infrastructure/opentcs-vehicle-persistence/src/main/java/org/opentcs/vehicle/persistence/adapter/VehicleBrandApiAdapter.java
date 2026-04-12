@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.opentcs.kernel.api.VehicleBrandApi;
 import org.opentcs.kernel.api.dto.VehicleBrandDTO;
 import org.opentcs.vehicle.persistence.entity.BrandEntity;
-import org.opentcs.vehicle.persistence.service.BrandDomainService;
+import org.opentcs.vehicle.persistence.service.BrandRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -19,25 +19,25 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class VehicleBrandApiAdapter implements VehicleBrandApi {
 
-    private final BrandDomainService brandDomainService;
+    private final BrandRepository brandRepository;
 
     @Override
     public List<VehicleBrandDTO> findAllEnabled() {
-        return brandDomainService.selectBrandList().stream()
+        return brandRepository.selectBrandList().stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
     public Optional<VehicleBrandDTO> findById(Long id) {
-        BrandEntity entity = brandDomainService.getById(id);
+        BrandEntity entity = brandRepository.getById(id);
         return Optional.ofNullable(entity).map(this::toDTO);
     }
 
     @Override
     public Optional<VehicleBrandDTO> findByBrandId(String brandId) {
         // brandId 与 code 字段对应（品牌缩写作为领域唯一标识）
-        return brandDomainService.lambdaQuery()
+        return brandRepository.lambdaQuery()
                 .eq(BrandEntity::getCode, brandId)
                 .oneOpt()
                 .map(this::toDTO);
@@ -46,20 +46,20 @@ public class VehicleBrandApiAdapter implements VehicleBrandApi {
     @Override
     public VehicleBrandDTO create(VehicleBrandDTO brand) {
         BrandEntity entity = toEntity(brand);
-        brandDomainService.save(entity);
+        brandRepository.save(entity);
         return toDTO(entity);
     }
 
     @Override
     public VehicleBrandDTO update(VehicleBrandDTO brand) {
         BrandEntity entity = toEntity(brand);
-        brandDomainService.updateById(entity);
-        return toDTO(brandDomainService.getById(entity.getId()));
+        brandRepository.updateById(entity);
+        return toDTO(brandRepository.getById(entity.getId()));
     }
 
     @Override
     public void delete(Long id) {
-        brandDomainService.removeById(id);
+        brandRepository.removeById(id);
     }
 
     @Override
@@ -67,7 +67,7 @@ public class VehicleBrandApiAdapter implements VehicleBrandApi {
         BrandEntity entity = new BrandEntity();
         entity.setId(id);
         entity.setEnabled(enabled);
-        brandDomainService.updateById(entity);
+        brandRepository.updateById(entity);
     }
 
     // ===== 转换方法 =====

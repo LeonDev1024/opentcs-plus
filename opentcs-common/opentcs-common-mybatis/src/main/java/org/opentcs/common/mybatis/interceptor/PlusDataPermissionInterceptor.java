@@ -21,6 +21,7 @@ import org.apache.ibatis.mapping.SqlCommandType;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.opentcs.common.mybatis.handler.PlusDataPermissionHandler;
+import org.opentcs.common.core.spi.CurrentUserProvider;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -35,7 +36,11 @@ import java.util.List;
 @Slf4j
 public class PlusDataPermissionInterceptor extends BaseMultiTableInnerInterceptor implements InnerInterceptor {
 
-    private final PlusDataPermissionHandler dataPermissionHandler = new PlusDataPermissionHandler();
+    private final PlusDataPermissionHandler dataPermissionHandler;
+
+    public PlusDataPermissionInterceptor(CurrentUserProvider currentUserProvider) {
+        this.dataPermissionHandler = new PlusDataPermissionHandler(currentUserProvider);
+    }
 
     /**
      * 在执行查询之前，检查并处理数据权限相关逻辑

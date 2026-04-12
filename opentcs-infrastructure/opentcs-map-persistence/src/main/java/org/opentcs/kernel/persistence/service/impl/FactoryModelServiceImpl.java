@@ -13,8 +13,8 @@ import org.opentcs.kernel.api.dto.NavigationMapDTO;
 import org.opentcs.kernel.persistence.entity.FactoryModelEntity;
 import org.opentcs.kernel.persistence.entity.NavigationMapEntity;
 import org.opentcs.kernel.persistence.mapper.FactoryModelMapper;
-import org.opentcs.kernel.persistence.service.FactoryModelDomainService;
-import org.opentcs.kernel.persistence.service.NavigationMapDomainService;
+import org.opentcs.kernel.persistence.service.FactoryModelRepository;
+import org.opentcs.kernel.persistence.service.NavigationMapRepository;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -29,9 +29,9 @@ import java.util.List;
 @RequiredArgsConstructor
 @CacheConfig(cacheNames = "factoryModel")
 public class FactoryModelServiceImpl extends ServiceImpl<FactoryModelMapper, FactoryModelEntity>
-        implements FactoryModelDomainService {
+        implements FactoryModelRepository {
 
-    private final NavigationMapDomainService navigationMapDomainService;
+    private final NavigationMapRepository navigationMapRepository;
 
     @Override
     @CacheEvict(allEntries = true)
@@ -110,7 +110,7 @@ public class FactoryModelServiceImpl extends ServiceImpl<FactoryModelMapper, Fac
     public FactoryModelEntity getFactoryModelDetail(Long id) {
         FactoryModelEntity factoryModel = this.getById(id);
         if (factoryModel != null) {
-            List<NavigationMapDTO> maps = navigationMapDomainService.selectByFactoryModelId(id);
+            List<NavigationMapDTO> maps = navigationMapRepository.selectByFactoryModelId(id);
             factoryModel.setParams(java.util.Map.of("maps", maps));
         }
         return factoryModel;
@@ -120,7 +120,7 @@ public class FactoryModelServiceImpl extends ServiceImpl<FactoryModelMapper, Fac
     public FactoryModelDTO getFactoryModelDetailDTO(Long id) {
         FactoryModelDTO dto = DTOConverter.toFactoryModelDTO(this.getById(id));
         if (dto != null) {
-            List<NavigationMapDTO> maps = navigationMapDomainService.selectByFactoryModelId(id);
+            List<NavigationMapDTO> maps = navigationMapRepository.selectByFactoryModelId(id);
             dto.setProperties(maps != null ? maps.toString() : null);
         }
         return dto;

@@ -8,7 +8,7 @@ import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.kernel.api.dto.LocationTypeDTO;
 import org.opentcs.kernel.persistence.entity.LocationTypeEntity;
 import org.opentcs.kernel.persistence.mapper.LocationTypeMapper;
-import org.opentcs.kernel.persistence.service.LocationTypeDomainService;
+import org.opentcs.kernel.persistence.service.LocationTypeRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  * 位置类型领域服务实现
  */
 @Service
-public class LocationTypeServiceImpl extends ServiceImpl<LocationTypeMapper, LocationTypeEntity> implements LocationTypeDomainService {
+public class LocationTypeServiceImpl extends ServiceImpl<LocationTypeMapper, LocationTypeEntity> implements LocationTypeRepository {
 
     @Override
     public TableDataInfo<LocationTypeEntity> selectPage(LocationTypeEntity locationType, PageQuery pageQuery) {

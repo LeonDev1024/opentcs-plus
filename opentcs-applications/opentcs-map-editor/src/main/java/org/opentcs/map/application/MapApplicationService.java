@@ -42,10 +42,10 @@ public class MapApplicationService {
         routePlanner.clear();
 
         // 加载点位 - TODO: 需要按工厂查询
-        // List<PointEntity> points = pointDomainService.selectAllPointByFactoryModelId(factoryModelId);
+        // List<PointEntity> points = pointRepository.selectAllPointByFactoryModelId(factoryModelId);
 
         // 加载路径 - TODO: 需要按工厂查询
-        // List<PathEntity> paths = pathDomainService.selectAllPathByFactoryModelId(factoryModelId);
+        // List<PathEntity> paths = pathRepository.selectAllPathByFactoryModelId(factoryModelId);
 
         log.info("地图已加载到内核: {}", factoryModel.getName());
     }

@@ -7,14 +7,14 @@ import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.vehicle.persistence.entity.VehicleTypeEntity;
 import org.opentcs.vehicle.persistence.mapper.VehicleTypeMapper;
-import org.opentcs.vehicle.persistence.service.VehicleTypeDomainService;
+import org.opentcs.vehicle.persistence.service.VehicleTypeRepository;
 import org.springframework.stereotype.Service;
 
 /**
  * 车辆类型领域服务实现
  */
 @Service
-public class VehicleTypeDomainServiceImpl extends ServiceImpl<VehicleTypeMapper, VehicleTypeEntity> implements VehicleTypeDomainService {
+public class VehicleTypeRepositoryImpl extends ServiceImpl<VehicleTypeMapper, VehicleTypeEntity> implements VehicleTypeRepository {
 
     @Override
     public TableDataInfo<VehicleTypeEntity> selectPageVehicleType(VehicleTypeEntity vehicleType, PageQuery pageQuery) {

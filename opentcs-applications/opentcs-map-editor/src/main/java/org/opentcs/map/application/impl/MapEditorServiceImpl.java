@@ -14,8 +14,8 @@ import org.opentcs.kernel.api.map.MapSceneApi;
 import org.opentcs.kernel.api.map.MapSnapshotHistoryPort;
 import org.opentcs.kernel.persistence.entity.LayerEntity;
 import org.opentcs.kernel.persistence.entity.LayerGroupEntity;
-import org.opentcs.kernel.persistence.service.LayerDomainService;
-import org.opentcs.kernel.persistence.service.LayerGroupDomainService;
+import org.opentcs.kernel.persistence.service.LayerRepository;
+import org.opentcs.kernel.persistence.service.LayerGroupRepository;
 import org.opentcs.map.application.IMapEditorService;
 import org.opentcs.map.domain.dto.MapEditorDTO;
 import org.opentcs.map.domain.dto.MapEditorLayerDTO;
@@ -56,8 +56,8 @@ public class MapEditorServiceImpl implements IMapEditorService {
 
     private final MapSceneApi mapSceneApi;
     private final MapSnapshotHistoryPort mapSnapshotHistoryPort;
-    private final LayerGroupDomainService layerGroupDomainService;
-    private final LayerDomainService layerDomainService;
+    private final LayerGroupRepository layerGroupRepository;
+    private final LayerRepository layerRepository;
     private final ObjectMapper objectMapper;
 
     /**
@@ -92,8 +92,8 @@ public class MapEditorServiceImpl implements IMapEditorService {
         var points = mapSceneApi.listPointsByMap(navMapId);
         var paths = mapSceneApi.listPathsByMap(navMapId);
         var locations = mapSceneApi.listLocationsByMap(navMapId);
-        var layerGroups = layerGroupDomainService.selectByNavigationMapId(navMapId);
-        var layers = layerDomainService.selectByNavigationMapId(navMapId);
+        var layerGroups = layerGroupRepository.selectByNavigationMapId(navMapId);
+        var layers = layerRepository.selectByNavigationMapId(navMapId);
 
         // 尝试加载 JSON 快照
         String snapshotUrl = getSnapshotFilePath(navMapDTO.getFactoryModelId(), mapId, navMapDTO.getMapVersion());
@@ -235,7 +235,7 @@ public class MapEditorServiceImpl implements IMapEditorService {
         var points = mapSceneApi.listPointsByMap(navMapId);
         var paths = mapSceneApi.listPathsByMap(navMapId);
         var locations = mapSceneApi.listLocationsByMap(navMapId);
-        var layers = layerDomainService.selectByNavigationMapId(navMapId);
+        var layers = layerRepository.selectByNavigationMapId(navMapId);
         if (points.isEmpty()) {
             throw new RuntimeException("发布失败：地图缺少点位数据");
         }
@@ -396,9 +396,9 @@ public class MapEditorServiceImpl implements IMapEditorService {
         if (layerGroups == null && layers == null) {
             return mapping;
         }
-        layerDomainService.remove(new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<LayerEntity>()
+        layerRepository.remove(new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<LayerEntity>()
             .eq(LayerEntity::getNavigationMapId, navMapId));
-        layerGroupDomainService.remove(new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<LayerGroupEntity>()
+        layerGroupRepository.remove(new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<LayerGroupEntity>()
             .eq(LayerGroupEntity::getNavigationMapId, navMapId));
 
         if (layerGroups != null) {
@@ -410,7 +410,7 @@ public class MapEditorServiceImpl implements IMapEditorService {
                 entity.setVisible(dto.getVisible() == null || dto.getVisible());
                 entity.setOrdinal(dto.getOrdinal() != null ? dto.getOrdinal() : i + 1);
                 entity.setProperties(dto.getProperties());
-                layerGroupDomainService.save(entity);
+                layerGroupRepository.save(entity);
                 if (dto.getId() != null) {
                     mapping.put(dto.getId(), entity.getId());
                 }
@@ -429,7 +429,7 @@ public class MapEditorServiceImpl implements IMapEditorService {
                 if (dto.getLayerGroupId() != null) {
                     entity.setLayerGroupId(mapping.get(dto.getLayerGroupId()));
                 }
-                layerDomainService.save(entity);
+                layerRepository.save(entity);
                 if (dto.getId() != null) {
                     mapping.put(dto.getId(), entity.getId());
                 }

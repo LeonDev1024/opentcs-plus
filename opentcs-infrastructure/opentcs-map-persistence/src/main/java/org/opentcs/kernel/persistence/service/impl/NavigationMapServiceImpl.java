@@ -11,9 +11,9 @@ import org.opentcs.kernel.api.dto.NavigationMapDTO;
 import org.opentcs.kernel.persistence.service.DTOConverter;
 import org.opentcs.kernel.persistence.entity.*;
 import org.opentcs.kernel.persistence.mapper.*;
-import org.opentcs.kernel.persistence.service.NavigationMapDomainService;
-import org.opentcs.kernel.persistence.service.LayerDomainService;
-import org.opentcs.kernel.persistence.service.LayerGroupDomainService;
+import org.opentcs.kernel.persistence.service.NavigationMapRepository;
+import org.opentcs.kernel.persistence.service.LayerRepository;
+import org.opentcs.kernel.persistence.service.LayerGroupRepository;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -29,10 +29,10 @@ import java.util.List;
 @RequiredArgsConstructor
 @CacheConfig(cacheNames = "navigationMap")
 public class NavigationMapServiceImpl extends ServiceImpl<NavigationMapMapper, NavigationMapEntity>
-        implements NavigationMapDomainService {
+        implements NavigationMapRepository {
 
-    private final LayerDomainService layerDomainService;
-    private final LayerGroupDomainService layerGroupDomainService;
+    private final LayerRepository layerRepository;
+    private final LayerGroupRepository layerGroupRepository;
 
     @Override
     @CacheEvict(allEntries = true)
@@ -56,14 +56,14 @@ public class NavigationMapServiceImpl extends ServiceImpl<NavigationMapMapper, N
             LayerGroupEntity layerGroup = new LayerGroupEntity();
             layerGroup.setNavigationMapId(navigationMap.getId());
             layerGroup.setName("默认图层组");
-            layerGroupDomainService.save(layerGroup);
+            layerGroupRepository.save(layerGroup);
 
             LayerEntity layer = new LayerEntity();
             layer.setNavigationMapId(navigationMap.getId());
             layer.setLayerGroupId(layerGroup.getId());
             layer.setName("默认图层");
             layer.setVisible(true);
-            layerDomainService.save(layer);
+            layerRepository.save(layer);
         }
 
         return saved;

@@ -8,7 +8,7 @@ import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.order.persistence.entity.TransportOrderEntity;
 import org.opentcs.order.persistence.mapper.TransportOrderMapper;
-import org.opentcs.order.persistence.service.TransportOrderDomainService;
+import org.opentcs.order.persistence.service.TransportOrderRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -21,7 +21,7 @@ import java.util.Map;
  * 运输订单领域服务实现
  */
 @Service
-public class TransportOrderDomainServiceImpl extends ServiceImpl<TransportOrderMapper, TransportOrderEntity> implements TransportOrderDomainService {
+public class TransportOrderRepositoryImpl extends ServiceImpl<TransportOrderMapper, TransportOrderEntity> implements TransportOrderRepository {
 
     @Override
     public TableDataInfo<TransportOrderEntity> selectPageTransportOrder(TransportOrderEntity transportOrder, PageQuery pageQuery) {

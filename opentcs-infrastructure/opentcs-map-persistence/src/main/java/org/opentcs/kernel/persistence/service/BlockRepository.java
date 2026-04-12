@@ -12,7 +12,7 @@ import java.util.List;
  * 区域/区块领域服务接口
  * 放在 kernel-persistence 作为领域层接口
  */
-public interface BlockDomainService extends IService<BlockEntity> {
+public interface BlockRepository extends IService<BlockEntity> {
 
     /**
      * 分页查询区域列表

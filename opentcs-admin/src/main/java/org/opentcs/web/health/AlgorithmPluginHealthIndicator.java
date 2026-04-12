@@ -58,12 +58,8 @@ public class AlgorithmPluginHealthIndicator implements HealthIndicator {
 
     private RoutingAlgorithmInfo getActiveAlgorithmInfo() {
         try {
-            var activeAlgorithm = registry.getActiveRoutingAlgorithm();
-            if (activeAlgorithm instanceof org.opentcs.algorithm.spi.AlgorithmPlugin plugin) {
-                AlgorithmDescriptor desc = plugin.getDescriptor();
-                return new RoutingAlgorithmInfo(desc.getName(), desc.getVersion());
-            }
-            return new RoutingAlgorithmInfo(activeAlgorithm.getClass().getSimpleName(), "unknown");
+            AlgorithmDescriptor desc = registry.getActiveDescriptor();
+            return new RoutingAlgorithmInfo(desc.getName(), desc.getVersion());
         } catch (Exception e) {
             return new RoutingAlgorithmInfo("unavailable", "unknown");
         }

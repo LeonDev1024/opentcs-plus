@@ -27,17 +27,18 @@ import java.util.List;
 @EnableConfigurationProperties(AlgorithmLoaderConfiguration.class)
 public class AlgorithmLoaderAutoConfiguration {
 
+    /**
+     * 注册 {@link AlgorithmPluginRegistry} 为 {@link RoutingAlgorithm} Bean。
+     * <p>
+     * Registry 本身实现了 {@link RoutingAlgorithm}（代理模式），
+     * 所有调用均委托到当前激活插件，支持运行时热切换。
+     * </p>
+     */
     @Bean
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(RoutingAlgorithm.class)
     public AlgorithmPluginRegistry algorithmPluginRegistry(
             List<RoutingAlgorithmPlugin> plugins,
             AlgorithmLoaderConfiguration config) {
         return new AlgorithmPluginRegistry(plugins, config.getProvider());
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(RoutingAlgorithm.class)
-    public RoutingAlgorithm routingAlgorithm(AlgorithmPluginRegistry registry) {
-        return registry.getActiveRoutingAlgorithm();
     }
 }

@@ -19,7 +19,7 @@ import org.opentcs.common.mybatis.annotation.DataColumn;
 import org.opentcs.common.mybatis.annotation.DataPermission;
 import org.opentcs.common.mybatis.enums.DataScopeType;
 import org.opentcs.common.mybatis.helper.DataPermissionHelper;
-import org.opentcs.common.satoken.utils.LoginHelper;
+import org.opentcs.common.core.spi.CurrentUserProvider;
 import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.expression.*;
 import org.springframework.expression.common.TemplateParserContext;
@@ -38,6 +38,8 @@ import java.util.function.Function;
 @Slf4j
 public class PlusDataPermissionHandler {
 
+    private final CurrentUserProvider currentUserProvider;
+
     /**
      * spel 解析器
      */
@@ -47,6 +49,10 @@ public class PlusDataPermissionHandler {
      * bean解析器 用于处理 spel 表达式中对 bean 的调用
      */
     private final BeanResolver beanResolver = new BeanFactoryResolver(SpringUtils.getBeanFactory());
+
+    public PlusDataPermissionHandler(CurrentUserProvider currentUserProvider) {
+        this.currentUserProvider = currentUserProvider;
+    }
 
     /**
      * 获取数据过滤条件的 SQL 片段
@@ -62,11 +68,11 @@ public class PlusDataPermissionHandler {
             // 获取当前登录用户信息
             LoginUser currentUser = DataPermissionHelper.getVariable("user");
             if (ObjectUtil.isNull(currentUser)) {
-                currentUser = LoginHelper.getLoginUser();
+                currentUser = currentUserProvider.getCurrentUser();
                 DataPermissionHelper.setVariable("user", currentUser);
             }
             // 如果是超级管理员，则不过滤数据
-            if (LoginHelper.isSuperAdmin()) {
+            if (currentUserProvider.isSuperAdmin()) {
                 return where;
             }
             // 构造数据过滤条件的 SQL 片段

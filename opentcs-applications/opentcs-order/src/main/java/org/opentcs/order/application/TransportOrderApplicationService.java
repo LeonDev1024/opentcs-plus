@@ -14,7 +14,7 @@ import org.opentcs.kernel.api.dto.TransportOrderDTO;
 import org.opentcs.kernel.api.dto.OrderStateDTO;
 import org.opentcs.order.application.bo.CreateOrderCommand;
 import org.opentcs.order.application.bo.TransportOrderQueryBO;
-import org.opentcs.order.persistence.service.TransportOrderDomainService;
+import org.opentcs.order.persistence.service.TransportOrderRepository;
 import org.opentcs.order.persistence.entity.TransportOrderEntity;
 
 import lombok.RequiredArgsConstructor;
@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TransportOrderApplicationService {
 
-    private final TransportOrderDomainService orderService;
+    private final TransportOrderRepository orderService;
     private final TransportOrderRegistry orderRegistry;
     private final VehicleRegistry vehicleRegistry;
     private final TransportOrderApi transportOrderApi;

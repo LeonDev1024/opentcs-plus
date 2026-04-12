@@ -2,7 +2,7 @@ package org.opentcs.vehicle.controller.req;
 
 import lombok.Data;
 import org.opentcs.driver.api.dto.DriverConfig;
-import org.opentcs.kernel.api.dto.VehicleEntityDTO;
+import org.opentcs.vehicle.application.bo.VehicleBO;
 
 /**
  * 车辆注册请求（车辆基础信息 + 驱动配置）。
@@ -10,7 +10,7 @@ import org.opentcs.kernel.api.dto.VehicleEntityDTO;
 @Data
 public class RegisterVehicleWithDriverRequest {
 
-    private VehicleEntityDTO vehicle;
+    private VehicleBO vehicle;
 
     private DriverConfig driverConfig;
 }

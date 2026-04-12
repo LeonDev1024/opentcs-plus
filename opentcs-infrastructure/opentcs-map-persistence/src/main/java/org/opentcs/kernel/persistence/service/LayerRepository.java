@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * 图层领域服务接口
  */
-public interface LayerDomainService extends IService<LayerEntity> {
+public interface LayerRepository extends IService<LayerEntity> {
 
     /**
      * 分页查询图层列表

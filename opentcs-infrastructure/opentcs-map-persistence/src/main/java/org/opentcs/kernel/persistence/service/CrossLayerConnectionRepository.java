@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * 跨层连接领域服务接口
  */
-public interface CrossLayerConnectionDomainService extends IService<CrossLayerConnectionEntity> {
+public interface CrossLayerConnectionRepository extends IService<CrossLayerConnectionEntity> {
 
     /**
      * 创建跨层连接

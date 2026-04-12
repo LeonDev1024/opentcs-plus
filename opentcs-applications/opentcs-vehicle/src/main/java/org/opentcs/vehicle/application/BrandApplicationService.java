@@ -5,7 +5,7 @@ import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.vehicle.application.bo.BrandBO;
 import org.opentcs.vehicle.persistence.entity.BrandEntity;
-import org.opentcs.vehicle.persistence.service.BrandDomainService;
+import org.opentcs.vehicle.persistence.service.BrandRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,10 +22,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class BrandApplicationService {
 
-    private final BrandDomainService brandDomainService;
+    private final BrandRepository brandRepository;
 
     public TableDataInfo<BrandBO> listBrands(BrandBO query, PageQuery pageQuery) {
-        TableDataInfo<BrandEntity> entityPage = brandDomainService.selectPageBrand(toEntity(query), pageQuery);
+        TableDataInfo<BrandEntity> entityPage = brandRepository.selectPageBrand(toEntity(query), pageQuery);
         TableDataInfo<BrandBO> result = new TableDataInfo<>();
         result.setTotal(entityPage.getTotal());
         result.setCode(entityPage.getCode());
@@ -36,32 +36,32 @@ public class BrandApplicationService {
     }
 
     public List<BrandBO> getAllEnabledBrands() {
-        return brandDomainService.selectBrandList().stream()
+        return brandRepository.selectBrandList().stream()
                 .map(this::toBO)
                 .collect(Collectors.toList());
     }
 
     public BrandBO getById(Long id) {
-        return toBO(brandDomainService.getById(id));
+        return toBO(brandRepository.getById(id));
     }
 
     public boolean create(BrandBO brand) {
-        return brandDomainService.save(toEntity(brand));
+        return brandRepository.save(toEntity(brand));
     }
 
     public boolean update(BrandBO brand) {
-        return brandDomainService.updateById(toEntity(brand));
+        return brandRepository.updateById(toEntity(brand));
     }
 
     public boolean delete(Long id) {
-        return brandDomainService.removeById(id);
+        return brandRepository.removeById(id);
     }
 
     public boolean changeStatus(Long id, Boolean enabled) {
         BrandEntity entity = new BrandEntity();
         entity.setId(id);
         entity.setEnabled(enabled);
-        return brandDomainService.updateById(entity);
+        return brandRepository.updateById(entity);
     }
 
     // ===== 内部转换方法（不对外暴露）=====

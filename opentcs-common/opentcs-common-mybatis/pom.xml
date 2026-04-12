@@ -15,9 +15,10 @@
             <artifactId>opentcs-common-core</artifactId>
         </dependency>
 
+        <!-- Jackson annotations（@JsonIgnore, @JsonInclude 等） -->
         <dependency>
-            <groupId>org.opentcs</groupId>
-            <artifactId>opentcs-common-satoken</artifactId>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
         </dependency>
 
         <!-- dynamic-datasource 多数据源-->

@@ -2,7 +2,6 @@ package org.opentcs.vehicle.persistence.service;
 
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
-import org.opentcs.kernel.api.dto.VehicleCrudDTO;
 import org.opentcs.vehicle.persistence.entity.VehicleEntity;
 
 import java.util.List;
@@ -12,7 +11,7 @@ import java.util.Map;
  * 车辆领域服务接口
  * 定义车辆数据的持久化操作，供应用层使用
  */
-public interface VehicleDomainService extends com.baomidou.mybatisplus.extension.service.IService<VehicleEntity> {
+public interface VehicleRepository extends com.baomidou.mybatisplus.extension.service.IService<VehicleEntity> {
 
     /**
      * 分页查询车辆列表
@@ -21,21 +20,6 @@ public interface VehicleDomainService extends com.baomidou.mybatisplus.extension
      * @return 分页结果
      */
     TableDataInfo<VehicleEntity> selectPageVehicle(VehicleEntity vehicle, PageQuery pageQuery);
-
-    /**
-     * 分页查询车辆列表（DTO）
-     * @param vehicle 查询条件
-     * @param pageQuery 分页参数
-     * @return 分页结果
-     */
-    TableDataInfo<VehicleCrudDTO> selectPageVehicleDTO(VehicleEntity vehicle, PageQuery pageQuery);
-
-    /**
-     * 根据ID查询车辆（DTO）
-     * @param id 车辆ID
-     * @return 车辆信息
-     */
-    VehicleCrudDTO getVehicleDTOById(Long id);
 
     /**
      * 获取车辆实时状态

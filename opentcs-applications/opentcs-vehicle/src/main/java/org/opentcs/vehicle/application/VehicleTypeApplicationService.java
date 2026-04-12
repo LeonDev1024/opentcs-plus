@@ -6,7 +6,7 @@ import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.vehicle.application.bo.VehicleTypeBO;
 import org.opentcs.vehicle.persistence.entity.VehicleTypeEntity;
-import org.opentcs.vehicle.persistence.service.VehicleTypeDomainService;
+import org.opentcs.vehicle.persistence.service.VehicleTypeRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,10 +23,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class VehicleTypeApplicationService {
 
-    private final VehicleTypeDomainService vehicleTypeDomainService;
+    private final VehicleTypeRepository vehicleTypeRepository;
 
     public TableDataInfo<VehicleTypeBO> listVehicleTypes(VehicleTypeBO query, PageQuery pageQuery) {
-        TableDataInfo<VehicleTypeEntity> entityPage = vehicleTypeDomainService.selectPageVehicleType(toEntity(query), pageQuery);
+        TableDataInfo<VehicleTypeEntity> entityPage = vehicleTypeRepository.selectPageVehicleType(toEntity(query), pageQuery);
         TableDataInfo<VehicleTypeBO> result = new TableDataInfo<>();
         result.setTotal(entityPage.getTotal());
         result.setCode(entityPage.getCode());
@@ -37,29 +37,29 @@ public class VehicleTypeApplicationService {
     }
 
     public List<VehicleTypeBO> getAllVehicleTypes() {
-        return vehicleTypeDomainService.list().stream()
+        return vehicleTypeRepository.list().stream()
                 .map(this::toBO)
                 .collect(Collectors.toList());
     }
 
     public VehicleTypeBO getById(Long id) {
-        return toBO(vehicleTypeDomainService.getById(id));
+        return toBO(vehicleTypeRepository.getById(id));
     }
 
     public boolean create(VehicleTypeBO vehicleType) {
-        return vehicleTypeDomainService.save(toEntity(vehicleType));
+        return vehicleTypeRepository.save(toEntity(vehicleType));
     }
 
     public boolean update(VehicleTypeBO vehicleType) {
-        return vehicleTypeDomainService.updateById(toEntity(vehicleType));
+        return vehicleTypeRepository.updateById(toEntity(vehicleType));
     }
 
     public boolean delete(Long id) {
-        return vehicleTypeDomainService.removeById(id);
+        return vehicleTypeRepository.removeById(id);
     }
 
     public List<VehicleTypeBO> getByBrandId(Long brandId) {
-        return vehicleTypeDomainService.list(
+        return vehicleTypeRepository.list(
                 new LambdaQueryWrapper<VehicleTypeEntity>()
                         .eq(VehicleTypeEntity::getBrandId, brandId)
                         .eq(VehicleTypeEntity::getDelFlag, "0")

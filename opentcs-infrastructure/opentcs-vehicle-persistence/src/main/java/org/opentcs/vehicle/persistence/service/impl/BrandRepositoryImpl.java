@@ -10,7 +10,7 @@ import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.vehicle.persistence.entity.BrandEntity;
 import org.opentcs.vehicle.persistence.mapper.BrandMapper;
-import org.opentcs.vehicle.persistence.service.BrandDomainService;
+import org.opentcs.vehicle.persistence.service.BrandRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -22,7 +22,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class BrandDomainServiceImpl extends ServiceImpl<BrandMapper, BrandEntity> implements BrandDomainService {
+public class BrandRepositoryImpl extends ServiceImpl<BrandMapper, BrandEntity> implements BrandRepository {
 
     @Override
     public TableDataInfo<BrandEntity> selectPageBrand(BrandEntity brand, PageQuery pageQuery) {

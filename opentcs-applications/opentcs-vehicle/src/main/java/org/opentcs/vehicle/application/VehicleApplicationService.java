@@ -10,9 +10,9 @@ import org.opentcs.kernel.api.OrderLifecycleApi;
 import org.opentcs.kernel.api.dto.OrderStateDTO;
 import org.opentcs.kernel.api.dto.PositionDTO;
 import org.opentcs.kernel.api.dto.TransportOrderDTO;
-import org.opentcs.kernel.api.dto.VehicleCrudDTO;
 import org.opentcs.kernel.api.dto.VehicleDTO;
-import org.opentcs.kernel.api.dto.VehicleEntityDTO;
+import org.opentcs.vehicle.application.bo.VehicleBO;
+import org.opentcs.vehicle.application.bo.VehicleCrudBO;
 import org.opentcs.kernel.application.TransportOrderRegistry;
 import org.opentcs.kernel.application.VehicleRegistry;
 import org.opentcs.kernel.domain.order.TransportOrder;
@@ -20,7 +20,7 @@ import org.opentcs.kernel.domain.vehicle.Vehicle;
 import org.opentcs.kernel.domain.vehicle.VehiclePosition;
 import org.opentcs.kernel.domain.vehicle.VehicleState;
 import org.opentcs.vehicle.persistence.entity.VehicleEntity;
-import org.opentcs.vehicle.persistence.service.VehicleDomainService;
+import org.opentcs.vehicle.persistence.service.VehicleRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class VehicleApplicationService {
 
-    private final VehicleDomainService vehicleService;
+    private final VehicleRepository vehicleService;
     private final VehicleRegistry vehicleRegistry;
     private final TransportOrderRegistry orderRegistry;
     private final OrderLifecycleApi orderLifecycleApi;
@@ -99,7 +99,7 @@ public class VehicleApplicationService {
      * 3. 配置驱动连接
      */
     @Transactional
-    public boolean registerVehicle(VehicleEntityDTO command, DriverConfig driverConfig) {
+    public boolean registerVehicle(VehicleBO command, DriverConfig driverConfig) {
         VehicleEntity entity = toEntity(command);
         // 1. 保存到数据库
         VehicleEntity dbVehicle = vehicleService.getByName(entity.getName());
@@ -364,27 +364,34 @@ public class VehicleApplicationService {
 
     // ===== CRUD 委托方法（供 Controller 调用，屏蔽 persistence 层） =====
 
-    public TableDataInfo<VehicleCrudDTO> listVehicles(VehicleEntityDTO query, PageQuery pageQuery) {
-        return vehicleService.selectPageVehicleDTO(toEntity(query), pageQuery);
+    public TableDataInfo<VehicleCrudBO> listVehicles(VehicleBO query, PageQuery pageQuery) {
+        TableDataInfo<VehicleEntity> entityPage = vehicleService.selectPageVehicle(toEntity(query), pageQuery);
+        TableDataInfo<VehicleCrudBO> result = new TableDataInfo<>();
+        result.setTotal(entityPage.getTotal());
+        result.setCode(entityPage.getCode());
+        result.setMsg(entityPage.getMsg());
+        result.setRows(entityPage.getRows() == null ? List.of()
+                : entityPage.getRows().stream().map(this::toCrudBO).collect(Collectors.toList()));
+        return result;
     }
 
-    public List<VehicleCrudDTO> getAllVehicles() {
+    public List<VehicleCrudBO> getAllVehicles() {
         return vehicleService.list().stream()
-                .map(entity -> vehicleService.getVehicleDTOById(entity.getId()))
+                .map(this::toCrudBO)
                 .collect(Collectors.toList());
     }
 
-    public VehicleCrudDTO getVehicleCrudById(Long id) {
-        return vehicleService.getVehicleDTOById(id);
+    public VehicleCrudBO getVehicleCrudById(Long id) {
+        return toCrudBO(vehicleService.getById(id));
     }
 
     @Transactional
-    public boolean createVehicle(VehicleEntityDTO vehicle) {
+    public boolean createVehicle(VehicleBO vehicle) {
         return vehicleService.save(toEntity(vehicle));
     }
 
     @Transactional
-    public boolean updateVehicle(VehicleEntityDTO vehicle) {
+    public boolean updateVehicle(VehicleBO vehicle) {
         return vehicleService.updateById(toEntity(vehicle));
     }
 
@@ -393,15 +400,15 @@ public class VehicleApplicationService {
         return vehicleService.removeById(id);
     }
 
-    public VehicleEntityDTO getVehicleStatus(Long id) {
+    public VehicleBO getVehicleStatus(Long id) {
         VehicleEntity entity = vehicleService.getVehicleStatus(id);
-        return toDTO(entity);
+        return toBO(entity);
     }
 
-    public List<VehicleEntityDTO> getAllVehicleStatus() {
+    public List<VehicleBO> getAllVehicleStatus() {
         List<VehicleEntity> list = vehicleService.getAllVehicleStatus();
         if (list == null) return new ArrayList<>();
-        return list.stream().map(this::toDTO).collect(Collectors.toList());
+        return list.stream().map(this::toBO).collect(Collectors.toList());
     }
 
     public TableDataInfo<Map<String, Object>> getVehicleHistory(Long id, PageQuery pageQuery) {
@@ -467,40 +474,60 @@ public class VehicleApplicationService {
         }
     }
 
-    private VehicleEntityDTO toDTO(VehicleEntity entity) {
+    private VehicleBO toBO(VehicleEntity entity) {
         if (entity == null) return null;
-        VehicleEntityDTO dto = new VehicleEntityDTO();
-        dto.setId(entity.getId());
-        dto.setName(entity.getName());
-        dto.setVinCode(entity.getVinCode());
-        dto.setVehicleTypeId(entity.getVehicleTypeId());
-        dto.setCurrentPosition(entity.getCurrentPosition());
-        dto.setNextPosition(entity.getNextPosition());
-        dto.setState(entity.getState());
-        dto.setIntegrationLevel(entity.getIntegrationLevel());
-        dto.setEnergyLevel(entity.getEnergyLevel());
-        dto.setCurrentTransportOrder(entity.getCurrentTransportOrder());
-        dto.setProperties(entity.getProperties());
-        dto.setCreateTime(entity.getCreateTime());
-        dto.setUpdateTime(entity.getUpdateTime());
-        return dto;
+        VehicleBO bo = new VehicleBO();
+        bo.setId(entity.getId());
+        bo.setName(entity.getName());
+        bo.setVinCode(entity.getVinCode());
+        bo.setVehicleTypeId(entity.getVehicleTypeId());
+        bo.setCurrentPosition(entity.getCurrentPosition());
+        bo.setNextPosition(entity.getNextPosition());
+        bo.setState(entity.getState());
+        bo.setIntegrationLevel(entity.getIntegrationLevel());
+        bo.setEnergyLevel(entity.getEnergyLevel());
+        bo.setCurrentTransportOrder(entity.getCurrentTransportOrder());
+        bo.setProperties(entity.getProperties());
+        bo.setCreateTime(entity.getCreateTime());
+        bo.setUpdateTime(entity.getUpdateTime());
+        return bo;
     }
 
-    private VehicleEntity toEntity(VehicleEntityDTO dto) {
+    private VehicleCrudBO toCrudBO(VehicleEntity entity) {
+        if (entity == null) return null;
+        VehicleCrudBO bo = new VehicleCrudBO();
+        bo.setId(entity.getId());
+        bo.setName(entity.getName());
+        bo.setVinCode(entity.getVinCode());
+        bo.setVehicleTypeId(entity.getVehicleTypeId());
+        bo.setVehicleTypeName(entity.getVehicleTypeName());
+        bo.setCurrentPosition(entity.getCurrentPosition());
+        bo.setNextPosition(entity.getNextPosition());
+        bo.setState(entity.getState());
+        bo.setIntegrationLevel(entity.getIntegrationLevel());
+        bo.setEnergyLevel(entity.getEnergyLevel());
+        bo.setCurrentTransportOrder(entity.getCurrentTransportOrder());
+        bo.setProperties(entity.getProperties());
+        bo.setCreateTime(entity.getCreateTime());
+        bo.setUpdateTime(entity.getUpdateTime());
+        return bo;
+    }
+
+    private VehicleEntity toEntity(VehicleBO bo) {
         VehicleEntity entity = new VehicleEntity();
-        entity.setId(dto.getId());
-        entity.setName(dto.getName());
-        entity.setVinCode(dto.getVinCode());
-        entity.setVehicleTypeId(dto.getVehicleTypeId());
-        entity.setCurrentPosition(dto.getCurrentPosition());
-        entity.setNextPosition(dto.getNextPosition());
-        entity.setState(dto.getState());
-        entity.setIntegrationLevel(dto.getIntegrationLevel());
-        entity.setEnergyLevel(dto.getEnergyLevel());
-        entity.setCurrentTransportOrder(dto.getCurrentTransportOrder());
-        entity.setProperties(dto.getProperties());
-        entity.setCreateTime(dto.getCreateTime());
-        entity.setUpdateTime(dto.getUpdateTime());
+        entity.setId(bo.getId());
+        entity.setName(bo.getName());
+        entity.setVinCode(bo.getVinCode());
+        entity.setVehicleTypeId(bo.getVehicleTypeId());
+        entity.setCurrentPosition(bo.getCurrentPosition());
+        entity.setNextPosition(bo.getNextPosition());
+        entity.setState(bo.getState());
+        entity.setIntegrationLevel(bo.getIntegrationLevel());
+        entity.setEnergyLevel(bo.getEnergyLevel());
+        entity.setCurrentTransportOrder(bo.getCurrentTransportOrder());
+        entity.setProperties(bo.getProperties());
+        entity.setCreateTime(bo.getCreateTime());
+        entity.setUpdateTime(bo.getUpdateTime());
         return entity;
     }
 }

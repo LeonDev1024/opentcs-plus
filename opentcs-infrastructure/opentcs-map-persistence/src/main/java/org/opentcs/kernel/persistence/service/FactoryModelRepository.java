@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * 工厂模型领域服务接口
  */
-public interface FactoryModelDomainService extends IService<FactoryModelEntity> {
+public interface FactoryModelRepository extends IService<FactoryModelEntity> {
 
     /**
      * 创建工厂模型

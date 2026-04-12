@@ -6,10 +6,10 @@ import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
 import org.opentcs.common.web.core.BaseController;
 import org.opentcs.driver.api.dto.InstantAction;
-import org.opentcs.kernel.api.dto.VehicleCrudDTO;
 import org.opentcs.kernel.api.dto.VehicleDTO;
-import org.opentcs.kernel.api.dto.VehicleEntityDTO;
 import org.opentcs.vehicle.application.VehicleApplicationService;
+import org.opentcs.vehicle.application.bo.VehicleBO;
+import org.opentcs.vehicle.application.bo.VehicleCrudBO;
 import org.opentcs.vehicle.controller.req.RegisterVehicleWithDriverRequest;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,27 +27,27 @@ public class VehicleController extends BaseController {
     private final VehicleApplicationService vehicleApplicationService;
 
     @GetMapping("/list")
-    public TableDataInfo<VehicleCrudDTO> listVehicles(VehicleEntityDTO vehicle, PageQuery pageQuery) {
+    public TableDataInfo<VehicleCrudBO> listVehicles(VehicleBO vehicle, PageQuery pageQuery) {
         return vehicleApplicationService.listVehicles(vehicle, pageQuery);
     }
 
     @GetMapping("/getAll")
-    public R<List<VehicleCrudDTO>> getAllVehicles() {
+    public R<List<VehicleCrudBO>> getAllVehicles() {
         return R.ok(vehicleApplicationService.getAllVehicles());
     }
 
     @GetMapping("/{id}")
-    public R<VehicleCrudDTO> getVehicleById(@PathVariable Long id) {
+    public R<VehicleCrudBO> getVehicleById(@PathVariable Long id) {
         return R.ok(vehicleApplicationService.getVehicleCrudById(id));
     }
 
     @PostMapping("/create")
-    public R<Boolean> createVehicle(@RequestBody VehicleEntityDTO vehicle) {
+    public R<Boolean> createVehicle(@RequestBody VehicleBO vehicle) {
         return R.ok(vehicleApplicationService.createVehicle(vehicle));
     }
 
     @PutMapping("/update")
-    public R<Boolean> updateVehicle(@RequestBody VehicleEntityDTO vehicle) {
+    public R<Boolean> updateVehicle(@RequestBody VehicleBO vehicle) {
         return R.ok(vehicleApplicationService.updateVehicle(vehicle));
     }
 
@@ -72,12 +72,12 @@ public class VehicleController extends BaseController {
     }
 
     @GetMapping("/status/{id}")
-    public R<VehicleEntityDTO> getVehicleStatus(@PathVariable Long id) {
+    public R<VehicleBO> getVehicleStatus(@PathVariable Long id) {
         return R.ok(vehicleApplicationService.getVehicleStatus(id));
     }
 
     @GetMapping("/status/all")
-    public R<List<VehicleEntityDTO>> getAllVehicleStatus() {
+    public R<List<VehicleBO>> getAllVehicleStatus() {
         return R.ok(vehicleApplicationService.getAllVehicleStatus());
     }
 
@@ -104,7 +104,7 @@ public class VehicleController extends BaseController {
     }
 
     @PostMapping("/register")
-    public R<Boolean> registerVehicle(@RequestBody VehicleEntityDTO vehicle) {
+    public R<Boolean> registerVehicle(@RequestBody VehicleBO vehicle) {
         return R.ok(vehicleApplicationService.registerVehicle(vehicle, null));
     }
 

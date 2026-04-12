@@ -12,7 +12,7 @@ import org.opentcs.kernel.persistence.entity.CrossLayerConnectionEntity;
 import org.opentcs.kernel.persistence.entity.ElevatorScheduleEntity;
 import org.opentcs.kernel.persistence.mapper.CrossLayerConnectionMapper;
 import org.opentcs.kernel.persistence.mapper.ElevatorScheduleMapper;
-import org.opentcs.kernel.persistence.service.CrossLayerConnectionDomainService;
+import org.opentcs.kernel.persistence.service.CrossLayerConnectionRepository;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
@@ -29,7 +29,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @CacheConfig(cacheNames = "crossLayerConnection")
 public class CrossLayerConnectionServiceImpl extends ServiceImpl<CrossLayerConnectionMapper, CrossLayerConnectionEntity>
-        implements CrossLayerConnectionDomainService {
+        implements CrossLayerConnectionRepository {
 
     private final ElevatorScheduleMapper elevatorScheduleMapper;
 

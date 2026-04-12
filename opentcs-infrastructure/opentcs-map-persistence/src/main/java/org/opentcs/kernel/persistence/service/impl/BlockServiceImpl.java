@@ -10,7 +10,7 @@ import org.opentcs.kernel.api.dto.BlockDTO;
 import org.opentcs.kernel.persistence.service.DTOConverter;
 import org.opentcs.kernel.persistence.entity.BlockEntity;
 import org.opentcs.kernel.persistence.mapper.BlockMapper;
-import org.opentcs.kernel.persistence.service.BlockDomainService;
+import org.opentcs.kernel.persistence.service.BlockRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -21,7 +21,7 @@ import java.util.List;
  */
 @Slf4j
 @Service
-public class BlockServiceImpl extends ServiceImpl<BlockMapper, BlockEntity> implements BlockDomainService {
+public class BlockServiceImpl extends ServiceImpl<BlockMapper, BlockEntity> implements BlockRepository {
 
     @Override
     public TableDataInfo<BlockEntity> selectPage(BlockEntity block, PageQuery pageQuery) {

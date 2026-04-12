@@ -8,7 +8,7 @@ import org.opentcs.vehicle.persistence.entity.BrandEntity;
 /**
  * 品牌领域服务接口
  */
-public interface BrandDomainService extends IService<BrandEntity> {
+public interface BrandRepository extends IService<BrandEntity> {
 
     /**
      * 分页查询品牌列表
