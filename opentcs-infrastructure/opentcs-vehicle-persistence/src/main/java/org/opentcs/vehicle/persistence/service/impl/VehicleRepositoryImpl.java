@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
-import org.opentcs.kernel.api.dto.VehicleCrudDTO;
 import org.opentcs.vehicle.persistence.entity.VehicleEntity;
 import org.opentcs.vehicle.persistence.mapper.VehicleMapper;
 import org.opentcs.vehicle.persistence.service.VehicleRepository;
@@ -18,7 +17,6 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * 车辆领域服务实现
@@ -32,29 +30,6 @@ public class VehicleRepositoryImpl extends ServiceImpl<VehicleMapper, VehicleEnt
         Page<VehicleEntity> page = new Page<>(pageQuery.getPageNum(), pageQuery.getPageSize());
         IPage<VehicleEntity> result = this.getBaseMapper().selectPageVehicle(page, vehicle);
         return TableDataInfo.build(result);
-    }
-
-    @Override
-    public TableDataInfo<VehicleCrudDTO> selectPageVehicleDTO(VehicleEntity vehicle, PageQuery pageQuery) {
-        Page<VehicleEntity> page = new Page<>(pageQuery.getPageNum(), pageQuery.getPageSize());
-        IPage<VehicleEntity> result = this.getBaseMapper().selectPageVehicle(page, vehicle);
-
-        List<VehicleCrudDTO> dtoList = result.getRecords().stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-
-        TableDataInfo<VehicleCrudDTO> tableDataInfo = new TableDataInfo<>();
-        tableDataInfo.setRows(dtoList);
-        tableDataInfo.setTotal(result.getTotal());
-        tableDataInfo.setCode(200);
-        tableDataInfo.setMsg("查询成功");
-        return tableDataInfo;
-    }
-
-    @Override
-    public VehicleCrudDTO getVehicleDTOById(Long id) {
-        VehicleEntity entity = super.getById(id);
-        return convertToDTO(entity);
     }
 
     @Override
@@ -165,25 +140,4 @@ public class VehicleRepositoryImpl extends ServiceImpl<VehicleMapper, VehicleEnt
         );
     }
 
-    private VehicleCrudDTO convertToDTO(VehicleEntity entity) {
-        if (entity == null) {
-            return null;
-        }
-        VehicleCrudDTO dto = new VehicleCrudDTO();
-        dto.setId(entity.getId());
-        dto.setName(entity.getName());
-        dto.setVinCode(entity.getVinCode());
-        dto.setVehicleTypeId(entity.getVehicleTypeId());
-        dto.setVehicleTypeName(entity.getVehicleTypeName());
-        dto.setCurrentPosition(entity.getCurrentPosition());
-        dto.setNextPosition(entity.getNextPosition());
-        dto.setState(entity.getState());
-        dto.setIntegrationLevel(entity.getIntegrationLevel());
-        dto.setEnergyLevel(entity.getEnergyLevel());
-        dto.setCurrentTransportOrder(entity.getCurrentTransportOrder());
-        dto.setProperties(entity.getProperties());
-        dto.setCreateTime(entity.getCreateTime());
-        dto.setUpdateTime(entity.getUpdateTime());
-        return dto;
-    }
 }
