@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 
 import java.util.List;
 
@@ -35,6 +36,7 @@ public class AlgorithmLoaderAutoConfiguration {
      * </p>
      */
     @Bean
+    @Primary
     @ConditionalOnMissingBean(RoutingAlgorithm.class)
     public AlgorithmPluginRegistry algorithmPluginRegistry(
             List<RoutingAlgorithmPlugin> plugins,

@@ -25,8 +25,9 @@ import org.springframework.context.annotation.FilterType;
         "org.opentcs.vehicle",
         "org.opentcs.system",
         "org.opentcs.common",
-        "org.opentcs.security"
-        // org.opentcs.strategies: 算法插件通过 BuiltinStrategiesAutoConfiguration 显式注册，无需组件扫描
+        "org.opentcs.security",
+        "org.opentcs.algorithm",     // 算法插件 + AutoConfiguration
+        "org.opentcs.strategies"    // 内置策略
     },
     excludeFilters = {
         @ComponentScan.Filter(type = FilterType.REGEX, pattern = "org\\.opentcs\\.common\\.tenant\\..*")

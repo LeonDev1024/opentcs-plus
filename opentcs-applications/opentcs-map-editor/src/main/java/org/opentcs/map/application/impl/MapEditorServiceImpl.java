@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.opentcs.kernel.api.dto.BlockDTO;
 import org.opentcs.kernel.api.dto.FactoryModelDTO;
 import org.opentcs.kernel.api.dto.LocationDTO;
 import org.opentcs.kernel.api.dto.NavigationMapDTO;
@@ -133,6 +134,8 @@ public class MapEditorServiceImpl implements IMapEditorService {
         mapInfo.setYamlUrl(navMapDTO.getYamlUrl());
         mapInfo.setMapOrigin(navMapDTO.getMapOrigin());
 
+        var blocks = mapSceneApi.listBlocksByMap(navMapId);
+
         MapEditorDTO dto = new MapEditorDTO();
         dto.setMapInfo(mapInfo);
         dto.setPoints(points);
@@ -140,10 +143,11 @@ public class MapEditorServiceImpl implements IMapEditorService {
         dto.setLocations(locations);
         dto.setLayerGroups(toLayerGroupDTOs(layerGroups));
         dto.setLayers(toLayerDTOs(layers));
+        dto.setBlocks(blocks);
 
-        log.info("加载导航地图完成: {}, 版本: {}, 状态: {}, 点位: {}, 路径: {}, 位置: {}",
+        log.info("加载导航地图完成: {}, 版本: {}, 状态: {}, 点位: {}, 路径: {}, 位置: {}, Block: {}",
                 navMapDTO.getName(), navMapDTO.getMapVersion(), navMapDTO.getStatus(),
-                points.size(), paths.size(), locations.size());
+                points.size(), paths.size(), locations.size(), blocks.size());
 
         return dto;
     }
@@ -192,6 +196,17 @@ public class MapEditorServiceImpl implements IMapEditorService {
 
         if (saveDTO.getLocations() != null) {
             mapSceneApi.replaceLocationsByMap(navMapId, saveDTO.getLocations());
+        }
+
+        if (saveDTO.getBlocks() != null) {
+            // 补填 navigationMapId 和 factoryModelId
+            for (BlockDTO block : saveDTO.getBlocks()) {
+                block.setNavigationMapId(navMapId);
+                if (block.getFactoryModelId() == null) {
+                    block.setFactoryModelId(navMapDTO.getFactoryModelId());
+                }
+            }
+            mapSceneApi.replaceBlocksByMap(navMapId, saveDTO.getBlocks());
         }
 
         // 2. 生成并保存 JSON 快照（只保存 data 字段，不保存点路径位置）

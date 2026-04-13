@@ -84,15 +84,13 @@ public class BlockController extends BaseController {
     }
 
     /**
-     * 获取区域类型枚举
+     * 获取区域类型枚举（对齐 openTCS Block.Type 语义）
      */
     @GetMapping("/types")
     public R<List<String>> getTypes() {
         return R.ok(List.of(
-                "WORK",       // 工作区域
-                "FORBIDDEN",  // 禁行区域
-                "WAIT",       // 等待区域
-                "CHARGE"     // 充电区域
+                "SINGLE_VEHICLE_ONLY",  // 单车互斥：同一时刻只允许一辆车占用 Block 内资源
+                "SAME_DIRECTION_ONLY"   // 同向通行：多车可同时占用，但进入方向必须相同
         ));
     }
 
