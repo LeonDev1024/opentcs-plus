@@ -1,6 +1,7 @@
 package org.opentcs.map.domain.dto;
 
 import lombok.Data;
+import org.opentcs.kernel.api.dto.BlockDTO;
 import org.opentcs.kernel.api.dto.PointDTO;
 
 import java.io.Serial;
@@ -45,4 +46,10 @@ public class MapEditorSaveDTO implements Serializable {
      * 图层列表（编辑语义）。
      */
     private List<MapEditorLayerDTO> layers;
+
+    /**
+     * Block 列表（资源互斥规则）。
+     * 对应 openTCS Block 语义：SINGLE_VEHICLE_ONLY / SAME_DIRECTION_ONLY
+     */
+    private List<BlockDTO> blocks;
 }

@@ -252,6 +252,30 @@ public class MapSceneApiImpl implements MapSceneApi {
     }
 
     @Override
+    public List<BlockDTO> listBlocksByMap(Long navigationMapId) {
+        return DTOConverter.toBlockDTOList(blockRepository.selectByNavigationMapId(navigationMapId));
+    }
+
+    @Override
+    public boolean replaceBlocksByMap(Long navigationMapId, List<BlockDTO> blocks) {
+        blockRepository.remove(
+            new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<
+                org.opentcs.kernel.persistence.entity.BlockEntity>()
+                .eq(org.opentcs.kernel.persistence.entity.BlockEntity::getNavigationMapId, navigationMapId)
+        );
+        if (blocks == null || blocks.isEmpty()) {
+            return true;
+        }
+        for (BlockDTO block : blocks) {
+            org.opentcs.kernel.persistence.entity.BlockEntity entity = DTOConverter.toBlockEntity(block);
+            entity.setId(null);
+            entity.setNavigationMapId(navigationMapId);
+            blockRepository.save(entity);
+        }
+        return true;
+    }
+
+    @Override
     public BlockDTO getBlockById(Long id) {
         return blockRepository.selectByIdDTO(id);
     }

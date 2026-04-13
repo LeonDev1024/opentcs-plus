@@ -86,6 +86,10 @@ public interface MapSceneApi {
 
     List<BlockDTO> listBlocksByFactoryAndType(Long factoryId, String type);
 
+    List<BlockDTO> listBlocksByMap(Long navigationMapId);
+
+    boolean replaceBlocksByMap(Long navigationMapId, List<BlockDTO> blocks);
+
     BlockDTO getBlockById(Long id);
 
     boolean createBlock(BlockDTO dto);
