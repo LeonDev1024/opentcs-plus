@@ -7,18 +7,22 @@ import org.opentcs.driver.api.dto.InstantAction;
 import org.opentcs.driver.api.dto.VehicleStatus;
 import org.opentcs.driver.registry.DriverRegistry;
 import org.opentcs.kernel.api.OrderLifecycleApi;
-import org.opentcs.kernel.api.dto.OrderStateDTO;
 import org.opentcs.kernel.api.dto.PositionDTO;
 import org.opentcs.kernel.api.dto.TransportOrderDTO;
 import org.opentcs.kernel.api.dto.VehicleDTO;
 import org.opentcs.vehicle.application.bo.VehicleBO;
 import org.opentcs.vehicle.application.bo.VehicleCrudBO;
+import org.opentcs.vehicle.application.bo.OpsActionResultBO;
 import org.opentcs.kernel.application.TransportOrderRegistry;
 import org.opentcs.kernel.application.VehicleRegistry;
 import org.opentcs.kernel.domain.order.TransportOrder;
 import org.opentcs.kernel.domain.vehicle.Vehicle;
 import org.opentcs.kernel.domain.vehicle.VehiclePosition;
 import org.opentcs.kernel.domain.vehicle.VehicleState;
+import org.opentcs.vehicle.controller.req.GoChargeRequest;
+import org.opentcs.vehicle.controller.req.MapSwitchRequest;
+import org.opentcs.vehicle.controller.req.ModeSwitchRequest;
+import org.opentcs.vehicle.controller.req.MoveRequest;
 import org.opentcs.vehicle.persistence.entity.VehicleEntity;
 import org.opentcs.vehicle.persistence.service.VehicleRepository;
 
@@ -28,10 +32,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.annotation.PostConstruct;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 /**
@@ -48,6 +55,7 @@ public class VehicleApplicationService {
     private final TransportOrderRegistry orderRegistry;
     private final OrderLifecycleApi orderLifecycleApi;
     private final DriverRegistry driverRegistry;
+    private final List<Map<String, Object>> opsActionRecords = new CopyOnWriteArrayList<>();
 
     /**
      * 启动时向驱动层注册状态监听器，自动检测订单完成事件。
@@ -240,6 +248,121 @@ public class VehicleApplicationService {
         driverRegistry.sendInstantAction(vehicleId, action);
 
         log.info("即时动作已发送到车辆 {}: {}", vehicleId, action.getActionType());
+    }
+
+    public OpsActionResultBO switchMode(String vehicleName, ModeSwitchRequest request) {
+        String targetMode = request.getTargetMode() == null ? "AUTOMATIC" : request.getTargetMode().toUpperCase();
+        String actionType = "AUTOMATIC".equals(targetMode) ? "RESUME" : "PAUSE";
+
+        Map<String, String> params = new HashMap<>();
+        params.put("targetMode", targetMode);
+        params.put("executePolicy", nvl(request.getExecutePolicy(), "REJECT_IF_BUSY"));
+        params.put("reason", nvl(request.getReason(), ""));
+        return executeOpsAction(vehicleName, "MODE_SWITCH", actionType, params);
+    }
+
+    public OpsActionResultBO switchMap(String vehicleName, MapSwitchRequest request) {
+        Map<String, String> params = new HashMap<>();
+        params.put("targetMapId", nvl(request.getTargetMapId(), ""));
+        params.put("targetMapVersion", nvl(request.getTargetMapVersion(), ""));
+        params.put("initPosition", nvl(request.getInitPosition(), ""));
+        params.put("fallbackMapId", nvl(request.getFallbackMapId(), ""));
+        return executeOpsAction(vehicleName, "MAP_SWITCH", "enableMap", params);
+    }
+
+    public OpsActionResultBO goCharge(String vehicleName, GoChargeRequest request) {
+        Map<String, String> params = new HashMap<>();
+        params.put("chargePolicy", nvl(request.getChargePolicy(), "NEAREST"));
+        params.put("stationId", nvl(request.getStationId(), ""));
+        params.put("interruptPolicy", nvl(request.getInterruptPolicy(), "WAIT_CURRENT_TASK"));
+        if (request.getMinSocThreshold() != null) {
+            params.put("minSocThreshold", String.valueOf(request.getMinSocThreshold()));
+        }
+        return executeOpsAction(vehicleName, "GO_CHARGE", "CHARGE", params);
+    }
+
+    public OpsActionResultBO moveVehicle(String vehicleName, MoveRequest request) {
+        String moveType = nvl(request.getMoveType(), "MOVE_TO_NODE");
+        Map<String, String> params = new HashMap<>();
+        params.put("moveType", moveType);
+        params.put("targetNodeId", nvl(request.getTargetNodeId(), ""));
+        params.put("mapId", nvl(request.getMapId(), ""));
+        params.put("confirmRisk", String.valueOf(Boolean.TRUE.equals(request.getConfirmRisk())));
+        if (request.getX() != null) {
+            params.put("x", String.valueOf(request.getX()));
+        }
+        if (request.getY() != null) {
+            params.put("y", String.valueOf(request.getY()));
+        }
+        if (request.getTheta() != null) {
+            params.put("theta", String.valueOf(request.getTheta()));
+        }
+
+        String actionType = "INIT_POSITION".equalsIgnoreCase(moveType) ? "initPosition" : "MOVE";
+        return executeOpsAction(vehicleName, "MOVE", actionType, params);
+    }
+
+    public Map<String, Object> precheck(String vehicleName, String actionType) {
+        Map<String, Object> result = new HashMap<>();
+        boolean online = vehicleRegistry.isOnline(vehicleName);
+        Vehicle vehicle = vehicleRegistry.getVehicleDomain(vehicleName);
+
+        result.put("vehicleName", vehicleName);
+        result.put("actionType", actionType);
+        result.put("online", online);
+        result.put("state", vehicle == null ? "UNKNOWN" : vehicle.getState().name());
+        result.put("allow", online);
+        result.put("reasonCode", online ? null : "OPS_AMR_001");
+        result.put("reasonMessage", online ? null : "车辆离线，禁止执行运维动作");
+        return result;
+    }
+
+    public List<Map<String, Object>> listOpsActionRecords(String vehicleName) {
+        if (vehicleName == null || vehicleName.isBlank()) {
+            return new ArrayList<>(opsActionRecords);
+        }
+        return opsActionRecords.stream()
+                .filter(record -> vehicleName.equals(record.get("vehicleName")))
+                .collect(Collectors.toList());
+    }
+
+    private OpsActionResultBO executeOpsAction(String vehicleName,
+                                               String actionCategory,
+                                               String actionType,
+                                               Map<String, String> parameters) {
+        if (!vehicleRegistry.isOnline(vehicleName)) {
+            throw new RuntimeException("车辆离线: " + vehicleName);
+        }
+
+        String actionId = "OPS-" + System.currentTimeMillis();
+        String traceId = UUID.randomUUID().toString().replace("-", "");
+
+        InstantAction action = new InstantAction(actionId, actionType);
+        action.setParameters(parameters);
+        driverRegistry.sendInstantAction(vehicleName, action);
+
+        Map<String, Object> record = new HashMap<>();
+        record.put("actionId", actionId);
+        record.put("traceId", traceId);
+        record.put("vehicleName", vehicleName);
+        record.put("actionCategory", actionCategory);
+        record.put("actionType", actionType);
+        record.put("requestPayload", parameters);
+        record.put("executeStatus", "ACCEPTED");
+        record.put("operatedAt", LocalDateTime.now().toString());
+        opsActionRecords.add(0, record);
+
+        OpsActionResultBO result = new OpsActionResultBO();
+        result.setActionId(actionId);
+        result.setAccepted(true);
+        result.setStatus("PENDING");
+        result.setTraceId(traceId);
+        result.setEstimatedFinishTime(LocalDateTime.now().plusMinutes(1).toString());
+        return result;
+    }
+
+    private String nvl(String value, String defaultValue) {
+        return value == null || value.isBlank() ? defaultValue : value;
     }
 
     /**
