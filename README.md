@@ -1,9 +1,12 @@
-# 平台简介
+# OpenTCS Plus
 ![Spring Boot 3.5](https://img.shields.io/badge/Spring%20Boot-3.5-green)
 ![JDK 21](https://img.shields.io/badge/JDK-21-orange)
 ![Redis](https://img.shields.io/badge/Redis-7.0-red)
 ![Maven](https://img.shields.io/badge/Maven-3.9-blue)
 ![Docker](https://img.shields.io/badge/Docker-20.10-blue)
+![License: GPLv3](https://img.shields.io/badge/License-GPLv3-429D53)
+
+> **开源协议**：OpenTCS Plus 采用 GPLv3 协议。如果您希望在闭源商业产品中使用，请联系我们获取商业授权。
 
 OpenTCS Plus 是基于 OpenTCS 核心思想构建的企业级AGV调度系统，在保留 OpenTCS 稳定调度内核的同时，提供了更现代化的架构、更友好的用户界面和更强大的功能扩展。
 
