@@ -1,15 +1,18 @@
-# 平台简介
+# OpenTCS Plus
 ![Spring Boot 3.5](https://img.shields.io/badge/Spring%20Boot-3.5-green)
 ![JDK 21](https://img.shields.io/badge/JDK-21-orange)
 ![Redis](https://img.shields.io/badge/Redis-7.0-red)
 ![Maven](https://img.shields.io/badge/Maven-3.9-blue)
 ![Docker](https://img.shields.io/badge/Docker-20.10-blue)
+![License: GPLv3](https://img.shields.io/badge/License-GPLv3-429D53)
+
+> **开源协议**：OpenTCS Plus 采用 GPLv3 协议。如果您希望在闭源商业产品中使用，请联系我们获取商业授权。
 
 OpenTCS Plus 是基于 OpenTCS 核心思想构建的企业级AGV调度系统，在保留 OpenTCS 稳定调度内核的同时，提供了更现代化的架构、更友好的用户界面和更强大的功能扩展。
 
 ## 项目架构
 考虑仓储物流核心私有化部署的场景，实现单机模式调度系统，采用领域驱动模式，将核心领域模型、应用层、接口层、基础设施层进行分离，实现模块化、可扩展、可维护、可测试。
-![opentcsplus架构图v1.2.1.png](doc/img/opentcsplus%E6%9E%B6%E6%9E%84%E5%9B%BEv1.2.1.png)
+![opentcsplus架构图v1.2.1.png](docs/img/opentcsplus%E6%9E%B6%E6%9E%84%E5%9B%BEv1.2.1.png)
 
 ### 架构约束（建议）
 - 依赖方向必须单向：`接口层 -> 应用层 -> 领域层 -> 基础设施层`，禁止反向依赖。
@@ -95,47 +98,11 @@ opentcs-plus-web/
 ### 前端技术栈
 - 框架：Vue3 + TypeScript + Element Plus + Vue Router + Pinia + Axios + Vite
 
-## 功能清单列表
-
-| 模块名称 | 模块描述 | 主要功能 |
-| :--- | :--- | :--- |
-| **系统管理** | 系统基础配置和用户管理 | 用户管理、角色管理、权限管理、系统参数配置 |
-| **地图管理** | 地图创建、编辑和管理 | 地图模型管理、地图编辑器、路径规划、站点管理 |
-| **车辆管理** | AGV车辆的管理和监控 | 车辆列表管理、车辆状态监控、车辆类型配置 |
-| **订单管理** | 任务订单的创建和管理 | 订单创建、订单状态跟踪、订单历史记录 |
-| **算法模块** | 路径规划和调度算法 | 最短路径计算、车辆调度优化、任务分配策略 |
-| **驱动模块** | 车辆通信和控制 | 车辆驱动适配、通信协议管理、车辆状态采集 |
-
 ## 在线体验
 
 - **演示地址**: http://106.54.43.41/   （腾讯云vps演示环境）
 - **默认账号**: admin
 - **默认密码**: admin123
-
-## 演示图
-
-### 登录页面
-![登录页面](doc/img/登录页面.png)
-
-### 首页
-![首页](doc/img/首页.png)
-
-### 地图管理
-![地图管理](doc/img/地图管理.png)
-
-### 地图编辑器
-![地图编辑器](doc/img/地图编辑器.png)
-
-### 订单管理
-![订单管理](doc/img/订单管理.png)
-
-### 车辆列表
-![车辆列表](doc/img/车辆列表.png)
-
-### 车辆类型
-![车辆类型](doc/img/车辆类型.png)
-
----
 
 ## Git提交规范
 参考 Angular 团队代码提交规范， 前后端可以通用
