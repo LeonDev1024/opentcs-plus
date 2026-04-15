@@ -17,16 +17,15 @@ UPDATE sys_menu SET component = 'system/management/notice/index' WHERE menu_id =
 UPDATE sys_menu SET component = 'system/management/oss/index' WHERE menu_id = 118;
 UPDATE sys_menu SET component = 'system/management/client/index' WHERE menu_id = 123;
 
--- 2. 系统监控（2、109、113、117、120、500、501）: monitor/* → system/monitor/*
+-- 2. 系统监控（2、109、113、117、120）: monitor/* → system/monitor/*
 UPDATE sys_menu SET component = 'system/monitor/online/index' WHERE menu_id = 109;
 UPDATE sys_menu SET component = 'system/monitor/cache/index' WHERE menu_id = 113;
 UPDATE sys_menu SET component = 'system/monitor/admin/index' WHERE menu_id = 117;
 UPDATE sys_menu SET component = 'system/monitor/snailjob/index' WHERE menu_id = 120;
-UPDATE sys_menu SET component = 'system/monitor/operlog/index' WHERE menu_id = 500;
-UPDATE sys_menu SET component = 'system/monitor/logininfor/index' WHERE menu_id = 501;
 
--- 3. 日志管理（108）: 移动到 system/management 下后 component 路径保持 system/*
---    （108 是目录，不是叶子，不需要更新 component）
+-- 3. 日志管理（500、501）: monitor/* → system/management/*
+UPDATE sys_menu SET component = 'system/management/operlog/index' WHERE menu_id = 500;
+UPDATE sys_menu SET component = 'system/management/logininfor/index' WHERE menu_id = 501;
 
 -- 4. 租户管理（121、122）: system/tenant* → system/management/tenant*
 UPDATE sys_menu SET component = 'system/management/tenant/index' WHERE menu_id = 121;
