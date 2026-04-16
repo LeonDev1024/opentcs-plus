@@ -30,13 +30,19 @@ services:
     restart: unless-stopped
     ports:
       - "6379:6379"
-    command: redis-server --requirepass ${REDIS_PASSWORD:-Redis@2024!Cache}
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD:-Redis@2024!Cache}
+      --maxmemory 1gb
+      --maxmemory-policy allkeys-lru
+      --save ""
+      --appendonly no
     volumes:
       - redis-data:/data
     networks:
       - opentcs-network
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-Redis@2024!Cache}", "ping"]
+      test: [ "CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-Redis@2024!Cache}", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
