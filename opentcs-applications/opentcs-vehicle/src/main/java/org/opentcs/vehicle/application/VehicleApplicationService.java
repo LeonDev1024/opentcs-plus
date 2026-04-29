@@ -26,6 +26,7 @@ import org.opentcs.vehicle.controller.req.MoveRequest;
 import org.opentcs.vehicle.persistence.entity.VehicleEntity;
 import org.opentcs.vehicle.persistence.service.VehicleRepository;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -53,6 +54,7 @@ public class VehicleApplicationService {
     private final VehicleRepository vehicleService;
     private final VehicleRegistry vehicleRegistry;
     private final TransportOrderRegistry orderRegistry;
+    private final ObjectMapper objectMapper;
     private final OrderLifecycleApi orderLifecycleApi;
     private final DriverRegistry driverRegistry;
     private final List<Map<String, Object>> opsActionRecords = new CopyOnWriteArrayList<>();
@@ -117,6 +119,14 @@ public class VehicleApplicationService {
 
         entity.setState("UNAVAILABLE");
         entity.setIntegrationLevel("TO_BE_UTILIZED");
+        // 持久化驱动配置（用于服务重启后恢复连接）
+        if (driverConfig != null) {
+            try {
+                entity.setProperties(objectMapper.writeValueAsString(driverConfig));
+            } catch (Exception e) {
+                log.warn("驱动配置序列化失败，将跳过持久化: {}", e.getMessage());
+            }
+        }
         vehicleService.save(entity);
 
         // 2. 注册到内核
@@ -125,7 +135,7 @@ public class VehicleApplicationService {
         kernelVehicle.updateState(VehicleState.UNAVAILABLE);
         vehicleRegistry.registerVehicleDomain(kernelVehicle);
 
-        // 3. 配置驱动连接（延迟连接）
+        // 3. 配置驱动连接
         if (driverConfig != null) {
             driverRegistry.registerVehicle(entity.getName(), driverConfig);
         }
