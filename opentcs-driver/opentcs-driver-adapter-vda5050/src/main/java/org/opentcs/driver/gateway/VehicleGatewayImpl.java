@@ -150,7 +150,8 @@ public class VehicleGatewayImpl implements VehicleGateway {
 
         DriverConfig config = vehicleConfigs.get(vehicleId);
         if (config == null) {
-            throw new IllegalArgumentException("车辆未注册: " + vehicleId);
+            //throw new IllegalArgumentException("车辆未注册: " + vehicleId);
+            return;
         }
 
         DriverAdapter adapter = adapters.get(config.getDriverType());
