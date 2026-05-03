@@ -81,11 +81,12 @@ public class OrderAllocator {
         // 更新订单状态
         order.setState(SimulatedOrder.OrderState.ASSIGNED);
         order.setAssignedVehicleId(vehicle.getVehicleId());
+        order.setAssignedVehicle(vehicle); // 直接持有引用，供 update() 使用
         order.setAssignedTime(System.currentTimeMillis());
-        
+
         // 指挥车辆移动到订单起点
         vehicle.moveTo(order.getStartX(), order.getStartY(), 0.0);
-        
+
         // 设置车辆的当前订单
         vehicle.setCurrentOrder(order);
     }
