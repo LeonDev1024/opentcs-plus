@@ -75,8 +75,9 @@ public class VehicleSimulator implements SimulationModule {
      */
     public SimulatedVehicle createVehicle(String vehicleId, String name, double maxSpeed, double acceleration, 
                                          double deceleration, double batteryCapacity) {
-        SimulatedVehicle vehicle = new SimulatedVehicle(vehicleId, name, maxSpeed, acceleration, 
+        SimulatedVehicle vehicle = new SimulatedVehicle(vehicleId, name, maxSpeed, acceleration,
                                                       deceleration, batteryCapacity);
+        vehicle.start(); // 立即启动，支持运行期间动态加入
         vehicles.put(vehicleId, vehicle);
         log.info("Created simulated vehicle: {}", name);
         return vehicle;

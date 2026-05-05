@@ -138,6 +138,12 @@
             <version>${revision}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-simulation</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
         <!-- 算法插件化框架（SPI + 加载器 + gRPC桥接） -->
         <dependency>
             <groupId>org.opentcs</groupId>

@@ -121,7 +121,18 @@ public class SimulatedVehicle {
         double dy = targetY - y;
         distanceToTarget = Math.sqrt(dx * dx + dy * dy);
         angleToTarget = Math.atan2(dy, dx);
-        
+
+        // 优先判断是否到达目标（不受转向状态影响）
+        if (distanceToTarget <= 0.1) {
+            currentSpeed = 0;
+            x = targetX;
+            y = targetY;
+            theta = targetTheta;
+            state = VehicleState.IDLE;
+            log.info("Vehicle {} reached target position", name);
+            return;
+        }
+
         // 计算转向角度
         double deltaTheta = angleToTarget - theta;
         // 调整到最小角度
@@ -143,39 +154,29 @@ public class SimulatedVehicle {
                 theta += 2 * Math.PI;
             }
         } else {
-            // 已经朝向目标，可以前进
-            if (distanceToTarget > 0.1) {
-                // 加速到最大速度
-                if (currentSpeed < maxSpeed) {
-                    currentSpeed += acceleration / 10.0;
-                    if (currentSpeed > maxSpeed) {
-                        currentSpeed = maxSpeed;
-                    }
+            // 已经朝向目标，前进（distanceToTarget > 0.1 已在方法开头保证）
+            // 加速到最大速度
+            if (currentSpeed < maxSpeed) {
+                currentSpeed += acceleration / 10.0;
+                if (currentSpeed > maxSpeed) {
+                    currentSpeed = maxSpeed;
                 }
-                
-                // 计算减速距离
-                double decelerationDistance = (currentSpeed * currentSpeed) / (2 * deceleration);
-                
-                // 如果距离目标很近，开始减速
-                if (distanceToTarget < decelerationDistance) {
-                    currentSpeed -= deceleration / 10.0;
-                    if (currentSpeed < 0) {
-                        currentSpeed = 0;
-                    }
-                }
-                
-                // 前进
-                x += Math.cos(theta) * currentSpeed / 10.0;
-                y += Math.sin(theta) * currentSpeed / 10.0;
-            } else {
-                // 到达目标
-                currentSpeed = 0;
-                x = targetX;
-                y = targetY;
-                theta = targetTheta;
-                state = VehicleState.IDLE;
-                log.info("Vehicle {} reached target position", name);
             }
+
+            // 计算减速距离
+            double decelerationDistance = (currentSpeed * currentSpeed) / (2 * deceleration);
+
+            // 如果距离目标很近，开始减速
+            if (distanceToTarget < decelerationDistance) {
+                currentSpeed -= deceleration / 10.0;
+                if (currentSpeed < 0) {
+                    currentSpeed = 0;
+                }
+            }
+
+            // 前进
+            x += Math.cos(theta) * currentSpeed / 10.0;
+            y += Math.sin(theta) * currentSpeed / 10.0;
         }
     }
     

@@ -15,8 +15,8 @@ public class OrderGenerator {
     
     private final Random random = new Random();
     private double orderCreationRate = 0.1; // 订单创建率（订单/秒）
-    private int orderMaxDistance = 100; // 订单最大距离（m）
-    private int orderMinDistance = 10; // 订单最小距离（m）
+    private int orderMaxDistance = 20; // 订单最大距离（m）
+    private int orderMinDistance = 5; // 订单最小距离（m）
     private int orderTimeout = 300; // 订单超时时间（秒）
     
     /**
@@ -24,9 +24,9 @@ public class OrderGenerator {
      * @return 新订单
      */
     public SimulatedOrder generateOrder() {
-        // 生成随机起点和终点
-        double startX = random.nextDouble() * 1000;
-        double startY = random.nextDouble() * 1000;
+        // 生成随机起点和终点（50x50 的小地图，便于快速验证）
+        double startX = random.nextDouble() * 50;
+        double startY = random.nextDouble() * 50;
         
         // 生成随机距离
         double distance = orderMinDistance + random.nextDouble() * (orderMaxDistance - orderMinDistance);
