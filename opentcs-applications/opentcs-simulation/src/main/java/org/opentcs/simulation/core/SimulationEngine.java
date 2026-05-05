@@ -171,6 +171,13 @@ public class SimulationEngine {
     public void removeModule(SimulationModule module) {
         modules.remove(module);
     }
+
+    /**
+     * 清除所有已注册模块（重新启动前调用，防止重复注册）
+     */
+    public void clearModules() {
+        modules.clear();
+    }
     
     /**
      * 添加仿真监听器

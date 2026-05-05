@@ -50,16 +50,17 @@ public class SimulationController {
             vehicleSimulator.initialize();
             orderSimulator.initialize();
             trafficSimulator.initialize();
-            
+
             // 设置模拟器之间的依赖
             orderSimulator.setVehicleSimulator(vehicleSimulator);
             trafficSimulator.setVehicleSimulator(vehicleSimulator);
-            
-            // 添加模拟器到仿真引擎
+
+            // 清除旧模块后重新注册，防止重复 addModule
+            simulationEngine.clearModules();
             simulationEngine.addModule(vehicleSimulator);
             simulationEngine.addModule(orderSimulator);
             simulationEngine.addModule(trafficSimulator);
-            
+
             // 启动仿真
             simulationEngine.start();
             

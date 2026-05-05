@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.metrics.buffering.BufferingApplicationStartup;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * 启动程序
@@ -14,6 +15,7 @@ import org.springframework.context.annotation.FilterType;
  */
 
 @SpringBootApplication
+@EnableScheduling
 @MapperScan("org.opentcs.**.mapper")
 @ComponentScan(
     basePackages = {

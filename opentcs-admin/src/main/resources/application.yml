@@ -285,3 +285,16 @@ opentcs:
     scheduling:
       deadlock-prevention: true
       conflict-check-interval-ms: 100
+--- # 仿真定时任务配置
+simulation:
+  schedule:
+    # 每轮间隔（毫秒），默认 5 分钟
+    interval-ms: 300000
+    # 启动延迟（毫秒），等待 Spring 完全启动后再执行第一轮
+    initial-delay-ms: 60000
+    # 每轮仿真运行时长（秒），留 30s 给下一轮准备
+    run-duration-seconds: 270
+    # 每轮测试车辆数
+    vehicle-count: 2
+    # 车辆最大速度（m/s）
+    vehicle-max-speed: 2.0
