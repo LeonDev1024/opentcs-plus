@@ -10,9 +10,13 @@ import org.opentcs.simulation.vehicle.VehicleSimulator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import org.opentcs.simulation.order.SimulatedOrder;
+import org.opentcs.simulation.vehicle.SimulatedVehicle;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.stream.Collectors;
 
 /**
  * 仿真控制器
@@ -322,22 +326,79 @@ public class SimulationController {
     
     /**
      * 获取所有模拟订单
-     * @return 响应
      */
     @GetMapping("/orders")
     public Map<String, Object> getOrders() {
         try {
             var orders = orderSimulator.getOrders();
-            return Map.of(
-                "success", true,
-                "orders", orders
-            );
+            return Map.of("success", true, "orders", orders);
         } catch (Exception e) {
             log.error("获取订单列表失败: {}", e.getMessage(), e);
-            return Map.of(
-                "success", false,
-                "message", "获取订单列表失败: " + e.getMessage()
-            );
+            return Map.of("success", false, "message", "获取订单列表失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 聚合快照：一次性返回引擎状态 + 所有车辆位置 + 订单统计
+     * 供前端监控页面 1s 轮询，减少多次请求
+     */
+    @GetMapping("/snapshot")
+    public Map<String, Object> getSnapshot() {
+        try {
+            // 车辆列表（精简字段）
+            List<Map<String, Object>> vehicleList = vehicleSimulator.getVehicles().stream()
+                    .map(v -> {
+                        Map<String, Object> m = new HashMap<>();
+                        m.put("vehicleId", v.getVehicleId());
+                        m.put("name", v.getName());
+                        m.put("state", v.getState().name());
+                        m.put("x", v.getX());
+                        m.put("y", v.getY());
+                        m.put("theta", v.getTheta());
+                        m.put("targetX", v.getTargetX());
+                        m.put("targetY", v.getTargetY());
+                        m.put("distanceToTarget", Math.round(v.getDistanceToTarget() * 10.0) / 10.0);
+                        m.put("currentSpeed", Math.round(v.getCurrentSpeed() * 100.0) / 100.0);
+                        m.put("currentBattery", Math.round(v.getCurrentBattery() * 10.0) / 10.0);
+                        return m;
+                    })
+                    .collect(Collectors.toList());
+
+            // 订单分组统计
+            List<SimulatedOrder> orders = orderSimulator.getOrders();
+            Map<String, Long> orderStats = orders.stream()
+                    .collect(Collectors.groupingBy(o -> o.getState().name(), Collectors.counting()));
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("engineStatus", simulationEngine.getStatus().name());
+            result.put("tick", simulationEngine.getCurrentTick());
+            result.put("vehicles", vehicleList);
+            result.put("orderStats", orderStats);
+            result.put("orderTotal", orders.size());
+            return result;
+        } catch (Exception e) {
+            log.error("获取仿真快照失败: {}", e.getMessage(), e);
+            return Map.of("success", false, "message", "获取仿真快照失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 批量添加测试车辆
+     */
+    @PostMapping("/vehicle/batch-add")
+    public Map<String, Object> batchAddVehicles(@RequestBody Map<String, Object> body) {
+        try {
+            int count = ((Number) body.getOrDefault("count", 2)).intValue();
+            double maxSpeed = ((Number) body.getOrDefault("maxSpeed", 2.0)).doubleValue();
+            for (int i = 1; i <= count; i++) {
+                String vid = "sim-v" + System.currentTimeMillis() % 10000 + "-" + i;
+                vehicleSimulator.createVehicle(vid, "SimAGV-" + i, maxSpeed, 0.5, 0.5, 100.0);
+            }
+            return Map.of("success", true, "message", "已添加 " + count + " 辆仿真车辆");
+        } catch (Exception e) {
+            log.error("批量添加车辆失败: {}", e.getMessage(), e);
+            return Map.of("success", false, "message", "批量添加车辆失败: " + e.getMessage());
         }
     }
 }
