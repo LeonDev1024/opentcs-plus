@@ -246,8 +246,9 @@ public class SimulationController {
 
             for (int i = 0; i < count; i++) {
                 int seq = vehicleSimulator.nextVehicleSeq();
-                String vid = "sim-v-" + seq;
-                SimulatedVehicle v = vehicleSimulator.createVehicle(vid, "AGV-" + seq, maxSpeed, 0.5, 0.5, 100.0);
+                String vid = String.format("sim-v-%03d", seq);
+                String vname = String.format("sim-%03d", seq);
+                SimulatedVehicle v = vehicleSimulator.createVehicle(vid, vname, maxSpeed, 0.5, 0.5, 100.0);
 
                 // 初始化位置到地图点位
                 if (!points.isEmpty()) {
