@@ -57,27 +57,18 @@ public class ConflictResolver {
      * @param vehicle2 车辆2
      */
     private void handleCurrentConflict(SimulatedVehicle vehicle1, SimulatedVehicle vehicle2) {
-        // 让两辆车都停止
-        vehicle1.setError();
-        vehicle2.setError();
-        log.info("Resolved current conflict by stopping both vehicles: {} and {}", 
-                vehicle1.getName(), vehicle2.getName());
+        // MVP: 仅记录冲突日志，不中断车辆运行
+        log.debug("Traffic conflict detected between {} and {}, continuing", vehicle1.getName(), vehicle2.getName());
     }
-    
+
     /**
      * 处理预测冲突
      * @param vehicle1 车辆1
      * @param vehicle2 车辆2
      */
     private void handlePredictedConflict(SimulatedVehicle vehicle1, SimulatedVehicle vehicle2) {
-        // 简单策略：让速度较慢的车辆停止
-        if (vehicle1.getCurrentSpeed() <= vehicle2.getCurrentSpeed()) {
-            vehicle1.setError();
-            log.info("Resolved predicted conflict by stopping vehicle: {}", vehicle1.getName());
-        } else {
-            vehicle2.setError();
-            log.info("Resolved predicted conflict by stopping vehicle: {}", vehicle2.getName());
-        }
+        // MVP: 仅记录冲突日志，不中断车辆运行
+        log.debug("Predicted traffic conflict between {} and {}, continuing", vehicle1.getName(), vehicle2.getName());
     }
     
     /**

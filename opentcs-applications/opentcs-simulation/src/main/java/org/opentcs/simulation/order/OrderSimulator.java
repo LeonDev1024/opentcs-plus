@@ -56,14 +56,9 @@ public class OrderSimulator implements SimulationModule {
     
     @Override
     public void tick(long tick) {
-        // 生成新订单
         generateOrders(tick);
-        
-        // 分配订单
-        allocateOrders();
-        
-        // 更新订单状态
-        updateOrders(tick);
+        updateOrders(tick);   // 先推进状态机（ASSIGNED→IN_EXECUTION→COMPLETED）
+        allocateOrders();      // 再分配空闲车辆，避免与状态机竞争
     }
     
     @Override
@@ -100,10 +95,11 @@ public class OrderSimulator implements SimulationModule {
             }
         }
         
-        // 获取空闲车辆
+        // 获取空闲且无当前任务的车辆
         List<SimulatedVehicle> idleVehicles = new ArrayList<>();
         for (SimulatedVehicle vehicle : vehicleSimulator.getVehicles()) {
-            if (vehicle.getState() == SimulatedVehicle.VehicleState.IDLE) {
+            if (vehicle.getState() == SimulatedVehicle.VehicleState.IDLE
+                    && vehicle.getCurrentOrder() == null) {
                 idleVehicles.add(vehicle);
             }
         }
@@ -141,6 +137,10 @@ public class OrderSimulator implements SimulationModule {
     public void setVehicleSimulator(VehicleSimulator vehicleSimulator) {
         this.vehicleSimulator = vehicleSimulator;
         orderAllocator.setVehicleSimulator(vehicleSimulator);
+    }
+
+    public OrderGenerator getOrderGenerator() {
+        return orderGenerator;
     }
     
     /**

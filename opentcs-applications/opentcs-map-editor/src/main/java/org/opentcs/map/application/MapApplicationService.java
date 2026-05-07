@@ -11,7 +11,8 @@ import org.opentcs.kernel.api.map.MapSceneApi;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
+import org.opentcs.kernel.api.dto.NavigationMapDTO;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -38,16 +39,28 @@ public class MapApplicationService {
             throw new RuntimeException("工厂模型不存在: " + factoryModelId);
         }
 
-        // 清空现有路由数据
         routePlanner.clear();
 
-        // 加载点位 - TODO: 需要按工厂查询
-        // List<PointEntity> points = pointRepository.selectAllPointByFactoryModelId(factoryModelId);
+        List<NavigationMapDTO> navMaps = mapSceneApi.listNavigationMapsByFactory(factoryModelId);
+        int totalPoints = 0;
+        int totalPaths = 0;
 
-        // 加载路径 - TODO: 需要按工厂查询
-        // List<PathEntity> paths = pathRepository.selectAllPathByFactoryModelId(factoryModelId);
+        for (NavigationMapDTO navMap : navMaps) {
+            List<PointDTO> points = mapSceneApi.listPointsByMap(navMap.getId());
+            for (PointDTO point : points) {
+                registerPoint(point);
+            }
+            totalPoints += points.size();
 
-        log.info("地图已加载到内核: {}", factoryModel.getName());
+            List<PathDTO> paths = mapSceneApi.listPathsByMap(navMap.getId());
+            for (PathDTO path : paths) {
+                registerPath(path);
+            }
+            totalPaths += paths.size();
+        }
+
+        log.info("地图已加载到内核: {}, 共 {} 张导航图, 点位: {}, 路径: {}",
+                factoryModel.getName(), navMaps.size(), totalPoints, totalPaths);
     }
 
     /**

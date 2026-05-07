@@ -1,18 +1,25 @@
 package org.opentcs.simulation.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.opentcs.kernel.api.dto.NavigationMapDTO;
 import org.opentcs.simulation.core.SimulationEngine;
 import org.opentcs.simulation.core.SimulationScene;
 import org.opentcs.simulation.core.SimulationSceneManager;
+import org.opentcs.simulation.map.SimMapPoint;
+import org.opentcs.simulation.map.SimulationMapService;
 import org.opentcs.simulation.order.OrderSimulator;
 import org.opentcs.simulation.traffic.TrafficSimulator;
 import org.opentcs.simulation.vehicle.VehicleSimulator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import org.opentcs.simulation.order.SimulatedOrder;
+import org.opentcs.simulation.vehicle.SimulatedVehicle;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.stream.Collectors;
 
 /**
  * 仿真控制器
@@ -21,243 +28,165 @@ import java.util.HashMap;
 @RestController
 @RequestMapping("/api/simulation")
 public class SimulationController {
-    
+
     @Autowired
     private SimulationEngine simulationEngine;
-    
+
     @Autowired
     private SimulationSceneManager sceneManager;
-    
+
     @Autowired
     private VehicleSimulator vehicleSimulator;
-    
+
     @Autowired
     private OrderSimulator orderSimulator;
-    
+
     @Autowired
     private TrafficSimulator trafficSimulator;
-    
+
+    @Autowired
+    private SimulationMapService simulationMapService;
+
+    /** 当前激活的地图 ID（null 表示使用随机坐标模式） */
+    private volatile Long currentMapId = null;
+    private volatile NavigationMapDTO currentMapInfo = null;
+
+    // ─── 地图管理 ──────────────────────────────────────────────
+
     /**
-     * 启动仿真
-     * @return 响应
+     * 查询工厂下所有可用地图
      */
+    @GetMapping("/maps")
+    public Map<String, Object> listMaps(@RequestParam(required = false) Long factoryId) {
+        try {
+            List<NavigationMapDTO> maps = factoryId != null
+                    ? simulationMapService.listMapsByFactory(factoryId)
+                    : List.of();
+            return Map.of("success", true, "maps", maps);
+        } catch (Exception e) {
+            log.error("获取地图列表失败: {}", e.getMessage(), e);
+            return Map.of("success", false, "message", e.getMessage());
+        }
+    }
+
+    /**
+     * 设置仿真使用的地图（加载真实点位）
+     */
+    @PostMapping("/map/set")
+    public Map<String, Object> setMap(@RequestBody Map<String, Object> body) {
+        try {
+            Long mapId = body.get("mapId") != null
+                    ? Long.parseLong(body.get("mapId").toString())
+                    : null;
+            if (mapId == null) {
+                currentMapId = null;
+                currentMapInfo = null;
+                orderSimulator.getOrderGenerator().setMapPoints(null);
+                return Map.of("success", true, "message", "已切换为随机坐标模式");
+            }
+
+            List<SimMapPoint> points = simulationMapService.loadMapPoints(mapId);
+            NavigationMapDTO mapInfo = simulationMapService.getMapInfo(mapId);
+
+            currentMapId = mapId;
+            currentMapInfo = mapInfo;
+            orderSimulator.getOrderGenerator().setMapPoints(points.isEmpty() ? null : points);
+
+            // 如果仿真正在运行，将现有车辆重置到地图点位
+            if (!vehicleSimulator.getVehicles().isEmpty() && !points.isEmpty()) {
+                vehicleSimulator.resetVehiclesToMapPoints(points);
+            }
+
+            log.info("已设置仿真地图 mapId={}, 加载点位数={}", mapId, points.size());
+            return Map.of("success", true, "message", "地图设置成功", "pointCount", points.size());
+        } catch (Exception e) {
+            log.error("设置仿真地图失败: {}", e.getMessage(), e);
+            return Map.of("success", false, "message", e.getMessage());
+        }
+    }
+
+    // ─── 仿真控制 ──────────────────────────────────────────────
+
     @PostMapping("/start")
     public Map<String, Object> startSimulation() {
         log.info("Starting simulation...");
-        
         try {
-            // 初始化模拟器
             vehicleSimulator.initialize();
             orderSimulator.initialize();
             trafficSimulator.initialize();
-            
-            // 设置模拟器之间的依赖
+
             orderSimulator.setVehicleSimulator(vehicleSimulator);
             trafficSimulator.setVehicleSimulator(vehicleSimulator);
-            
-            // 添加模拟器到仿真引擎
+
+            // 如果有地图，重新注入点位
+            if (currentMapId != null) {
+                List<SimMapPoint> points = simulationMapService.loadMapPoints(currentMapId);
+                orderSimulator.getOrderGenerator().setMapPoints(points.isEmpty() ? null : points);
+            }
+
+            simulationEngine.clearModules();
             simulationEngine.addModule(vehicleSimulator);
             simulationEngine.addModule(orderSimulator);
             simulationEngine.addModule(trafficSimulator);
-            
-            // 启动仿真
+
             simulationEngine.start();
-            
-            return Map.of(
-                "success", true,
-                "message", "仿真启动成功"
-            );
+            return Map.of("success", true, "message", "仿真启动成功");
         } catch (Exception e) {
             log.error("启动仿真失败: {}", e.getMessage(), e);
-            return Map.of(
-                "success", false,
-                "message", "启动仿真失败: " + e.getMessage()
-            );
+            return Map.of("success", false, "message", "启动仿真失败: " + e.getMessage());
         }
     }
-    
-    /**
-     * 暂停仿真
-     * @return 响应
-     */
+
     @PostMapping("/pause")
     public Map<String, Object> pauseSimulation() {
-        log.info("Pausing simulation...");
-        
         try {
             simulationEngine.pause();
-            return Map.of(
-                "success", true,
-                "message", "仿真暂停成功"
-            );
+            return Map.of("success", true, "message", "仿真暂停成功");
         } catch (Exception e) {
             log.error("暂停仿真失败: {}", e.getMessage(), e);
-            return Map.of(
-                "success", false,
-                "message", "暂停仿真失败: " + e.getMessage()
-            );
+            return Map.of("success", false, "message", "暂停仿真失败: " + e.getMessage());
         }
     }
-    
-    /**
-     * 继续仿真
-     * @return 响应
-     */
+
     @PostMapping("/resume")
     public Map<String, Object> resumeSimulation() {
-        log.info("Resuming simulation...");
-        
         try {
             simulationEngine.resume();
-            return Map.of(
-                "success", true,
-                "message", "仿真继续成功"
-            );
+            return Map.of("success", true, "message", "仿真继续成功");
         } catch (Exception e) {
             log.error("继续仿真失败: {}", e.getMessage(), e);
-            return Map.of(
-                "success", false,
-                "message", "继续仿真失败: " + e.getMessage()
-            );
+            return Map.of("success", false, "message", "继续仿真失败: " + e.getMessage());
         }
     }
-    
-    /**
-     * 停止仿真
-     * @return 响应
-     */
+
     @PostMapping("/stop")
     public Map<String, Object> stopSimulation() {
-        log.info("Stopping simulation...");
-        
         try {
             simulationEngine.stop();
-            return Map.of(
-                "success", true,
-                "message", "仿真停止成功"
-            );
+            return Map.of("success", true, "message", "仿真停止成功");
         } catch (Exception e) {
             log.error("停止仿真失败: {}", e.getMessage(), e);
-            return Map.of(
-                "success", false,
-                "message", "停止仿真失败: " + e.getMessage()
-            );
+            return Map.of("success", false, "message", "停止仿真失败: " + e.getMessage());
         }
     }
-    
-    /**
-     * 获取仿真状态
-     * @return 响应
-     */
+
     @GetMapping("/status")
     public Map<String, Object> getSimulationStatus() {
         try {
             return Map.of(
-                "success", true,
-                "status", simulationEngine.getStatus().name(),
-                "currentTick", simulationEngine.getCurrentTick(),
-                "tickRate", simulationEngine.getTickRate()
+                    "success", true,
+                    "status", simulationEngine.getStatus().name(),
+                    "currentTick", simulationEngine.getCurrentTick(),
+                    "tickRate", simulationEngine.getTickRate()
             );
         } catch (Exception e) {
             log.error("获取仿真状态失败: {}", e.getMessage(), e);
-            return Map.of(
-                "success", false,
-                "message", "获取仿真状态失败: " + e.getMessage()
-            );
+            return Map.of("success", false, "message", "获取仿真状态失败: " + e.getMessage());
         }
     }
-    
-    /**
-     * 创建仿真场景
-     * @param sceneData 场景数据
-     * @return 响应
-     */
-    @PostMapping("/scene/create")
-    public Map<String, Object> createScene(@RequestBody Map<String, Object> sceneData) {
-        try {
-            String name = (String) sceneData.get("name");
-            String description = (String) sceneData.get("description");
-            
-            // 参数验证
-            if (name == null || name.trim().isEmpty()) {
-                return Map.of(
-                    "success", false,
-                    "message", "场景名称不能为空"
-                );
-            }
-            
-            SimulationScene scene = sceneManager.createScene(name, description);
-            
-            return Map.of(
-                "success", true,
-                "message", "场景创建成功",
-                "scene", scene
-            );
-        } catch (Exception e) {
-            log.error("创建场景失败: {}", e.getMessage(), e);
-            return Map.of(
-                "success", false,
-                "message", "创建场景失败: " + e.getMessage()
-            );
-        }
-    }
-    
-    /**
-     * 获取所有场景
-     * @return 响应
-     */
-    @GetMapping("/scenes")
-    public Map<String, Object> getScenes() {
-        try {
-            List<SimulationScene> scenes = sceneManager.getScenes();
-            return Map.of(
-                "success", true,
-                "scenes", scenes
-            );
-        } catch (Exception e) {
-            log.error("获取场景列表失败: {}", e.getMessage(), e);
-            return Map.of(
-                "success", false,
-                "message", "获取场景列表失败: " + e.getMessage()
-            );
-        }
-    }
-    
-    /**
-     * 设置当前场景
-     * @param sceneId 场景ID
-     * @return 响应
-     */
-    @PostMapping("/scene/set-current/{sceneId}")
-    public Map<String, Object> setCurrentScene(@PathVariable String sceneId) {
-        try {
-            // 参数验证
-            if (sceneId == null || sceneId.trim().isEmpty()) {
-                return Map.of(
-                    "success", false,
-                    "message", "场景ID不能为空"
-                );
-            }
-            
-            // 这里需要根据sceneId找到场景，暂时返回成功
-            return Map.of(
-                "success", true,
-                "message", "场景设置成功"
-            );
-        } catch (Exception e) {
-            log.error("设置场景失败: {}", e.getMessage(), e);
-            return Map.of(
-                "success", false,
-                "message", "设置场景失败: " + e.getMessage()
-            );
-        }
-    }
-    
-    /**
-     * 添加模拟车辆
-     * @param vehicleData 车辆数据
-     * @return 响应
-     */
+
+    // ─── 车辆管理 ──────────────────────────────────────────────
+
     @PostMapping("/vehicle/add")
     public Map<String, Object> addVehicle(@RequestBody Map<String, Object> vehicleData) {
         try {
@@ -267,76 +196,156 @@ public class SimulationController {
             double acceleration = (Double) vehicleData.getOrDefault("acceleration", 0.5);
             double deceleration = (Double) vehicleData.getOrDefault("deceleration", 0.5);
             double batteryCapacity = (Double) vehicleData.getOrDefault("batteryCapacity", 100.0);
-            
-            // 参数验证
+
             if (vehicleId == null || vehicleId.trim().isEmpty()) {
-                return Map.of(
-                    "success", false,
-                    "message", "车辆ID不能为空"
-                );
+                return Map.of("success", false, "message", "车辆ID不能为空");
             }
             if (name == null || name.trim().isEmpty()) {
-                return Map.of(
-                    "success", false,
-                    "message", "车辆名称不能为空"
-                );
+                return Map.of("success", false, "message", "车辆名称不能为空");
             }
-            
             var vehicle = vehicleSimulator.createVehicle(vehicleId, name, maxSpeed, acceleration, deceleration, batteryCapacity);
-            
-            return Map.of(
-                "success", true,
-                "message", "车辆添加成功",
-                "vehicle", vehicle
-            );
+            return Map.of("success", true, "message", "车辆添加成功", "vehicle", vehicle);
         } catch (Exception e) {
             log.error("添加车辆失败: {}", e.getMessage(), e);
-            return Map.of(
-                "success", false,
-                "message", "添加车辆失败: " + e.getMessage()
-            );
+            return Map.of("success", false, "message", "添加车辆失败: " + e.getMessage());
         }
     }
-    
-    /**
-     * 获取所有模拟车辆
-     * @return 响应
-     */
+
     @GetMapping("/vehicles")
     public Map<String, Object> getVehicles() {
         try {
-            var vehicles = vehicleSimulator.getVehicles();
-            return Map.of(
-                "success", true,
-                "vehicles", vehicles
-            );
+            return Map.of("success", true, "vehicles", vehicleSimulator.getVehicles());
         } catch (Exception e) {
             log.error("获取车辆列表失败: {}", e.getMessage(), e);
-            return Map.of(
-                "success", false,
-                "message", "获取车辆列表失败: " + e.getMessage()
-            );
+            return Map.of("success", false, "message", "获取车辆列表失败: " + e.getMessage());
         }
     }
-    
-    /**
-     * 获取所有模拟订单
-     * @return 响应
-     */
+
     @GetMapping("/orders")
     public Map<String, Object> getOrders() {
         try {
-            var orders = orderSimulator.getOrders();
-            return Map.of(
-                "success", true,
-                "orders", orders
-            );
+            return Map.of("success", true, "orders", orderSimulator.getOrders());
         } catch (Exception e) {
             log.error("获取订单列表失败: {}", e.getMessage(), e);
-            return Map.of(
-                "success", false,
-                "message", "获取订单列表失败: " + e.getMessage()
-            );
+            return Map.of("success", false, "message", "获取订单列表失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 批量添加测试车辆（若有地图则初始化到地图点位）
+     */
+    @PostMapping("/vehicle/batch-add")
+    public Map<String, Object> batchAddVehicles(@RequestBody Map<String, Object> body) {
+        try {
+            int count = ((Number) body.getOrDefault("count", 2)).intValue();
+            double maxSpeed = ((Number) body.getOrDefault("maxSpeed", 2.0)).doubleValue();
+
+            List<SimMapPoint> points = currentMapId != null
+                    ? simulationMapService.loadMapPoints(currentMapId)
+                    : List.of();
+
+            for (int i = 0; i < count; i++) {
+                int seq = vehicleSimulator.nextVehicleSeq();
+                String vid = "sim-v-" + seq;
+                SimulatedVehicle v = vehicleSimulator.createVehicle(vid, "AGV-" + seq, maxSpeed, 0.5, 0.5, 100.0);
+
+                // 初始化位置到地图点位
+                if (!points.isEmpty()) {
+                    SimMapPoint p = points.get((int) (Math.random() * points.size()));
+                    v.setX(p.getX());
+                    v.setY(p.getY());
+                }
+            }
+            return Map.of("success", true, "message", "已添加 " + count + " 辆仿真车辆");
+        } catch (Exception e) {
+            log.error("批量添加车辆失败: {}", e.getMessage(), e);
+            return Map.of("success", false, "message", "批量添加车辆失败: " + e.getMessage());
+        }
+    }
+
+    // ─── 快照 ──────────────────────────────────────────────────
+
+    /**
+     * 聚合快照：引擎状态 + 车辆列表 + 订单统计 + 当前地图元数据
+     */
+    @GetMapping("/snapshot")
+    public Map<String, Object> getSnapshot() {
+        try {
+            List<Map<String, Object>> vehicleList = vehicleSimulator.getVehicles().stream()
+                    .map(v -> {
+                        Map<String, Object> m = new HashMap<>();
+                        m.put("vehicleId", v.getVehicleId());
+                        m.put("name", v.getName());
+                        m.put("state", v.getState().name());
+                        m.put("x", v.getX());
+                        m.put("y", v.getY());
+                        m.put("theta", v.getTheta());
+                        m.put("targetX", v.getTargetX());
+                        m.put("targetY", v.getTargetY());
+                        m.put("distanceToTarget", Math.round(v.getDistanceToTarget() * 10.0) / 10.0);
+                        m.put("currentSpeed", Math.round(v.getCurrentSpeed() * 1000.0) / 1000.0);
+                        m.put("currentBattery", Math.round(v.getCurrentBattery() * 10.0) / 10.0);
+                        return m;
+                    })
+                    .collect(Collectors.toList());
+
+            List<SimulatedOrder> orders = orderSimulator.getOrders();
+            Map<String, Long> orderStats = orders.stream()
+                    .collect(Collectors.groupingBy(o -> o.getState().name(), Collectors.counting()));
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("engineStatus", simulationEngine.getStatus().name());
+            result.put("tick", simulationEngine.getCurrentTick());
+            result.put("vehicles", vehicleList);
+            result.put("orderStats", orderStats);
+            result.put("orderTotal", orders.size());
+
+            // 地图元数据（供前端渲染真实地图底图）
+            if (currentMapInfo != null) {
+                Map<String, Object> mapMeta = new HashMap<>();
+                mapMeta.put("mapId", currentMapId);
+                mapMeta.put("name", currentMapInfo.getName());
+                mapMeta.put("rasterUrl", currentMapInfo.getRasterUrl());
+                mapMeta.put("rasterResolution", currentMapInfo.getRasterResolution());
+                mapMeta.put("rasterWidth", currentMapInfo.getRasterWidth());
+                mapMeta.put("rasterHeight", currentMapInfo.getRasterHeight());
+                mapMeta.put("mapOrigin", currentMapInfo.getMapOrigin());
+                result.put("mapInfo", mapMeta);
+            }
+
+            return result;
+        } catch (Exception e) {
+            log.error("获取仿真快照失败: {}", e.getMessage(), e);
+            return Map.of("success", false, "message", "获取仿真快照失败: " + e.getMessage());
+        }
+    }
+
+    // ─── 场景管理（保留原有接口）────────────────────────────────
+
+    @PostMapping("/scene/create")
+    public Map<String, Object> createScene(@RequestBody Map<String, Object> sceneData) {
+        try {
+            String name = (String) sceneData.get("name");
+            String description = (String) sceneData.get("description");
+            if (name == null || name.trim().isEmpty()) {
+                return Map.of("success", false, "message", "场景名称不能为空");
+            }
+            SimulationScene scene = sceneManager.createScene(name, description);
+            return Map.of("success", true, "message", "场景创建成功", "scene", scene);
+        } catch (Exception e) {
+            log.error("创建场景失败: {}", e.getMessage(), e);
+            return Map.of("success", false, "message", "创建场景失败: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/scenes")
+    public Map<String, Object> getScenes() {
+        try {
+            return Map.of("success", true, "scenes", sceneManager.getScenes());
+        } catch (Exception e) {
+            log.error("获取场景列表失败: {}", e.getMessage(), e);
+            return Map.of("success", false, "message", "获取场景列表失败: " + e.getMessage());
         }
     }
 }

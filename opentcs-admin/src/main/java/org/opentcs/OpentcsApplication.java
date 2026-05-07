@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.metrics.buffering.BufferingApplicationStartup;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * 启动程序
@@ -14,6 +15,7 @@ import org.springframework.context.annotation.FilterType;
  */
 
 @SpringBootApplication
+@EnableScheduling
 @MapperScan("org.opentcs.**.mapper")
 @ComponentScan(
     basePackages = {
@@ -27,7 +29,8 @@ import org.springframework.context.annotation.FilterType;
         "org.opentcs.common",
         "org.opentcs.security",
         "org.opentcs.algorithm",     // 算法插件 + AutoConfiguration
-        "org.opentcs.strategies"    // 内置策略
+        "org.opentcs.strategies",   // 内置策略
+        "org.opentcs.simulation"    // 仿真引擎
     },
     excludeFilters = {
         @ComponentScan.Filter(type = FilterType.REGEX, pattern = "org\\.opentcs\\.common\\.tenant\\..*")

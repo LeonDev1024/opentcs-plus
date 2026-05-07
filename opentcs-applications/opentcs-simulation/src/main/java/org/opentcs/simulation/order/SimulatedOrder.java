@@ -10,7 +10,7 @@ import org.opentcs.simulation.vehicle.SimulatedVehicle;
 @Slf4j
 @Data
 public class SimulatedOrder {
-    
+
     private String orderId;
     private double startX; // 起点X坐标
     private double startY; // 起点Y坐标
@@ -18,10 +18,11 @@ public class SimulatedOrder {
     private double endY; // 终点Y坐标
     private double distance; // 订单距离
     private int timeout; // 超时时间（秒）
-    
+
     // 订单状态
     private OrderState state = OrderState.CREATED;
     private String assignedVehicleId;
+    private SimulatedVehicle assignedVehicle; // 直接持有车辆引用，避免每次 update 都要查找
     private long createdAt;
     private long assignedTime;
     private long startedTime;
@@ -63,21 +64,21 @@ public class SimulatedOrder {
                 // 检查车辆是否到达终点
                 SimulatedVehicle executingVehicle = getAssignedVehicle();
                 if (executingVehicle != null && executingVehicle.getState() == SimulatedVehicle.VehicleState.IDLE) {
-                    // 车辆到达终点，完成订单
                     state = OrderState.COMPLETED;
                     completedTime = System.currentTimeMillis();
-                    // 清除车辆的当前订单
                     executingVehicle.setCurrentOrder(null);
+                    assignedVehicle = null;
                     log.info("Order {} completed", orderId);
+                    break;
                 }
                 // 检查是否超时
-                if (System.currentTimeMillis() - startedTime > timeout * 1000) {
+                if (System.currentTimeMillis() - startedTime > timeout * 1000L) {
                     state = OrderState.TIMED_OUT;
                     timedOutTime = System.currentTimeMillis();
-                    // 清除车辆的当前订单
                     if (executingVehicle != null) {
                         executingVehicle.setCurrentOrder(null);
                     }
+                    assignedVehicle = null;
                     log.warn("Order {} timed out during execution", orderId);
                 }
                 break;
@@ -91,12 +92,9 @@ public class SimulatedOrder {
     
     /**
      * 获取分配的车辆
-     * @return 分配的车辆
      */
     private SimulatedVehicle getAssignedVehicle() {
-        // 这里需要从车辆模拟器中获取车辆，暂时返回null
-        // 实际实现中，应该通过车辆ID从VehicleSimulator中获取车辆
-        return null;
+        return assignedVehicle;
     }
     
     /**
@@ -105,12 +103,12 @@ public class SimulatedOrder {
     public void cancel() {
         state = OrderState.CANCELLED;
         log.info("Order {} cancelled", orderId);
-        
-        // 清除车辆的当前订单
+
         SimulatedVehicle vehicle = getAssignedVehicle();
         if (vehicle != null) {
             vehicle.setCurrentOrder(null);
         }
+        assignedVehicle = null;
     }
     
     /**

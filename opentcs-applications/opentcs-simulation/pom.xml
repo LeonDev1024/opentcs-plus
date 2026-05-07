@@ -29,6 +29,13 @@
             <version>${project.version}</version>
         </dependency>
 
+        <!-- Map editor: load real map points for simulation -->
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-map-editor</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <!-- Spring Boot dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -2,11 +2,13 @@ package org.opentcs.simulation.vehicle;
 
 import lombok.extern.slf4j.Slf4j;
 import org.opentcs.simulation.core.SimulationModule;
+import org.opentcs.simulation.map.SimMapPoint;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -18,6 +20,8 @@ public class VehicleSimulator implements SimulationModule {
     
     private final Map<String, SimulatedVehicle> vehicles = new ConcurrentHashMap<>();
     private boolean initialized = false;
+    /** 全局车辆序号，确保添加多次时名称不重复 */
+    private final java.util.concurrent.atomic.AtomicInteger vehicleSeq = new java.util.concurrent.atomic.AtomicInteger(0);
     
     @Override
     public void initialize() {
@@ -75,8 +79,9 @@ public class VehicleSimulator implements SimulationModule {
      */
     public SimulatedVehicle createVehicle(String vehicleId, String name, double maxSpeed, double acceleration, 
                                          double deceleration, double batteryCapacity) {
-        SimulatedVehicle vehicle = new SimulatedVehicle(vehicleId, name, maxSpeed, acceleration, 
+        SimulatedVehicle vehicle = new SimulatedVehicle(vehicleId, name, maxSpeed, acceleration,
                                                       deceleration, batteryCapacity);
+        vehicle.start(); // 立即启动，支持运行期间动态加入
         vehicles.put(vehicleId, vehicle);
         log.info("Created simulated vehicle: {}", name);
         return vehicle;
@@ -93,10 +98,25 @@ public class VehicleSimulator implements SimulationModule {
     
     /**
      * 获取所有模拟车辆
-     * @return 模拟车辆列表
      */
     public List<SimulatedVehicle> getVehicles() {
         return new ArrayList<>(vehicles.values());
+    }
+
+    /**
+     * 将现有车辆重置到地图点位（切换地图时调用）
+     */
+    public void resetVehiclesToMapPoints(List<SimMapPoint> points) {
+        if (points == null || points.isEmpty()) return;
+        Random rnd = new Random();
+        vehicles.values().forEach(v -> {
+            SimMapPoint p = points.get(rnd.nextInt(points.size()));
+            v.setX(p.getX());
+            v.setY(p.getY());
+            v.setTargetX(p.getX());
+            v.setTargetY(p.getY());
+            v.setDistanceToTarget(0.0);
+        });
     }
     
     /**
@@ -123,5 +143,10 @@ public class VehicleSimulator implements SimulationModule {
         }
         vehicles.clear();
         log.info("Cleared all simulated vehicles");
+    }
+
+    /** 生成下一个唯一车辆序号 */
+    public int nextVehicleSeq() {
+        return vehicleSeq.incrementAndGet();
     }
 }
