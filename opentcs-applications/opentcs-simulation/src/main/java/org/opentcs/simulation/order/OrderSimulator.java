@@ -2,6 +2,7 @@ package org.opentcs.simulation.order;
 
 import lombok.extern.slf4j.Slf4j;
 import org.opentcs.simulation.core.SimulationModule;
+import org.opentcs.simulation.map.SimMapGraph;
 import org.opentcs.simulation.vehicle.SimulatedVehicle;
 import org.opentcs.simulation.vehicle.VehicleSimulator;
 import org.springframework.stereotype.Component;
@@ -132,11 +133,17 @@ public class OrderSimulator implements SimulationModule {
     
     /**
      * 设置车辆模拟器
-     * @param vehicleSimulator 车辆模拟器
      */
     public void setVehicleSimulator(VehicleSimulator vehicleSimulator) {
         this.vehicleSimulator = vehicleSimulator;
         orderAllocator.setVehicleSimulator(vehicleSimulator);
+    }
+
+    /**
+     * 设置地图拓扑图（有地图时注入，null 表示随机坐标模式）
+     */
+    public void setMapGraph(SimMapGraph mapGraph) {
+        orderAllocator.setMapGraph(mapGraph);
     }
 
     public OrderGenerator getOrderGenerator() {

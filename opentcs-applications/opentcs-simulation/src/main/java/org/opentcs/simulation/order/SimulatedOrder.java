@@ -2,7 +2,11 @@ package org.opentcs.simulation.order;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.opentcs.simulation.map.SimMapPoint;
 import org.opentcs.simulation.vehicle.SimulatedVehicle;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * 模拟订单
@@ -29,6 +33,12 @@ public class SimulatedOrder {
     private long completedTime;
     private long timedOutTime;
     
+    // 路径规划（有地图时预计算）
+    /** 车辆→订单起点 路径（在 ASSIGNED 阶段行驶） */
+    private List<SimMapPoint> routeToStart = Collections.emptyList();
+    /** 订单起点→终点 路径（在 IN_EXECUTION 阶段行驶） */
+    private List<SimMapPoint> routeToEnd = Collections.emptyList();
+
     // 构造函数
     public SimulatedOrder() {
         this.createdAt = System.currentTimeMillis();
@@ -52,12 +62,15 @@ public class SimulatedOrder {
                 // 检查车辆是否到达起点
                 SimulatedVehicle vehicle = getAssignedVehicle();
                 if (vehicle != null && vehicle.getState() == SimulatedVehicle.VehicleState.IDLE) {
-                    // 车辆到达起点，开始执行订单
                     state = OrderState.IN_EXECUTION;
                     startedTime = System.currentTimeMillis();
-                    // 指挥车辆移动到终点
-                    vehicle.moveTo(endX, endY, 0.0);
-                    log.info("Order {} started execution", orderId);
+                    // 有路径规划时按路径走，否则直线
+                    if (!routeToEnd.isEmpty()) {
+                        vehicle.moveByRoute(routeToEnd);
+                    } else {
+                        vehicle.moveTo(endX, endY, 0.0);
+                    }
+                    log.info("Order {} started execution (routeToEnd.size={})", orderId, routeToEnd.size());
                 }
                 break;
             case IN_EXECUTION:
