@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.opentcs.simulation.order.SimulatedOrder;
 import org.opentcs.simulation.vehicle.SimulatedVehicle;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +48,9 @@ public class SimulationController {
     @Autowired
     private SimulationMapService simulationMapService;
 
-    /** 当前激活的地图 ID（null 表示使用随机坐标模式） */
+    /** 当前激活的工厂模型 ID（null 表示使用随机坐标模式） */
+    private volatile Long currentFactoryModelId = null;
+    /** 当前主导航地图的数字 ID（用于加载点位和元数据） */
     private volatile Long currentMapId = null;
     private volatile NavigationMapDTO currentMapInfo = null;
 
@@ -75,30 +78,54 @@ public class SimulationController {
     @PostMapping("/map/set")
     public Map<String, Object> setMap(@RequestBody Map<String, Object> body) {
         try {
-            Long mapId = body.get("mapId") != null
+            Long factoryModelId = body.get("mapId") != null
                     ? Long.parseLong(body.get("mapId").toString())
                     : null;
-            if (mapId == null) {
+            if (factoryModelId == null) {
+                currentFactoryModelId = null;
                 currentMapId = null;
                 currentMapInfo = null;
                 orderSimulator.getOrderGenerator().setMapPoints(null);
                 return Map.of("success", true, "message", "已切换为随机坐标模式");
             }
 
-            List<SimMapPoint> points = simulationMapService.loadMapPoints(mapId);
-            NavigationMapDTO mapInfo = simulationMapService.getMapInfo(mapId);
-
-            currentMapId = mapId;
-            currentMapInfo = mapInfo;
-            orderSimulator.getOrderGenerator().setMapPoints(points.isEmpty() ? null : points);
-
-            // 如果仿真正在运行，将现有车辆重置到地图点位
-            if (!vehicleSimulator.getVehicles().isEmpty() && !points.isEmpty()) {
-                vehicleSimulator.resetVehiclesToMapPoints(points);
+            // 通过工厂模型 ID 查询旗下所有导航地图
+            List<NavigationMapDTO> navMaps = simulationMapService.listMapsByFactory(factoryModelId);
+            if (navMaps.isEmpty()) {
+                return Map.of("success", false, "message", "工厂场景下没有可用地图");
             }
 
-            log.info("已设置仿真地图 mapId={}, 加载点位数={}", mapId, points.size());
-            return Map.of("success", true, "message", "地图设置成功", "pointCount", points.size());
+            // 合并所有导航地图的点位
+            List<SimMapPoint> allPoints = new ArrayList<>();
+            for (NavigationMapDTO navMap : navMaps) {
+                List<SimMapPoint> pts = simulationMapService.loadMapPoints(navMap.getId());
+                allPoints.addAll(pts);
+            }
+
+            // 取第一张导航地图作为元数据（栅格图）
+            NavigationMapDTO primaryMap = navMaps.get(0);
+            currentFactoryModelId = factoryModelId;
+            currentMapId = primaryMap.getId();
+            currentMapInfo = primaryMap;
+            orderSimulator.getOrderGenerator().setMapPoints(allPoints.isEmpty() ? null : allPoints);
+
+            // 如果仿真正在运行，将现有车辆重置到地图点位
+            if (!vehicleSimulator.getVehicles().isEmpty() && !allPoints.isEmpty()) {
+                vehicleSimulator.resetVehiclesToMapPoints(allPoints);
+            }
+
+            log.info("已设置仿真地图 factoryModelId={}, 导航地图数={}, 合并点位数={}",
+                    factoryModelId, navMaps.size(), allPoints.size());
+
+            // 返回第一张导航地图的字符串 mapId（供前端加载地图拓扑用）
+            String navMapStringId = primaryMap.getMapId();
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("message", "地图设置成功");
+            result.put("pointCount", allPoints.size());
+            result.put("navMapCount", navMaps.size());
+            result.put("navMapStringId", navMapStringId);
+            return result;
         } catch (Exception e) {
             log.error("设置仿真地图失败: {}", e.getMessage(), e);
             return Map.of("success", false, "message", e.getMessage());
@@ -126,10 +153,14 @@ public class SimulationController {
             orderSimulator.setVehicleSimulator(vehicleSimulator);
             trafficSimulator.setVehicleSimulator(vehicleSimulator);
 
-            // 如果有地图，重新注入点位
-            if (currentMapId != null) {
-                List<SimMapPoint> points = simulationMapService.loadMapPoints(currentMapId);
-                orderSimulator.getOrderGenerator().setMapPoints(points.isEmpty() ? null : points);
+            // 如果有地图，重新注入点位（从工厂模型所有导航地图合并）
+            if (currentFactoryModelId != null) {
+                List<NavigationMapDTO> navMaps = simulationMapService.listMapsByFactory(currentFactoryModelId);
+                List<SimMapPoint> allPoints = new ArrayList<>();
+                for (NavigationMapDTO navMap : navMaps) {
+                    allPoints.addAll(simulationMapService.loadMapPoints(navMap.getId()));
+                }
+                orderSimulator.getOrderGenerator().setMapPoints(allPoints.isEmpty() ? null : allPoints);
             }
 
             simulationEngine.clearModules();
