@@ -163,6 +163,10 @@ public class SimulationController {
     public Map<String, Object> stopSimulation() {
         try {
             simulationEngine.stop();
+            // 停止时同步清空车辆和订单，避免残留
+            vehicleSimulator.stop();
+            orderSimulator.stop();
+            trafficSimulator.stop();
             return Map.of("success", true, "message", "仿真停止成功");
         } catch (Exception e) {
             log.error("停止仿真失败: {}", e.getMessage(), e);
