@@ -244,9 +244,10 @@ public class SimulationController {
                     ? simulationMapService.loadMapPoints(currentMapId)
                     : List.of();
 
-            for (int i = 1; i <= count; i++) {
-                String vid = "sim-v" + System.currentTimeMillis() % 10000 + "-" + i;
-                SimulatedVehicle v = vehicleSimulator.createVehicle(vid, "TestVehicle-" + i, maxSpeed, 0.5, 0.5, 100.0);
+            for (int i = 0; i < count; i++) {
+                int seq = vehicleSimulator.nextVehicleSeq();
+                String vid = "sim-v-" + seq;
+                SimulatedVehicle v = vehicleSimulator.createVehicle(vid, "AGV-" + seq, maxSpeed, 0.5, 0.5, 100.0);
 
                 // 初始化位置到地图点位
                 if (!points.isEmpty()) {
@@ -282,7 +283,7 @@ public class SimulationController {
                         m.put("targetX", v.getTargetX());
                         m.put("targetY", v.getTargetY());
                         m.put("distanceToTarget", Math.round(v.getDistanceToTarget() * 10.0) / 10.0);
-                        m.put("currentSpeed", Math.round(v.getCurrentSpeed() * 100.0) / 100.0);
+                        m.put("currentSpeed", Math.round(v.getCurrentSpeed() * 1000.0) / 1000.0);
                         m.put("currentBattery", Math.round(v.getCurrentBattery() * 10.0) / 10.0);
                         return m;
                     })

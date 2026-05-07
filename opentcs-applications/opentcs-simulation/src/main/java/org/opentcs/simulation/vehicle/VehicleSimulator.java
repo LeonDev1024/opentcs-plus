@@ -20,6 +20,8 @@ public class VehicleSimulator implements SimulationModule {
     
     private final Map<String, SimulatedVehicle> vehicles = new ConcurrentHashMap<>();
     private boolean initialized = false;
+    /** 全局车辆序号，确保添加多次时名称不重复 */
+    private final java.util.concurrent.atomic.AtomicInteger vehicleSeq = new java.util.concurrent.atomic.AtomicInteger(0);
     
     @Override
     public void initialize() {
@@ -141,5 +143,10 @@ public class VehicleSimulator implements SimulationModule {
         }
         vehicles.clear();
         log.info("Cleared all simulated vehicles");
+    }
+
+    /** 生成下一个唯一车辆序号 */
+    public int nextVehicleSeq() {
+        return vehicleSeq.incrementAndGet();
     }
 }
