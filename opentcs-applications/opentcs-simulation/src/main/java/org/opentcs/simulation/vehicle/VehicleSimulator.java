@@ -2,11 +2,13 @@ package org.opentcs.simulation.vehicle;
 
 import lombok.extern.slf4j.Slf4j;
 import org.opentcs.simulation.core.SimulationModule;
+import org.opentcs.simulation.map.SimMapPoint;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -94,10 +96,25 @@ public class VehicleSimulator implements SimulationModule {
     
     /**
      * 获取所有模拟车辆
-     * @return 模拟车辆列表
      */
     public List<SimulatedVehicle> getVehicles() {
         return new ArrayList<>(vehicles.values());
+    }
+
+    /**
+     * 将现有车辆重置到地图点位（切换地图时调用）
+     */
+    public void resetVehiclesToMapPoints(List<SimMapPoint> points) {
+        if (points == null || points.isEmpty()) return;
+        Random rnd = new Random();
+        vehicles.values().forEach(v -> {
+            SimMapPoint p = points.get(rnd.nextInt(points.size()));
+            v.setX(p.getX());
+            v.setY(p.getY());
+            v.setTargetX(p.getX());
+            v.setTargetY(p.getY());
+            v.setDistanceToTarget(0.0);
+        });
     }
     
     /**

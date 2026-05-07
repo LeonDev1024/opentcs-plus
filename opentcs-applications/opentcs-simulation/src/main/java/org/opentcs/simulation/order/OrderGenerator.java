@@ -2,54 +2,74 @@ package org.opentcs.simulation.order;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.opentcs.simulation.map.SimMapPoint;
 
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
 /**
- * 订单生成器
+ * 订单生成器：优先使用真实地图点位，无地图时退回随机坐标
  */
 @Slf4j
 @Data
 public class OrderGenerator {
-    
+
     private final Random random = new Random();
-    private double orderCreationRate = 0.1; // 订单创建率（订单/秒）
-    private int orderMaxDistance = 20; // 订单最大距离（m）
-    private int orderMinDistance = 5; // 订单最小距离（m）
-    private int orderTimeout = 300; // 订单超时时间（秒）
-    
-    /**
-     * 生成新订单
-     * @return 新订单
-     */
+    private double orderCreationRate = 0.1;
+    private int orderMaxDistance = 20;
+    private int orderMinDistance = 5;
+    private int orderTimeout = 300;
+
+    /** 真实地图点位；不为空时从中随机选取起终点 */
+    private List<SimMapPoint> mapPoints;
+
     public SimulatedOrder generateOrder() {
-        // 生成随机起点和终点（50x50 的小地图，便于快速验证）
+        if (mapPoints != null && mapPoints.size() >= 2) {
+            return generateOrderFromMapPoints();
+        }
+        return generateRandomOrder();
+    }
+
+    private SimulatedOrder generateOrderFromMapPoints() {
+        int startIdx = random.nextInt(mapPoints.size());
+        int endIdx;
+        do {
+            endIdx = random.nextInt(mapPoints.size());
+        } while (endIdx == startIdx);
+
+        SimMapPoint start = mapPoints.get(startIdx);
+        SimMapPoint end = mapPoints.get(endIdx);
+
+        double distance = Math.hypot(end.getX() - start.getX(), end.getY() - start.getY());
+
+        SimulatedOrder order = new SimulatedOrder();
+        order.setOrderId("order-" + UUID.randomUUID());
+        order.setStartX(start.getX());
+        order.setStartY(start.getY());
+        order.setEndX(end.getX());
+        order.setEndY(end.getY());
+        order.setDistance(Math.max(distance, 0.1));
+        order.setTimeout(orderTimeout);
+        return order;
+    }
+
+    private SimulatedOrder generateRandomOrder() {
         double startX = random.nextDouble() * 50;
         double startY = random.nextDouble() * 50;
-        
-        // 生成随机距离
         double distance = orderMinDistance + random.nextDouble() * (orderMaxDistance - orderMinDistance);
-        // 生成随机方向
         double angle = random.nextDouble() * Math.PI * 2;
-        
-        // 计算终点坐标
         double endX = startX + Math.cos(angle) * distance;
         double endY = startY + Math.sin(angle) * distance;
-        
-        // 生成订单ID
-        String orderId = "order-" + UUID.randomUUID().toString();
-        
-        // 创建订单
+
         SimulatedOrder order = new SimulatedOrder();
-        order.setOrderId(orderId);
+        order.setOrderId("order-" + UUID.randomUUID());
         order.setStartX(startX);
         order.setStartY(startY);
         order.setEndX(endX);
         order.setEndY(endY);
         order.setDistance(distance);
         order.setTimeout(orderTimeout);
-        
         return order;
     }
 }

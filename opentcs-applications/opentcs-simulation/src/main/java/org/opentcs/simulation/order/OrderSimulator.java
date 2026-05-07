@@ -138,6 +138,10 @@ public class OrderSimulator implements SimulationModule {
         this.vehicleSimulator = vehicleSimulator;
         orderAllocator.setVehicleSimulator(vehicleSimulator);
     }
+
+    public OrderGenerator getOrderGenerator() {
+        return orderGenerator;
+    }
     
     /**
      * 获取所有订单
