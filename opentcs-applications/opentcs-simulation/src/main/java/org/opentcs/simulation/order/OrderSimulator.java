@@ -25,7 +25,7 @@ public class OrderSimulator implements SimulationModule {
     private boolean initialized = false;
     
     // 配置参数
-    private double orderCreationRate = 0.1; // 订单创建率（订单/秒）
+    private double orderCreationRate = 2.0; // 订单创建率（订单/秒），约 2 个/秒
     private int orderMaxDistance = 100; // 订单最大距离（m）
     private int orderMinDistance = 10; // 订单最小距离（m）
     

@@ -111,6 +111,14 @@ public class SimulationController {
     public Map<String, Object> startSimulation() {
         log.info("Starting simulation...");
         try {
+            // 先强制停止旧的仿真（避免引擎已运行时 start() 直接返回）
+            if (simulationEngine.getStatus() != SimulationEngine.SimulationStatus.STOPPED) {
+                simulationEngine.stop();
+                vehicleSimulator.stop();
+                orderSimulator.stop();
+                trafficSimulator.stop();
+            }
+
             vehicleSimulator.initialize();
             orderSimulator.initialize();
             trafficSimulator.initialize();

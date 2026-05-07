@@ -16,7 +16,8 @@ import java.util.UUID;
 public class OrderGenerator {
 
     private final Random random = new Random();
-    private double orderCreationRate = 0.1;
+    /** 订单创建率（订单/秒），默认 2.0 → 每 tick 20% 概率，约 2 个/秒 */
+    private double orderCreationRate = 2.0;
     private int orderMaxDistance = 20;
     private int orderMinDistance = 5;
     private int orderTimeout = 300;
