@@ -309,11 +309,16 @@ public class SimulationController {
                 String vname = String.format("sim-%03d", seq);
                 SimulatedVehicle v = vehicleSimulator.createVehicle(vid, vname, maxSpeed, 0.5, 0.5, 100.0);
 
-                // 初始化位置到地图点位
+                // 初始化位置：有地图时随机选点位，无地图时分散在坐标范围内
                 if (!points.isEmpty()) {
                     SimMapPoint p = points.get((int) (Math.random() * points.size()));
                     v.setX(p.getX());
                     v.setY(p.getY());
+                } else {
+                    // 随机坐标模式：在 [0, 15]×[0, 15] 范围内分散车辆
+                    double range = orderSimulator.getOrderGenerator().getRandomCoordRange();
+                    v.setX(Math.random() * range);
+                    v.setY(Math.random() * range);
                 }
             }
             return Map.of("success", true, "message", "已添加 " + count + " 辆仿真车辆");
