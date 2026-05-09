@@ -24,6 +24,8 @@ public class Vehicle {
     private final Map<String, String> properties;
     private final long createTime;
     private long updateTime;
+    private long runtimeVersion;
+    private long lastStatusSequence;
 
     public Vehicle(String vehicleId) {
         this.vehicleId = Objects.requireNonNull(vehicleId, "vehicleId不能为空");
@@ -33,6 +35,8 @@ public class Vehicle {
         this.properties = new HashMap<>();
         this.createTime = System.currentTimeMillis();
         this.updateTime = this.createTime;
+        this.runtimeVersion = 0;
+        this.lastStatusSequence = -1;
     }
 
     // 领域行为
@@ -45,6 +49,7 @@ public class Vehicle {
             throw new IllegalStateException("车辆不可用，无法激活");
         }
         this.state = VehicleState.IDLE;
+        this.runtimeVersion++;
         this.updateTime = System.currentTimeMillis();
     }
 
@@ -53,6 +58,7 @@ public class Vehicle {
      */
     public void disable() {
         this.state = VehicleState.UNAVAILABLE;
+        this.runtimeVersion++;
         this.updateTime = System.currentTimeMillis();
     }
 
@@ -61,6 +67,7 @@ public class Vehicle {
      */
     public void updatePosition(VehiclePosition position) {
         this.position = position;
+        this.runtimeVersion++;
         this.updateTime = System.currentTimeMillis();
     }
 
@@ -69,7 +76,32 @@ public class Vehicle {
      */
     public void updateState(VehicleState newState) {
         this.state = newState;
+        this.runtimeVersion++;
         this.updateTime = System.currentTimeMillis();
+    }
+
+    /**
+     * 根据车辆侧实时上报刷新运行态。
+     */
+    public boolean reportRuntimeState(VehicleState newState, String currentOrderId) {
+        return reportRuntimeState(newState, currentOrderId, null);
+    }
+
+    /**
+     * 根据车辆侧实时上报刷新运行态，带状态序列保护。
+     */
+    public boolean reportRuntimeState(VehicleState newState, String currentOrderId, Long statusSequence) {
+        if (statusSequence != null && statusSequence < lastStatusSequence) {
+            return false;
+        }
+        if (statusSequence != null) {
+            this.lastStatusSequence = statusSequence;
+        }
+        this.state = newState;
+        this.currentOrderId = currentOrderId;
+        this.runtimeVersion++;
+        this.updateTime = System.currentTimeMillis();
+        return true;
     }
 
     /**
@@ -81,6 +113,7 @@ public class Vehicle {
         }
         this.currentOrderId = orderId;
         this.state = VehicleState.EXECUTING;
+        this.runtimeVersion++;
         this.updateTime = System.currentTimeMillis();
     }
 
@@ -90,6 +123,7 @@ public class Vehicle {
     public void completeOrder() {
         this.currentOrderId = null;
         this.state = VehicleState.IDLE;
+        this.runtimeVersion++;
         this.updateTime = System.currentTimeMillis();
     }
 
@@ -99,6 +133,7 @@ public class Vehicle {
     public void cancelOrder() {
         this.currentOrderId = null;
         this.state = VehicleState.IDLE;
+        this.runtimeVersion++;
         this.updateTime = System.currentTimeMillis();
     }
 
@@ -107,6 +142,7 @@ public class Vehicle {
      */
     public void updateEnergy(double energyLevel) {
         this.energyLevel = Math.max(0, Math.min(100, energyLevel));
+        this.runtimeVersion++;
         this.updateTime = System.currentTimeMillis();
     }
 
@@ -191,6 +227,14 @@ public class Vehicle {
 
     public long getUpdateTime() {
         return updateTime;
+    }
+
+    public long getRuntimeVersion() {
+        return runtimeVersion;
+    }
+
+    public long getLastStatusSequence() {
+        return lastStatusSequence;
     }
 
     @Override

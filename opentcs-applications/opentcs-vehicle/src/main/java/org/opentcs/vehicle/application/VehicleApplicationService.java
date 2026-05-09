@@ -7,9 +7,13 @@ import org.opentcs.driver.api.dto.InstantAction;
 import org.opentcs.driver.api.dto.VehicleStatus;
 import org.opentcs.driver.registry.DriverRegistry;
 import org.opentcs.kernel.api.OrderLifecycleApi;
+import org.opentcs.kernel.api.TransportOrderApi;
 import org.opentcs.kernel.api.dto.PositionDTO;
 import org.opentcs.kernel.api.dto.TransportOrderDTO;
 import org.opentcs.kernel.api.dto.VehicleDTO;
+import org.opentcs.kernel.api.dto.VehicleStateDTO;
+import org.opentcs.kernel.application.runtime.RuntimeStateStore;
+import org.opentcs.kernel.application.runtime.VehicleRuntimeSnapshot;
 import org.opentcs.vehicle.application.bo.VehicleBO;
 import org.opentcs.vehicle.application.bo.VehicleCrudBO;
 import org.opentcs.vehicle.application.bo.OpsActionResultBO;
@@ -33,6 +37,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.annotation.PostConstruct;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,6 +61,8 @@ public class VehicleApplicationService {
     private final TransportOrderRegistry orderRegistry;
     private final ObjectMapper objectMapper;
     private final OrderLifecycleApi orderLifecycleApi;
+    private final TransportOrderApi transportOrderApi;
+    private final RuntimeStateStore runtimeStateStore;
     private final DriverRegistry driverRegistry;
     private final List<Map<String, Object>> opsActionRecords = new CopyOnWriteArrayList<>();
 
@@ -93,8 +100,7 @@ public class VehicleApplicationService {
         boolean isNowIdle = "IDLE".equalsIgnoreCase(status.getAgvState());
 
         if (wasExecuting && isNowIdle && activeOrderId != null) {
-            boolean hasFault = status.getErrors() != null && status.getErrors().stream()
-                    .anyMatch(e -> "FAULT".equalsIgnoreCase(e.getErrorLevel()));
+            boolean hasFault = hasFault(status);
             orderLifecycleApi.onOrderExecutionResult(
                     activeOrderId, vehicleId, !hasFault,
                     hasFault ? "AGV 报告 FAULT 错误，订单执行失败" : null);
@@ -390,7 +396,30 @@ public class VehicleApplicationService {
 
         // 更新内核状态
         VehicleState newState = mapToVehicleState(status.getAgvState());
-        vehicleRegistry.updateVehicleStateDomain(vehicleId, newState);
+        boolean accepted = vehicleRegistry.reportVehicleRuntimeStateDomain(
+                vehicleId,
+                newState,
+                status.getOrderId(),
+                status.getOrderUpdateId() == null ? null : status.getOrderUpdateId().longValue());
+        if (!accepted) {
+            log.warn("忽略过期车辆状态: vehicleId={}, orderUpdateId={}",
+                    vehicleId, status.getOrderUpdateId());
+            return;
+        }
+        boolean hasFault = hasFault(status);
+        runtimeStateStore.saveVehicleSnapshot(new VehicleRuntimeSnapshot(
+                vehicleId,
+                status.getOrderId(),
+                VehicleStateDTO.valueOf(newState.name()),
+                status.getActiveOrderIds() == null ? List.of() : List.copyOf(status.getActiveOrderIds()),
+                hasFault,
+                Instant.now()));
+        transportOrderApi.reconcileVehicleRuntimeState(
+                vehicleId,
+                status.getOrderId(),
+                VehicleStateDTO.valueOf(newState.name()),
+                status.getActiveOrderIds(),
+                hasFault);
 
         // 更新位置信息
         VehiclePosition position = new VehiclePosition(
@@ -409,6 +438,11 @@ public class VehicleApplicationService {
         }
 
         log.debug("车辆状态已更新: {} -> {}", vehicleId, newState);
+    }
+
+    private boolean hasFault(VehicleStatus status) {
+        return status.getErrors() != null && status.getErrors().stream()
+                .anyMatch(e -> "FAULT".equalsIgnoreCase(e.getErrorLevel()));
     }
 
     /**

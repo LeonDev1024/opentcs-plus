@@ -49,6 +49,20 @@ public class VehicleRegistry implements VehicleRegistryApi {
         if (v != null) v.updateState(state);
     }
 
+    public boolean reportVehicleRuntimeStateDomain(String vehicleId,
+                                                   VehicleState state,
+                                                   String currentOrderId) {
+        return reportVehicleRuntimeStateDomain(vehicleId, state, currentOrderId, null);
+    }
+
+    public boolean reportVehicleRuntimeStateDomain(String vehicleId,
+                                                   VehicleState state,
+                                                   String currentOrderId,
+                                                   Long statusSequence) {
+        Vehicle v = vehicles.get(vehicleId);
+        return v != null && v.reportRuntimeState(state, currentOrderId, statusSequence);
+    }
+
     public void updateVehiclePositionDomain(String vehicleId, VehiclePosition position) {
         Vehicle v = vehicles.get(vehicleId);
         if (v != null) v.updatePosition(position);
@@ -149,6 +163,8 @@ public class VehicleRegistry implements VehicleRegistryApi {
         dto.setState(toStateDTO(v.getState()));
         dto.setCurrentOrderId(v.getCurrentOrderId());
         dto.setEnergyLevel(v.getEnergyLevel());
+        dto.setRuntimeVersion(v.getRuntimeVersion());
+        dto.setLastStatusSequence(v.getLastStatusSequence());
         dto.setCreateTime(v.getCreateTime());
         dto.setUpdateTime(v.getUpdateTime());
         if (v.getPosition() != null) {

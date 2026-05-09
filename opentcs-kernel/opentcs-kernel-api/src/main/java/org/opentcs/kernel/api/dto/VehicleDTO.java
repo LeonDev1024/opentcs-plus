@@ -34,6 +34,10 @@ public class VehicleDTO {
 
     private Long updateTime;
 
+    private Long runtimeVersion;
+
+    private Long lastStatusSequence;
+
     // Getters and Setters
     public String getVehicleId() {
         return vehicleId;
@@ -125,5 +129,21 @@ public class VehicleDTO {
 
     public void setUpdateTime(Long updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public Long getRuntimeVersion() {
+        return runtimeVersion;
+    }
+
+    public void setRuntimeVersion(Long runtimeVersion) {
+        this.runtimeVersion = runtimeVersion;
+    }
+
+    public Long getLastStatusSequence() {
+        return lastStatusSequence;
+    }
+
+    public void setLastStatusSequence(Long lastStatusSequence) {
+        this.lastStatusSequence = lastStatusSequence;
     }
 }

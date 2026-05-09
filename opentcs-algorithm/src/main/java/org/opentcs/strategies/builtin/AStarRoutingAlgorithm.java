@@ -58,7 +58,11 @@ public class AStarRoutingAlgorithm implements RoutingAlgorithmPlugin {
                     continue;
                 }
 
-                double tentativeG = gScore.get(current.getPointId()) + path.getLength();
+                double pathCost = path.travelCost();
+                if (pathCost == Double.MAX_VALUE) {
+                    continue;
+                }
+                double tentativeG = gScore.get(current.getPointId()) + pathCost;
 
                 if (!gScore.containsKey(neighborId) || tentativeG < gScore.get(neighborId)) {
                     cameFrom.put(neighborId, current.getPointId());
@@ -80,13 +84,10 @@ public class AStarRoutingAlgorithm implements RoutingAlgorithmPlugin {
         Map<String, List<Path>> adjacency = new HashMap<>();
         for (Path path : paths.values()) {
             adjacency.computeIfAbsent(path.getSourcePointId(), k -> new ArrayList<>()).add(path);
-            Path reverse = new Path(
-                    path.getPathId() + "_reverse",
-                    path.getDestPointId(),
-                    path.getSourcePointId(),
-                    path.getLength()
-            );
-            adjacency.computeIfAbsent(reverse.getSourcePointId(), k -> new ArrayList<>()).add(reverse);
+            if (path.isBidirectional()) {
+                Path reverse = path.reverseCopy();
+                adjacency.computeIfAbsent(reverse.getSourcePointId(), k -> new ArrayList<>()).add(reverse);
+            }
         }
         return adjacency;
     }

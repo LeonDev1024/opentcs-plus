@@ -13,6 +13,7 @@ import org.opentcs.kernel.api.dto.PathDTO;
 import org.opentcs.kernel.api.dto.PointDTO;
 import org.opentcs.kernel.api.map.MapSceneApi;
 import org.opentcs.kernel.api.map.MapSnapshotHistoryPort;
+import org.opentcs.kernel.application.MapRuntimeService;
 import org.opentcs.kernel.persistence.entity.LayerEntity;
 import org.opentcs.kernel.persistence.entity.LayerGroupEntity;
 import org.opentcs.kernel.persistence.service.LayerRepository;
@@ -57,6 +58,7 @@ public class MapEditorServiceImpl implements IMapEditorService {
 
     private final MapSceneApi mapSceneApi;
     private final MapSnapshotHistoryPort mapSnapshotHistoryPort;
+    private final MapRuntimeService mapRuntimeService;
     private final LayerGroupRepository layerGroupRepository;
     private final LayerRepository layerRepository;
     private final ObjectMapper objectMapper;
@@ -242,6 +244,7 @@ public class MapEditorServiceImpl implements IMapEditorService {
         // 已经是发布状态
         if (STATUS_PUBLISHED.equals(navMap.getStatus())) {
             log.info("地图已经是发布状态: {}", mapId);
+            mapRuntimeService.loadPublishedMap(mapId);
             return true;
         }
 
@@ -297,6 +300,7 @@ public class MapEditorServiceImpl implements IMapEditorService {
         // 更新为发布状态
         navMap.setStatus(STATUS_PUBLISHED);
         mapSceneApi.updateNavigationMap(navMap);
+        mapRuntimeService.loadPublishedMap(mapId);
 
         log.info("发布地图完成: {} -> v{}", navMap.getMapId(), navMap.getMapVersion());
         return true;

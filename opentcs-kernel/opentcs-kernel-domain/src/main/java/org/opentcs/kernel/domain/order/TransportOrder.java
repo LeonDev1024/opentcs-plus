@@ -129,6 +129,7 @@ public class TransportOrder {
             throw new IllegalStateException("订单没有步骤，无法激活");
         }
         this.state = OrderState.ACTIVE;
+        steps.get(currentStepIndex).start();
     }
 
     /**
@@ -138,6 +139,35 @@ public class TransportOrder {
         if (this.state != OrderState.ACTIVE) {
             throw new IllegalStateException("只有 ACTIVE 状态才能分配车辆");
         }
+        this.processingVehicle = vehicleId;
+    }
+
+    /**
+     * 从持久化快照恢复运行态。
+     */
+    public void restoreRuntimeState(OrderState restoredState, String processingVehicle) {
+        if (restoredState == null || restoredState.isFinal()) {
+            throw new IllegalArgumentException("只能恢复非终态订单");
+        }
+        if (restoredState != OrderState.RAW && steps.isEmpty()) {
+            throw new IllegalStateException("订单没有步骤，无法恢复运行态");
+        }
+        this.state = restoredState;
+        this.processingVehicle = processingVehicle;
+        if ((restoredState == OrderState.ACTIVE || restoredState == OrderState.RECOVERING)
+                && getCurrentStep() != null) {
+            getCurrentStep().start();
+        }
+    }
+
+    /**
+     * 车辆状态对账确认订单仍在执行。
+     */
+    public void confirmRecoveredExecution(String vehicleId) {
+        if (this.state != OrderState.RECOVERING) {
+            throw new IllegalStateException("只有 RECOVERING 状态才能确认恢复执行");
+        }
+        this.state = OrderState.ACTIVE;
         this.processingVehicle = vehicleId;
     }
 
@@ -159,6 +189,8 @@ public class TransportOrder {
         // 检查是否所有步骤都完成
         if (currentStepIndex >= steps.size()) {
             finish();
+        } else {
+            steps.get(currentStepIndex).start();
         }
     }
 

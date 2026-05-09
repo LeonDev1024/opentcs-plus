@@ -3,6 +3,7 @@ package org.opentcs.kernel.application;
 import org.opentcs.kernel.api.RoutePlannerApi;
 import org.opentcs.kernel.api.dto.PathDTO;
 import org.opentcs.kernel.api.dto.RouteDTO;
+import org.opentcs.kernel.domain.resource.ResourceType;
 import org.opentcs.kernel.domain.routing.Path;
 import org.opentcs.kernel.domain.routing.Point;
 import org.opentcs.kernel.domain.routing.RoutingAlgorithm;
@@ -23,6 +24,7 @@ public class RoutePlannerImpl implements RoutePlannerApi {
 
     private final Map<String, Point> points = new ConcurrentHashMap<>();
     private final Map<String, Path> paths = new ConcurrentHashMap<>();
+    private final Set<String> lockedResources = ConcurrentHashMap.newKeySet();
     private final RoutingAlgorithm router;
 
     public RoutePlannerImpl(RoutingAlgorithm router) {
@@ -63,6 +65,16 @@ public class RoutePlannerImpl implements RoutePlannerApi {
     public void clear() {
         points.clear();
         paths.clear();
+        lockedResources.clear();
+    }
+
+    public void setResourceLocked(ResourceType resourceType, String resourceId, boolean locked) {
+        String key = resourceKey(resourceType, resourceId);
+        if (locked) {
+            lockedResources.add(key);
+        } else {
+            lockedResources.remove(key);
+        }
     }
 
     // ===== 内部规划方法（kernel-core 内部使用，返回领域对象）=====
@@ -71,7 +83,13 @@ public class RoutePlannerImpl implements RoutePlannerApi {
         Point source = points.get(sourcePointId);
         Point dest = points.get(destPointId);
         if (source == null || dest == null) return Collections.emptyList();
-        return router.findRoute(points, paths, source, dest);
+        if (isPointResourceLocked(sourcePointId) || isPointResourceLocked(destPointId)) {
+            return Collections.emptyList();
+        }
+        Map<String, Path> availablePaths = paths.values().stream()
+                .filter(this::isRoutePathAvailable)
+                .collect(Collectors.toMap(Path::getPathId, p -> p));
+        return router.findRoute(points, availablePaths, source, dest);
     }
 
     public List<Path> findPath(String sourcePointId, String destPointId) {
@@ -82,10 +100,7 @@ public class RoutePlannerImpl implements RoutePlannerApi {
         for (int i = 0; i < route.size() - 1; i++) {
             String from = route.get(i).getPointId();
             String to   = route.get(i + 1).getPointId();
-            paths.values().stream()
-                    .filter(p -> p.getSourcePointId().equals(from) && p.getDestPointId().equals(to))
-                    .findFirst()
-                    .ifPresent(result::add);
+            findPathSegment(from, to).ifPresent(result::add);
         }
         return result;
     }
@@ -129,6 +144,16 @@ public class RoutePlannerImpl implements RoutePlannerApi {
                 .sum();
     }
 
+    public double getTravelCost(String sourcePointId, String destPointId) {
+        List<Path> pathList = findPath(sourcePointId, destPointId);
+        if (pathList.isEmpty()) {
+            return Double.MAX_VALUE;
+        }
+        return pathList.stream()
+                .mapToDouble(Path::travelCost)
+                .sum();
+    }
+
     // ===== 内部工具 =====
 
     private RouteDTO buildRouteDTO(String sourceId, String destId, List<Path> pathList) {
@@ -139,6 +164,50 @@ public class RoutePlannerImpl implements RoutePlannerApi {
         dto.setTotalDistance(pathList.stream().mapToDouble(Path::getLength).sum());
         dto.setPaths(pathList.stream().map(this::toPathDTO).collect(Collectors.toList()));
         return dto;
+    }
+
+    private Optional<Path> findPathSegment(String from, String to) {
+        Optional<Path> forward = paths.values().stream()
+                .filter(p -> p.getSourcePointId().equals(from) && p.getDestPointId().equals(to))
+                .filter(this::isRoutePathAvailable)
+                .findFirst();
+        if (forward.isPresent()) {
+            return forward;
+        }
+        return paths.values().stream()
+                .filter(Path::isBidirectional)
+                .filter(p -> p.getSourcePointId().equals(to) && p.getDestPointId().equals(from))
+                .filter(this::isRoutePathAvailable)
+                .findFirst()
+                .map(Path::reverseCopy);
+    }
+
+    private boolean isRoutePathAvailable(Path path) {
+        return !lockedResources.contains(resourceKey(ResourceType.PATH, path.getPathId()))
+                && !isPointResourceLocked(path.getSourcePointId())
+                && !isPointResourceLocked(path.getDestPointId())
+                && !hasLockedBlock(path);
+    }
+
+    private boolean isPointResourceLocked(String pointId) {
+        return lockedResources.contains(resourceKey(ResourceType.POINT, pointId));
+    }
+
+    private boolean hasLockedBlock(Path path) {
+        String blockIds = path.getProperties().get("blockIds");
+        if (blockIds == null || blockIds.isBlank()) {
+            return false;
+        }
+        for (String blockId : blockIds.split(",")) {
+            if (lockedResources.contains(resourceKey(ResourceType.BLOCK, blockId.trim()))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String resourceKey(ResourceType resourceType, String resourceId) {
+        return resourceType + ":" + resourceId;
     }
 
     private PathDTO toPathDTO(Path p) {

@@ -17,7 +17,7 @@ public class TransportOrderQueryBO {
 
     private String orderNo;
 
-    /** 订单状态：RAW, ACTIVE, FINISHED, FAILED, CANCELLED */
+    /** 订单状态：RAW, ACTIVE, RECOVERING, FINISHED, FAILED, CANCELLED */
     private String state;
 
     private String intendedVehicle;
