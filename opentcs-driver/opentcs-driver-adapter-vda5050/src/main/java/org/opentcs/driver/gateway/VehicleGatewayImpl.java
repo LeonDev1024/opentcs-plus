@@ -8,7 +8,9 @@ import org.opentcs.driver.api.dto.InstantAction;
 import org.opentcs.driver.api.dto.VehicleStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
 
+import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,6 +33,7 @@ public class VehicleGatewayImpl implements VehicleGateway {
 
     // 车辆状态缓存
     private final Map<String, VehicleStatus> vehicleStatuses = new ConcurrentHashMap<>();
+    private final Map<String, Instant> vehicleStatusUpdatedAt = new ConcurrentHashMap<>();
 
     // 状态监听器
     private final Set<Consumer<VehicleStatus>> statusListeners = ConcurrentHashMap.newKeySet();
@@ -53,6 +56,7 @@ public class VehicleGatewayImpl implements VehicleGateway {
         adapters.clear();
         vehicleConfigs.clear();
         vehicleStatuses.clear();
+        vehicleStatusUpdatedAt.clear();
         statusListeners.clear();
         initialized = false;
 
@@ -103,6 +107,7 @@ public class VehicleGatewayImpl implements VehicleGateway {
         }
 
         vehicleStatuses.remove(vehicleId);
+        vehicleStatusUpdatedAt.remove(vehicleId);
 
         LOG.info("车辆 {} 已注销", vehicleId);
     }
@@ -119,7 +124,7 @@ public class VehicleGatewayImpl implements VehicleGateway {
                     String vehicleId = entry.getKey();
                     DriverConfig config = entry.getValue();
                     DriverAdapter adapter = adapters.get(config.getDriverType());
-                    return adapter != null && adapter.isConnected(vehicleId);
+                    return adapter != null && adapter.isConnected(vehicleId) && !isStatusStale(vehicleId);
                 })
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toSet());
@@ -169,6 +174,24 @@ public class VehicleGatewayImpl implements VehicleGateway {
         return vehicleStatuses.get(vehicleId);
     }
 
+    @Scheduled(fixedDelayString = "${opentcs.driver.status-poll-ms:500}")
+    public void pollVehicleStatuses() {
+        if (!initialized) {
+            return;
+        }
+        for (Map.Entry<String, DriverConfig> entry : vehicleConfigs.entrySet()) {
+            String vehicleId = entry.getKey();
+            DriverAdapter adapter = adapters.get(entry.getValue().getDriverType());
+            if (adapter == null || !adapter.isConnected(vehicleId)) {
+                continue;
+            }
+            VehicleStatus status = adapter.receiveStatus(vehicleId);
+            if (status != null) {
+                updateVehicleStatus(status);
+            }
+        }
+    }
+
     @Override
     public void addStatusListener(Consumer<VehicleStatus> listener) {
         statusListeners.add(listener);
@@ -184,6 +207,7 @@ public class VehicleGatewayImpl implements VehicleGateway {
      */
     public void updateVehicleStatus(VehicleStatus status) {
         vehicleStatuses.put(status.getVehicleId(), status);
+        vehicleStatusUpdatedAt.put(status.getVehicleId(), Instant.now());
 
         // 通知所有监听器
         for (Consumer<VehicleStatus> listener : statusListeners) {
@@ -212,5 +236,13 @@ public class VehicleGatewayImpl implements VehicleGateway {
         if (!initialized) {
             throw new IllegalStateException("车辆网关未初始化");
         }
+    }
+
+    private boolean isStatusStale(String vehicleId) {
+        Instant updatedAt = vehicleStatusUpdatedAt.get(vehicleId);
+        if (updatedAt == null) {
+            return false;
+        }
+        return updatedAt.plusMillis(30_000).isBefore(Instant.now());
     }
 }

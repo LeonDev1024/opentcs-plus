@@ -1,9 +1,19 @@
 package org.opentcs.driver.vda5050.client;
 
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 import org.opentcs.driver.api.dto.DriverConfig.MqttConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -21,9 +31,7 @@ public class VDA5050MqttClient {
 
     private volatile boolean connected = false;
     private final BlockingQueue<String> statusQueue = new LinkedBlockingQueue<>(100);
-
-    // 实际实现需要MQTT客户端库（如Eclipse Paho）
-    // 这里提供接口框架
+    private MqttClient client;
 
     public VDA5050MqttClient(String vehicleId, MqttConfig mqttConfig) {
         this.vehicleId = vehicleId;
@@ -39,17 +47,16 @@ public class VDA5050MqttClient {
         }
 
         try {
-            // TODO: 使用实际的MQTT客户端库实现连接
-            // 示例使用Eclipse Paho:
-            // MqttClient client = new MqttClient(mqttConfig.getBrokerUrl(),
-            //         mqttConfig.getClientIdPrefix() + "_" + vehicleId,
-            //         new MqttDefaultMemoryPersistence());
-            // client.connect(options);
-
-            // 订阅状态主题
-            // String topic = mqttConfig.getSubscribeTopic().replace("{vehicleId}", vehicleId);
-            // client.subscribe(topic, qos);
-
+            validateConfig();
+            Path persistenceDir = Files.createTempDirectory("opentcs-vda5050-mqtt-");
+            client = new MqttClient(mqttConfig.getBrokerUrl(), clientId(),
+                    new MqttDefaultFilePersistence(persistenceDir.toString()));
+            client.setCallback(new VehicleMqttCallback());
+            client.connect(connectOptions());
+            for (String topic : subscribeTopics()) {
+                client.subscribe(topic, mqttConfig.getQos());
+                LOG.info("车辆 {} 已订阅 MQTT 主题: {}", vehicleId, topic);
+            }
             connected = true;
             LOG.info("车辆 {} 已连接到 MQTT Broker: {}", vehicleId, mqttConfig.getBrokerUrl());
         } catch (Exception e) {
@@ -67,10 +74,12 @@ public class VDA5050MqttClient {
         }
 
         try {
-            // TODO: 实现断开连接逻辑
-            // client.disconnect();
-            // client.close();
-
+            if (client != null) {
+                if (client.isConnected()) {
+                    client.disconnect();
+                }
+                client.close();
+            }
             connected = false;
             LOG.info("车辆 {} 已断开连接", vehicleId);
         } catch (Exception e) {
@@ -82,7 +91,7 @@ public class VDA5050MqttClient {
      * 检查是否已连接
      */
     public boolean isConnected() {
-        return connected;
+        return connected && client != null && client.isConnected();
     }
 
     /**
@@ -97,13 +106,13 @@ public class VDA5050MqttClient {
         }
 
         try {
-            // TODO: 实现发布逻辑
-            // String fullTopic = mqttConfig.getPublishTopic().replace("{vehicleId}", vehicleId) + "/" + topic;
-            // MqttMessage message = new MqttMessage(payload.getBytes());
-            // message.setQos(mqttConfig.getQos());
-            // client.publish(fullTopic, message);
+            String fullTopic = resolveTopic(mqttConfig.getPublishTopic(), topic);
+            MqttMessage message = new MqttMessage(payload.getBytes(StandardCharsets.UTF_8));
+            message.setQos(mqttConfig.getQos());
+            message.setRetained(false);
+            client.publish(fullTopic, message);
 
-            LOG.debug("车辆 {} 发布消息到主题 {}: {}", vehicleId, topic, payload);
+            LOG.debug("车辆 {} 发布消息到主题 {}: {}", vehicleId, fullTopic, payload);
         } catch (Exception e) {
             LOG.error("车辆 {} 发布消息失败: {}", vehicleId, e.getMessage());
             throw new RuntimeException("消息发布失败", e);
@@ -137,5 +146,99 @@ public class VDA5050MqttClient {
      */
     public String getVehicleId() {
         return vehicleId;
+    }
+
+    private void validateConfig() {
+        if (mqttConfig == null) {
+            throw new IllegalArgumentException("MQTT 配置不能为空");
+        }
+        if (mqttConfig.getBrokerUrl() == null || mqttConfig.getBrokerUrl().isBlank()) {
+            throw new IllegalArgumentException("MQTT brokerUrl 不能为空");
+        }
+        if (mqttConfig.getPublishTopic() == null || mqttConfig.getPublishTopic().isBlank()) {
+            throw new IllegalArgumentException("MQTT publishTopic 不能为空");
+        }
+        if (mqttConfig.getSubscribeTopic() == null || mqttConfig.getSubscribeTopic().isBlank()) {
+            throw new IllegalArgumentException("MQTT subscribeTopic 不能为空");
+        }
+    }
+
+    private String clientId() {
+        String prefix = mqttConfig.getClientIdPrefix();
+        if (prefix == null || prefix.isBlank()) {
+            prefix = "opentcs-vda5050";
+        }
+        return prefix + "_" + vehicleId;
+    }
+
+    private MqttConnectOptions connectOptions() {
+        MqttConnectOptions options = new MqttConnectOptions();
+        options.setAutomaticReconnect(true);
+        options.setCleanSession(true);
+        options.setConnectionTimeout(10);
+        options.setKeepAliveInterval(30);
+        if (mqttConfig.getUsername() != null && !mqttConfig.getUsername().isBlank()) {
+            options.setUserName(mqttConfig.getUsername());
+        }
+        if (mqttConfig.getPassword() != null && !mqttConfig.getPassword().isBlank()) {
+            options.setPassword(mqttConfig.getPassword().toCharArray());
+        }
+        return options;
+    }
+
+    private List<String> subscribeTopics() {
+        String template = mqttConfig.getSubscribeTopic();
+        if (template.contains("{topic}")) {
+            return List.of(
+                    resolveTopic(template, "state"),
+                    resolveTopic(template, "connection"),
+                    resolveTopic(template, "factsheet"),
+                    resolveTopic(template, "visualization")
+            );
+        }
+        return List.of(resolveTopic(template, null));
+    }
+
+    private String resolveTopic(String template, String topic) {
+        String resolved = template.replace("{vehicleId}", vehicleId);
+        if (topic != null && !topic.isBlank()) {
+            if (resolved.contains("{topic}")) {
+                resolved = resolved.replace("{topic}", topic);
+            } else {
+                resolved = resolved.endsWith("/") ? resolved + topic : resolved + "/" + topic;
+            }
+        }
+        return resolved;
+    }
+
+    private class VehicleMqttCallback implements MqttCallbackExtended {
+
+        @Override
+        public void connectComplete(boolean reconnect, String serverURI) {
+            connected = true;
+            LOG.info("车辆 {} MQTT {}完成: {}", vehicleId, reconnect ? "重连" : "连接", serverURI);
+        }
+
+        @Override
+        public void connectionLost(Throwable cause) {
+            connected = false;
+            LOG.warn("车辆 {} MQTT 连接丢失: {}", vehicleId,
+                    cause == null ? "unknown" : cause.getMessage());
+        }
+
+        @Override
+        public void messageArrived(String topic, MqttMessage message) {
+            String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
+            if (topic.endsWith("/state") || topic.endsWith("/connection")
+                    || topic.endsWith("/factsheet") || topic.endsWith("/visualization")
+                    || topic.equals(resolveTopic(mqttConfig.getSubscribeTopic(), null))) {
+                onStatusReceived(payload);
+            }
+        }
+
+        @Override
+        public void deliveryComplete(IMqttDeliveryToken token) {
+            LOG.debug("车辆 {} MQTT 消息发送完成: {}", vehicleId, token.getMessageId());
+        }
     }
 }

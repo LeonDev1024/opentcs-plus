@@ -4,15 +4,20 @@ import org.opentcs.kernel.api.algorithm.Dispatcher;
 import org.opentcs.kernel.domain.order.OrderState;
 import org.opentcs.kernel.domain.order.TransportOrder;
 import org.opentcs.kernel.domain.event.OrderCreatedEvent;
+import org.opentcs.kernel.domain.event.OrderStateChangedEvent;
+import org.opentcs.kernel.domain.event.OrderWithdrawalRequestedEvent;
 import org.opentcs.kernel.domain.event.VehicleStateChangedEvent;
-import org.opentcs.kernel.domain.routing.Point;
+import org.opentcs.kernel.application.runtime.RuntimeStateStore;
+import org.opentcs.kernel.application.dispatch.DispatchStrategy;
 import org.opentcs.kernel.domain.vehicle.Vehicle;
 import org.opentcs.kernel.domain.vehicle.VehicleState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import jakarta.annotation.PostConstruct;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,17 +41,23 @@ public class DispatcherService implements Dispatcher {
     private final TransportOrderRegistry orderRegistry;
     private final RoutePlannerImpl routePlanner;
     private final ApplicationEventPublisher eventPublisher;
+    private final RuntimeStateStore runtimeStateStore;
+    private final DispatchStrategy dispatchStrategy;
 
     private volatile boolean initialized = false;
 
     public DispatcherService(VehicleRegistry vehicleRegistry,
                              TransportOrderRegistry orderRegistry,
                              RoutePlannerImpl routePlanner,
-                             ApplicationEventPublisher eventPublisher) {
+                             ApplicationEventPublisher eventPublisher,
+                             RuntimeStateStore runtimeStateStore,
+                             DispatchStrategy dispatchStrategy) {
         this.vehicleRegistry = vehicleRegistry;
         this.orderRegistry = orderRegistry;
         this.routePlanner = routePlanner;
         this.eventPublisher = eventPublisher;
+        this.runtimeStateStore = runtimeStateStore;
+        this.dispatchStrategy = dispatchStrategy;
     }
 
     // ===== Lifecycle =====
@@ -69,6 +80,11 @@ public class DispatcherService implements Dispatcher {
         return initialized;
     }
 
+    @Override
+    public String getCurrentStrategyName() {
+        return dispatchStrategy.getName();
+    }
+
     // ===== Dispatcher 端口接口实现 =====
 
     /**
@@ -76,9 +92,20 @@ public class DispatcherService implements Dispatcher {
      */
     @Override
     public void dispatch() {
-        List<TransportOrder> waiting = orderRegistry.getWaitingOrders();
+        List<TransportOrder> waiting = sortWaitingOrders(orderRegistry.getWaitingOrders());
         log.debug("触发全量调度，待处理订单数: {}", waiting.size());
         waiting.forEach(this::dispatchOrder);
+    }
+
+    /**
+     * 周期兜底调度，避免订单创建/车辆状态事件丢失后等待队列长期滞留。
+     */
+    @Scheduled(fixedDelayString = "${opentcs.dispatch.interval-ms:1000}")
+    public void scheduledDispatch() {
+        if (!initialized) {
+            return;
+        }
+        dispatch();
     }
 
     /**
@@ -93,9 +120,13 @@ public class DispatcherService implements Dispatcher {
         }
         String vehicleId = order.getProcessingVehicle();
         if (vehicleId != null) {
-            vehicleCancelledOrder(vehicleId);
+            eventPublisher.publishEvent(new OrderWithdrawalRequestedEvent(
+                    order.getOrderId(), vehicleId, immediateAbort));
+            cancelVehicleOrder(vehicleId, immediateAbort ? "WITHDRAW_ABORTED" : "WITHDRAWN");
         } else {
+            OrderState oldState = order.getState();
             order.cancel();
+            publishOrderStateChanged(order, oldState, "WITHDRAWN");
         }
     }
 
@@ -104,7 +135,12 @@ public class DispatcherService implements Dispatcher {
      */
     @Override
     public void withdrawOrderByVehicle(String vehicleId, boolean immediateAbort) {
-        vehicleCancelledOrder(vehicleId);
+        Vehicle vehicle = vehicleRegistry.getVehicleDomain(vehicleId);
+        if (vehicle != null && vehicle.getCurrentOrderId() != null) {
+            eventPublisher.publishEvent(new OrderWithdrawalRequestedEvent(
+                    vehicle.getCurrentOrderId(), vehicleId, immediateAbort));
+        }
+        cancelVehicleOrder(vehicleId, immediateAbort ? "WITHDRAW_ABORTED" : "WITHDRAWN");
     }
 
     /**
@@ -168,6 +204,18 @@ public class DispatcherService implements Dispatcher {
      * @return {@code true} 表示成功分配
      */
     public boolean dispatchOrder(TransportOrder order) {
+        if (!runtimeStateStore.tryAcquireOrderDispatchLock(order.getOrderId())) {
+            log.debug("订单 {} 正在调度中，跳过重复调度", order.getOrderId());
+            return false;
+        }
+        try {
+            return doDispatchOrder(order);
+        } finally {
+            runtimeStateStore.releaseOrderDispatchLock(order.getOrderId());
+        }
+    }
+
+    private boolean doDispatchOrder(TransportOrder order) {
         if (order.getState() != OrderState.RAW && order.getState() != OrderState.ACTIVE) {
             return false;
         }
@@ -190,7 +238,8 @@ public class DispatcherService implements Dispatcher {
             return false;
         }
 
-        Vehicle selected = selectNearest(candidates, order.getSourcePointId());
+        Vehicle selected = dispatchStrategy.selectVehicle(order, candidates, routePlanner)
+                .orElse(null);
         if (selected == null) return false;
 
         assignOrderToVehicle(order, selected);
@@ -207,7 +256,11 @@ public class DispatcherService implements Dispatcher {
         String orderId = vehicle.getCurrentOrderId();
         if (orderId != null) {
             TransportOrder order = orderRegistry.getOrder(orderId);
-            if (order != null) order.complete();
+            if (order != null) {
+                OrderState oldState = order.getState();
+                order.complete();
+                publishOrderStateChanged(order, oldState, null);
+            }
         }
 
         VehicleState old = vehicle.getState();
@@ -224,13 +277,21 @@ public class DispatcherService implements Dispatcher {
      * 车辆取消/放弃订单回调。
      */
     public void vehicleCancelledOrder(String vehicleId) {
+        cancelVehicleOrder(vehicleId, "VEHICLE_CANCELLED");
+    }
+
+    private void cancelVehicleOrder(String vehicleId, String reason) {
         Vehicle vehicle = vehicleRegistry.getVehicleDomain(vehicleId);
         if (vehicle == null) return;
 
         String orderId = vehicle.getCurrentOrderId();
         TransportOrder order = orderId != null ? orderRegistry.getOrder(orderId) : null;
 
-        if (order != null) order.cancel();
+        if (order != null) {
+            OrderState oldState = order.getState();
+            order.cancel();
+            publishOrderStateChanged(order, oldState, reason);
+        }
 
         VehicleState old = vehicle.getState();
         vehicle.cancelOrder();
@@ -253,21 +314,9 @@ public class DispatcherService implements Dispatcher {
         return !routePlanner.findRouteDomain(current, targetPointId).isEmpty();
     }
 
-    private Vehicle selectNearest(List<Vehicle> candidates, String targetPointId) {
-        Point target = routePlanner.getPoint(targetPointId);
-        if (target == null) return candidates.get(0);
-
-        return candidates.stream().min((a, b) -> {
-            Point pa = routePlanner.getPoint(a.getPosition().getPointId());
-            Point pb = routePlanner.getPoint(b.getPosition().getPointId());
-            double da = pa != null ? distance(pa, target) : Double.MAX_VALUE;
-            double db = pb != null ? distance(pb, target) : Double.MAX_VALUE;
-            return Double.compare(da, db);
-        }).orElse(null);
-    }
-
     private void assignOrderToVehicle(TransportOrder order, Vehicle vehicle) {
         order.assignTo(vehicle.getVehicleId());
+        publishOrderStateChanged(order, OrderState.ACTIVE, null);
 
         VehicleState old = vehicle.getState();
         vehicle.assignOrder(order.getOrderId());
@@ -284,15 +333,44 @@ public class DispatcherService implements Dispatcher {
         Vehicle vehicle = vehicleRegistry.getVehicleDomain(vehicleId);
         if (vehicle == null || !vehicle.canAcceptOrder()) return;
 
-        orderRegistry.getWaitingOrders().stream()
+        sortWaitingOrders(orderRegistry.getWaitingOrders()).stream()
                 .filter(o -> canReach(vehicle, o.getSourcePointId()))
                 .findFirst()
                 .ifPresent(this::dispatchOrder);
     }
 
-    private double distance(Point a, Point b) {
-        double dx = a.getX() - b.getX();
-        double dy = a.getY() - b.getY();
-        return Math.sqrt(dx * dx + dy * dy);
+    private List<TransportOrder> sortWaitingOrders(List<TransportOrder> orders) {
+        return orders.stream()
+                .sorted(Comparator
+                        .comparingInt(this::orderPriority).reversed()
+                        .thenComparingLong(this::orderDeadline)
+                        .thenComparingLong(TransportOrder::getCreationTime))
+                .collect(Collectors.toList());
+    }
+
+    private int orderPriority(TransportOrder order) {
+        String priority = order.getProperties().get("priority");
+        if (priority == null || priority.isBlank()) {
+            return 0;
+        }
+        try {
+            return Integer.parseInt(priority.trim());
+        } catch (NumberFormatException e) {
+            log.warn("订单 {} priority={} 不是有效整数，按 0 处理", order.getOrderId(), priority);
+            return 0;
+        }
+    }
+
+    private long orderDeadline(TransportOrder order) {
+        return order.getDeadline() == null ? Long.MAX_VALUE : order.getDeadline();
+    }
+
+    private void publishOrderStateChanged(TransportOrder order, OrderState oldState, String reason) {
+        eventPublisher.publishEvent(new OrderStateChangedEvent(
+                order.getOrderId(),
+                oldState,
+                order.getState(),
+                order.getProcessingVehicle(),
+                reason));
     }
 }

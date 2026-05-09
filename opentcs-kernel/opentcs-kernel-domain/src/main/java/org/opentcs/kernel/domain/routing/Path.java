@@ -21,13 +21,18 @@ public class Path {
     private final java.util.Map<String, String> properties;
 
     public Path(String pathId, String sourcePointId, String destPointId, double length) {
+        this(pathId, sourcePointId, destPointId, length, null, null);
+    }
+
+    public Path(String pathId, String sourcePointId, String destPointId, double length,
+                Double maxVelocity, Double maxReverseVelocity) {
         this.pathId = Objects.requireNonNull(pathId, "pathId不能为空");
         this.sourcePointId = Objects.requireNonNull(sourcePointId, "sourcePointId不能为空");
         this.destPointId = Objects.requireNonNull(destPointId, "destPointId不能为空");
         this.pathName = pathId;
         this.length = length;
-        this.maxVelocity = null;
-        this.maxReverseVelocity = null;
+        this.maxVelocity = maxVelocity;
+        this.maxReverseVelocity = maxReverseVelocity;
         this.properties = new java.util.HashMap<>();
     }
 
@@ -35,7 +40,52 @@ public class Path {
      * 检查是否可通行
      */
     public boolean isTraversable() {
-        return !locked && !blocked;
+        return !locked && !blocked && !isTruthy(properties.get("temporaryBlocked"));
+    }
+
+    public boolean isBidirectional() {
+        if (isTruthy(properties.get("oneWay"))) {
+            return false;
+        }
+        if (isFalsy(properties.get("bidirectional"))) {
+            return false;
+        }
+        String routingType = properties.get("routingType");
+        if (routingType == null || routingType.isBlank()) {
+            return true;
+        }
+        return !List.of("ONE_WAY", "ONEWAY", "DIRECTED", "FORWARD")
+                .contains(routingType.trim().toUpperCase());
+    }
+
+    public double travelCost() {
+        if (!isTraversable()) {
+            return Double.MAX_VALUE;
+        }
+        double safeLength = length > 0 ? length : 1;
+        if (maxVelocity == null || maxVelocity <= 0) {
+            return applyDynamicCost(safeLength);
+        }
+        return applyDynamicCost(safeLength / maxVelocity);
+    }
+
+    public Path reverseCopy() {
+        Path reverse = new Path(
+                pathId + "_reverse",
+                destPointId,
+                sourcePointId,
+                length,
+                maxReverseVelocity,
+                maxVelocity
+        );
+        reverse.properties.putAll(properties);
+        if (locked) {
+            reverse.lock();
+        }
+        if (blocked) {
+            reverse.block();
+        }
+        return reverse;
     }
 
     /**
@@ -105,6 +155,36 @@ public class Path {
 
     public java.util.Map<String, String> getProperties() {
         return properties;
+    }
+
+    private boolean isTruthy(String value) {
+        return value != null && List.of("true", "1", "yes", "y").contains(value.trim().toLowerCase());
+    }
+
+    private boolean isFalsy(String value) {
+        return value != null && List.of("false", "0", "no", "n").contains(value.trim().toLowerCase());
+    }
+
+    private double applyDynamicCost(double baseCost) {
+        double cost = baseCost * doubleProperty("costMultiplier", 1.0);
+        cost *= doubleProperty("congestionMultiplier", 1.0);
+        cost *= doubleProperty("slowZoneMultiplier", 1.0);
+        cost += doubleProperty("costPenalty", 0.0);
+        cost += doubleProperty("congestionCost", 0.0);
+        cost += doubleProperty("resourceCost", 0.0);
+        return Math.max(cost, 0.0);
+    }
+
+    private double doubleProperty(String key, double defaultValue) {
+        String value = properties.get(key);
+        if (value == null || value.isBlank()) {
+            return defaultValue;
+        }
+        try {
+            return Double.parseDouble(value.trim());
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
     }
 
     @Override

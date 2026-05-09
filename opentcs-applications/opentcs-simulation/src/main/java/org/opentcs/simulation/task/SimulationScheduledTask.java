@@ -8,6 +8,7 @@ import org.opentcs.simulation.traffic.TrafficSimulator;
 import org.opentcs.simulation.vehicle.VehicleSimulator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Component
+@ConditionalOnProperty(name = "simulation.schedule.enabled", havingValue = "true", matchIfMissing = false)
 public class SimulationScheduledTask {
 
     /** 每轮仿真运行时长（秒），默认 270s，留 30s 给下一轮准备 */

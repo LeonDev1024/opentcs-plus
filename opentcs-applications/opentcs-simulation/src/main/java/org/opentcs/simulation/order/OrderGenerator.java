@@ -16,10 +16,15 @@ import java.util.UUID;
 public class OrderGenerator {
 
     private final Random random = new Random();
-    private double orderCreationRate = 0.1;
-    private int orderMaxDistance = 20;
-    private int orderMinDistance = 5;
+    /** 订单创建率（订单/秒），默认 2.0 → 每 tick 20% 概率，约 2 个/秒 */
+    private double orderCreationRate = 2.0;
+    /** 随机模式下的订单最大距离（m） */
+    private int orderMaxDistance = 5;
+    /** 随机模式下的订单最小距离（m） */
+    private int orderMinDistance = 1;
     private int orderTimeout = 300;
+    /** 随机坐标模式下的坐标范围（m），车辆和订单都在此范围内 */
+    private double randomCoordRange = 15.0;
 
     /** 真实地图点位；不为空时从中随机选取起终点 */
     private List<SimMapPoint> mapPoints;
@@ -55,8 +60,8 @@ public class OrderGenerator {
     }
 
     private SimulatedOrder generateRandomOrder() {
-        double startX = random.nextDouble() * 50;
-        double startY = random.nextDouble() * 50;
+        double startX = random.nextDouble() * randomCoordRange;
+        double startY = random.nextDouble() * randomCoordRange;
         double distance = orderMinDistance + random.nextDouble() * (orderMaxDistance - orderMinDistance);
         double angle = random.nextDouble() * Math.PI * 2;
         double endX = startX + Math.cos(angle) * distance;

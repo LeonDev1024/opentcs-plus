@@ -57,7 +57,23 @@ public class TransportOrderController extends BaseController {
     }
 
     /**
-     * 批量创建运输订单（直接写 DB，无内核调度）
+     * 保存草稿运输订单（不进入内核调度）
+     */
+    @PostMapping("/draft")
+    public R<Boolean> createDraftTransportOrder(@RequestBody TransportOrderQueryBO transportOrder) {
+        return R.ok(transportOrderApplicationService.createDraftTransportOrder(transportOrder));
+    }
+
+    /**
+     * 提交草稿运输订单进入内核调度
+     */
+    @PostMapping("/submit/{id}")
+    public R<Boolean> submitDraftTransportOrder(@PathVariable Long id) {
+        return R.ok(transportOrderApplicationService.submitDraftTransportOrder(id));
+    }
+
+    /**
+     * 批量导入草稿运输订单（直接写 DB，不进入内核调度）
      */
     @PostMapping("/batch")
     public R<Boolean> batchCreateTransportOrder(@RequestBody List<TransportOrderQueryBO> transportOrders) {
@@ -73,11 +89,11 @@ public class TransportOrderController extends BaseController {
     }
 
     /**
-     * 删除运输订单
+     * 删除草稿运输订单
      */
     @DeleteMapping("/{id}")
     public R<Boolean> deleteTransportOrder(@PathVariable Long id) {
-        return R.ok(transportOrderApplicationService.cancelTransportOrder(id));
+        return R.ok(transportOrderApplicationService.deleteDraftTransportOrder(id));
     }
 
     /**

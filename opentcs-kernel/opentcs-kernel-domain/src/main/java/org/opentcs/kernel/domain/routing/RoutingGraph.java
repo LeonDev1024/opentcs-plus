@@ -27,8 +27,8 @@ public class RoutingGraph {
         // 添加正向边
         adjacencyList.computeIfAbsent(path.getSourcePointId(), k -> new ArrayList<>()).add(path);
         // 添加反向边（如果是双向路径）
-        if (isBidirectional(path)) {
-            Path reversePath = createReversePath(path);
+        if (path.isBidirectional()) {
+            Path reversePath = path.reverseCopy();
             adjacencyList.computeIfAbsent(reversePath.getSourcePointId(), k -> new ArrayList<>()).add(reversePath);
         }
     }
@@ -76,17 +76,4 @@ public class RoutingGraph {
                 .anyMatch(path -> path.getDestPointId().equals(destPointId));
     }
 
-    private boolean isBidirectional(Path path) {
-        // 默认假设所有路径都是双向的
-        return true;
-    }
-
-    private Path createReversePath(Path path) {
-        return new Path(
-                path.getPathId() + "_reverse",
-                path.getDestPointId(),
-                path.getSourcePointId(),
-                path.getLength()
-        );
-    }
 }

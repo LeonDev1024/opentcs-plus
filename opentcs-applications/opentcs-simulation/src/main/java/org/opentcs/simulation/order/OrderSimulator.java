@@ -2,6 +2,7 @@ package org.opentcs.simulation.order;
 
 import lombok.extern.slf4j.Slf4j;
 import org.opentcs.simulation.core.SimulationModule;
+import org.opentcs.simulation.map.SimMapGraph;
 import org.opentcs.simulation.vehicle.SimulatedVehicle;
 import org.opentcs.simulation.vehicle.VehicleSimulator;
 import org.springframework.stereotype.Component;
@@ -25,7 +26,7 @@ public class OrderSimulator implements SimulationModule {
     private boolean initialized = false;
     
     // 配置参数
-    private double orderCreationRate = 0.1; // 订单创建率（订单/秒）
+    private double orderCreationRate = 2.0; // 订单创建率（订单/秒），约 2 个/秒
     private int orderMaxDistance = 100; // 订单最大距离（m）
     private int orderMinDistance = 10; // 订单最小距离（m）
     
@@ -132,11 +133,17 @@ public class OrderSimulator implements SimulationModule {
     
     /**
      * 设置车辆模拟器
-     * @param vehicleSimulator 车辆模拟器
      */
     public void setVehicleSimulator(VehicleSimulator vehicleSimulator) {
         this.vehicleSimulator = vehicleSimulator;
         orderAllocator.setVehicleSimulator(vehicleSimulator);
+    }
+
+    /**
+     * 设置地图拓扑图（有地图时注入，null 表示随机坐标模式）
+     */
+    public void setMapGraph(SimMapGraph mapGraph) {
+        orderAllocator.setMapGraph(mapGraph);
     }
 
     public OrderGenerator getOrderGenerator() {

@@ -9,6 +9,7 @@ import lombok.Getter;
 public enum OrderState {
     RAW("待激活"),
     ACTIVE("执行中"),
+    RECOVERING("恢复中"),
     FINISHED("已完成"),
     FAILED("失败"),
     CANCELLED("已取消");
@@ -30,7 +31,7 @@ public enum OrderState {
      * 是否可以取消
      */
     public boolean canCancel() {
-        return this == RAW || this == ACTIVE;
+        return this == RAW || this == ACTIVE || this == RECOVERING;
     }
 
     /**

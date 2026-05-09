@@ -54,6 +54,13 @@ public interface Dispatcher extends Lifecycle {
     void assignNow(String orderId) throws TransportOrderAssignmentException;
 
     /**
+     * 当前启用的派车策略名称。
+     *
+     * @return 策略名称
+     */
+    String getCurrentStrategyName();
+
+    /**
      * 重新路由类型。
      */
     enum ReroutingType {
