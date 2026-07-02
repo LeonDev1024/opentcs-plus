@@ -39,6 +39,11 @@ public interface PathRepository extends IService<PathEntity> {
     TableDataInfo<PathDTO> selectPageDTO(PathDTO path, PageQuery pageQuery);
 
     /**
+     * 按地图ID列表分页查询路径（DTO）
+     */
+    TableDataInfo<PathDTO> selectPageByMapIdsDTO(List<Long> mapIds, PathDTO path, PageQuery pageQuery);
+
+    /**
      * 保存路径（DTO）
      * @param path 路径数据
      * @return 是否保存成功

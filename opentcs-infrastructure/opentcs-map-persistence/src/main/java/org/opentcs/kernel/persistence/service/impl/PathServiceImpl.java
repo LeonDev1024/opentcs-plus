@@ -1,6 +1,7 @@
 package org.opentcs.kernel.persistence.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,23 +28,68 @@ public class PathServiceImpl extends ServiceImpl<PathMapper, PathEntity> impleme
 
     @Override
     public TableDataInfo<PathEntity> selectPagePath(PathEntity path, PageQuery pageQuery) {
-        return this.getBaseMapper().selectPagePath(path, pageQuery);
+        LambdaQueryWrapper<PathEntity> wrapper = buildPathWrapper(path, null);
+        Page<PathEntity> page = this.page(
+            new Page<>(pageQuery.getPageNum(), pageQuery.getPageSize()),
+            wrapper
+        );
+        page.getRecords().forEach(this::hydratePathLayout);
+        return TableDataInfo.build(page);
     }
 
     @Override
     public TableDataInfo<PathDTO> selectPageDTO(PathEntity path, PageQuery pageQuery) {
-        TableDataInfo<PathEntity> entityResult = this.getBaseMapper().selectPagePath(path, pageQuery);
-        List<PathDTO> dtoList = DTOConverter.toPathDTOList(entityResult.getRows());
-
-        TableDataInfo<PathDTO> result = TableDataInfo.build();
-        result.setRows(dtoList);
-        result.setTotal(entityResult.getTotal());
-        return result;
+        LambdaQueryWrapper<PathEntity> wrapper = buildPathWrapper(path, null);
+        Page<PathEntity> page = this.page(
+            new Page<>(pageQuery.getPageNum(), pageQuery.getPageSize()),
+            wrapper
+        );
+        return toPathDtoPage(page);
     }
 
     @Override
     public TableDataInfo<PathDTO> selectPageDTO(PathDTO path, PageQuery pageQuery) {
         return selectPageDTO(toEntity(path), pageQuery);
+    }
+
+    @Override
+    public TableDataInfo<PathDTO> selectPageByMapIdsDTO(List<Long> mapIds, PathDTO path, PageQuery pageQuery) {
+        LambdaQueryWrapper<PathEntity> wrapper = buildPathWrapper(toEntity(path), mapIds);
+        Page<PathEntity> page = this.page(
+            new Page<>(pageQuery.getPageNum(), pageQuery.getPageSize()),
+            wrapper
+        );
+        page.getRecords().forEach(this::hydratePathLayout);
+        return toPathDtoPage(page);
+    }
+
+    private TableDataInfo<PathDTO> toPathDtoPage(Page<PathEntity> page) {
+        page.getRecords().forEach(this::hydratePathLayout);
+        List<PathDTO> dtoList = DTOConverter.toPathDTOList(page.getRecords());
+        TableDataInfo<PathDTO> result = TableDataInfo.build();
+        result.setRows(dtoList);
+        result.setTotal(page.getTotal());
+        return result;
+    }
+
+    private LambdaQueryWrapper<PathEntity> buildPathWrapper(PathEntity path, List<Long> mapIds) {
+        LambdaQueryWrapper<PathEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(PathEntity::getDelFlag, "0");
+
+        if (mapIds != null && !mapIds.isEmpty()) {
+            wrapper.in(PathEntity::getNavigationMapId, mapIds);
+        } else if (path != null && path.getNavigationMapId() != null) {
+            wrapper.eq(PathEntity::getNavigationMapId, path.getNavigationMapId());
+        }
+
+        if (path != null && org.springframework.util.StringUtils.hasText(path.getName())) {
+            wrapper.and(w -> w.like(PathEntity::getName, path.getName())
+                .or()
+                .like(PathEntity::getPathId, path.getName()));
+        }
+
+        wrapper.orderByDesc(PathEntity::getCreateTime);
+        return wrapper;
     }
 
     @Override

@@ -21,7 +21,7 @@ UPDATE sys_menu SET component = 'system/management/client/index' WHERE menu_id =
 UPDATE sys_menu SET component = 'system/monitor/online/index' WHERE menu_id = 109;
 UPDATE sys_menu SET component = 'system/monitor/cache/index' WHERE menu_id = 113;
 UPDATE sys_menu SET component = 'system/monitor/admin/index' WHERE menu_id = 117;
-UPDATE sys_menu SET component = 'system/monitor/snailjob/index' WHERE menu_id = 120;
+UPDATE sys_menu SET component = 'system/monitor/job/index' WHERE menu_id = 120;
 
 -- 3. 日志管理（500、501）: monitor/* → system/management/*
 UPDATE sys_menu SET component = 'system/management/operlog/index' WHERE menu_id = 500;

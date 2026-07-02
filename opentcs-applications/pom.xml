@@ -15,5 +15,6 @@
         <module>opentcs-order</module>
         <module>opentcs-vehicle</module>
         <module>opentcs-simulation</module>
+        <module>opentcs-job</module>
     </modules>
 </project>

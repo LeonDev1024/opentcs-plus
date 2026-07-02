@@ -11,10 +11,6 @@ spring.boot.admin.client:
   username: @monitor.username@
   password: @monitor.password@
 
-# 禁用 XXL-JOB 配置以避免 ClassNotFoundException
-xxl:
-  job:
-    enabled: false
 
 # 数据源配置
 spring:

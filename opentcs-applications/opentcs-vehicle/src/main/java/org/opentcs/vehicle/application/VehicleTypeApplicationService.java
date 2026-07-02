@@ -75,8 +75,10 @@ public class VehicleTypeApplicationService {
         VehicleTypeBO bo = new VehicleTypeBO();
         bo.setId(entity.getId());
         bo.setBrandId(entity.getBrandId());
+        bo.setCode(entity.getCode());
         bo.setBrandName(entity.getBrandName());
         bo.setName(entity.getName());
+        bo.setCategory(entity.getCategory());
         bo.setLength(entity.getLength());
         bo.setWidth(entity.getWidth());
         bo.setHeight(entity.getHeight());
@@ -96,7 +98,9 @@ public class VehicleTypeApplicationService {
         VehicleTypeEntity entity = new VehicleTypeEntity();
         entity.setId(bo.getId());
         entity.setBrandId(bo.getBrandId());
+        entity.setCode(bo.getCode());
         entity.setName(bo.getName());
+        entity.setCategory(bo.getCategory());
         entity.setLength(bo.getLength());
         entity.setWidth(bo.getWidth());
         entity.setHeight(bo.getHeight());

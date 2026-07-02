@@ -156,6 +156,13 @@ public class MapSceneApiImpl implements MapSceneApi {
 
     @Override
     public TableDataInfo<PathDTO> listPaths(PathDTO query, PageQuery pageQuery) {
+        if (query != null && query.getFactoryModelId() != null && query.getNavigationMapId() == null) {
+            List<Long> mapIds = resolveMapIdsByFactory(query.getFactoryModelId());
+            if (mapIds.isEmpty()) {
+                return emptyTableData();
+            }
+            return pathRepository.selectPageByMapIdsDTO(mapIds, query, pageQuery);
+        }
         return pathRepository.selectPageDTO(query, pageQuery);
     }
 
@@ -197,6 +204,13 @@ public class MapSceneApiImpl implements MapSceneApi {
 
     @Override
     public TableDataInfo<LocationDTO> listLocations(LocationDTO query, PageQuery pageQuery) {
+        if (query != null && query.getFactoryModelId() != null && query.getNavigationMapId() == null) {
+            List<Long> mapIds = resolveMapIdsByFactory(query.getFactoryModelId());
+            if (mapIds.isEmpty()) {
+                return emptyTableData();
+            }
+            return locationRepository.selectPageByMapIdsDTO(mapIds, query, pageQuery);
+        }
         return locationRepository.selectPageDTO(query, pageQuery);
     }
 
@@ -370,5 +384,19 @@ public class MapSceneApiImpl implements MapSceneApi {
         entity.setCreateTime(dto.getCreateTime());
         entity.setUpdateTime(dto.getUpdateTime());
         return entity;
+    }
+
+    private List<Long> resolveMapIdsByFactory(Long factoryModelId) {
+        return navigationMapRepository.selectByFactoryModelId(factoryModelId)
+            .stream()
+            .map(NavigationMapDTO::getId)
+            .toList();
+    }
+
+    private <T> TableDataInfo<T> emptyTableData() {
+        TableDataInfo<T> result = TableDataInfo.build();
+        result.setRows(List.of());
+        result.setTotal(0);
+        return result;
     }
 }

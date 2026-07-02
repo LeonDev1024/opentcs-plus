@@ -32,54 +32,34 @@ public class LocationServiceImpl extends ServiceImpl<LocationMapper, LocationEnt
 
     @Override
     public TableDataInfo<LocationEntity> selectPage(LocationEntity location, PageQuery pageQuery) {
-        LambdaQueryWrapper<LocationEntity> wrapper = new LambdaQueryWrapper<>();
-
-        if (location != null) {
-            if (StringUtils.hasText(location.getName())) {
-                wrapper.like(LocationEntity::getName, location.getName());
-            }
-            if (location.getLocationTypeId() != null) {
-                wrapper.eq(LocationEntity::getLocationTypeId, location.getLocationTypeId());
-            }
-            if (location.getNavigationMapId() != null) {
-                wrapper.eq(LocationEntity::getNavigationMapId, location.getNavigationMapId());
-            }
-        }
-
-        wrapper.orderByDesc(LocationEntity::getCreateTime);
-
-        Page<LocationEntity> page = this.page(
-            new Page<>(pageQuery.getPageNum(), pageQuery.getPageSize()),
-            wrapper
-        );
-
-        return TableDataInfo.build(page);
+        return TableDataInfo.build(selectLocationPage(location, null, pageQuery));
     }
 
     @Override
     public TableDataInfo<LocationDTO> selectPageDTO(LocationEntity location, PageQuery pageQuery) {
-        LambdaQueryWrapper<LocationEntity> wrapper = new LambdaQueryWrapper<>();
+        return toLocationDtoPage(selectLocationPage(location, null, pageQuery));
+    }
 
-        if (location != null) {
-            if (StringUtils.hasText(location.getName())) {
-                wrapper.like(LocationEntity::getName, location.getName());
-            }
-            if (location.getLocationTypeId() != null) {
-                wrapper.eq(LocationEntity::getLocationTypeId, location.getLocationTypeId());
-            }
-            if (location.getNavigationMapId() != null) {
-                wrapper.eq(LocationEntity::getNavigationMapId, location.getNavigationMapId());
-            }
-        }
+    @Override
+    public TableDataInfo<LocationDTO> selectPageDTO(LocationDTO location, PageQuery pageQuery) {
+        return selectPageDTO(location != null ? toEntity(location) : null, pageQuery);
+    }
 
-        wrapper.orderByDesc(LocationEntity::getCreateTime);
+    @Override
+    public TableDataInfo<LocationDTO> selectPageByMapIdsDTO(List<Long> mapIds, LocationDTO location, PageQuery pageQuery) {
+        LocationEntity entity = location != null ? toEntity(location) : null;
+        return toLocationDtoPage(selectLocationPage(entity, mapIds, pageQuery));
+    }
 
-        Page<LocationEntity> page = this.page(
+    private Page<LocationEntity> selectLocationPage(LocationEntity location, List<Long> mapIds, PageQuery pageQuery) {
+        LambdaQueryWrapper<LocationEntity> wrapper = buildLocationWrapper(location, mapIds);
+        return this.page(
             new Page<>(pageQuery.getPageNum(), pageQuery.getPageSize()),
             wrapper
         );
+    }
 
-        // Convert to DTO
+    private TableDataInfo<LocationDTO> toLocationDtoPage(Page<LocationEntity> page) {
         List<LocationDTO> dtoList = DTOConverter.toLocationDTOList(page.getRecords());
         TableDataInfo<LocationDTO> result = TableDataInfo.build();
         result.setRows(dtoList);
@@ -87,9 +67,28 @@ public class LocationServiceImpl extends ServiceImpl<LocationMapper, LocationEnt
         return result;
     }
 
-    @Override
-    public TableDataInfo<LocationDTO> selectPageDTO(LocationDTO location, PageQuery pageQuery) {
-        return selectPageDTO(toEntity(location), pageQuery);
+    private LambdaQueryWrapper<LocationEntity> buildLocationWrapper(LocationEntity location, List<Long> mapIds) {
+        LambdaQueryWrapper<LocationEntity> wrapper = new LambdaQueryWrapper<>();
+
+        if (mapIds != null && !mapIds.isEmpty()) {
+            wrapper.in(LocationEntity::getNavigationMapId, mapIds);
+        } else if (location != null && location.getNavigationMapId() != null) {
+            wrapper.eq(LocationEntity::getNavigationMapId, location.getNavigationMapId());
+        }
+
+        if (location != null) {
+            if (StringUtils.hasText(location.getName())) {
+                wrapper.and(w -> w.like(LocationEntity::getName, location.getName())
+                    .or()
+                    .like(LocationEntity::getLocationId, location.getName()));
+            }
+            if (location.getLocationTypeId() != null) {
+                wrapper.eq(LocationEntity::getLocationTypeId, location.getLocationTypeId());
+            }
+        }
+
+        wrapper.orderByDesc(LocationEntity::getCreateTime);
+        return wrapper;
     }
 
     @Override

@@ -11,9 +11,11 @@ public interface FactoryModelMapper extends BaseMapper<FactoryModelEntity> {
 
     /**
      * 分页查询工厂模型列表
-     * @param page 分页参数
-     * @param factoryModel 查询条件
-     * @return 分页结果
      */
     IPage<FactoryModelEntity> selectPageFactoryModel(IPage<FactoryModelEntity> page, FactoryModelEntity factoryModel);
+
+    /**
+     * 查询 C 前缀场景编号的最大序号（含已删除记录，保证唯一约束）
+     */
+    Integer selectMaxSceneCodeNumber();
 }

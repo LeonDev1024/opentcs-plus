@@ -19,11 +19,17 @@ public class VehicleTypeBO {
     /** 所属品牌ID */
     private Long brandId;
 
+    /** 类型编码 */
+    private String code;
+
     /** 品牌名称（冗余展示字段） */
     private String brandName;
 
     /** 车辆类型名称 */
     private String name;
+
+    /** 车辆形态 */
+    private String category;
 
     /** 车辆长度（mm） */
     private BigDecimal length;

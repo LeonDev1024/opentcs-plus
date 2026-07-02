@@ -5,17 +5,19 @@
     <resultMap type="org.opentcs.vehicle.persistence.entity.VehicleTypeEntity" id="VehicleTypeResult">
         <result property="id" column="id"/>
         <result property="brandId" column="brand_id"/>
+        <result property="code" column="code"/>
         <result property="brandName" column="brand_name"/>
         <result property="name" column="name"/>
+        <result property="category" column="category"/>
         <result property="length" column="length"/>
         <result property="width" column="width"/>
         <result property="height" column="height"/>
         <result property="maxVelocity" column="max_velocity"/>
         <result property="maxReverseVelocity" column="max_reverse_velocity"/>
         <result property="energyLevel" column="energy_level"/>
-        <result property="allowedOrders" column="allowed_orders"/>
-        <result property="allowedPeripheralOperations" column="allowed_peripheral_operations"/>
-        <result property="properties" column="properties"/>
+        <result property="allowedOrders" column="allowed_orders" typeHandler="org.opentcs.common.mybatis.handler.MySqlJsonTypeHandler"/>
+        <result property="allowedPeripheralOperations" column="allowed_peripheral_operations" typeHandler="org.opentcs.common.mybatis.handler.MySqlJsonTypeHandler"/>
+        <result property="properties" column="properties" typeHandler="org.opentcs.common.mybatis.handler.MySqlJsonTypeHandler"/>
         <result property="createBy" column="create_by"/>
         <result property="updateBy" column="update_by"/>
         <result property="createTime" column="create_time"/>
@@ -24,13 +26,13 @@
     </resultMap>
 
     <sql id="selectVehicleTypeVo">
-        SELECT t.id, t.brand_id, b.name as brand_name, t.name, t.length, t.width, t.height, t.max_velocity, t.max_reverse_velocity, t.energy_level, t.allowed_orders, t.allowed_peripheral_operations, t.properties, t.create_by, t.update_by, t.create_time, t.update_time, t.del_flag
+        SELECT t.id, t.brand_id, t.code, b.name as brand_name, t.name, t.category, t.length, t.width, t.height, t.max_velocity, t.max_reverse_velocity, t.energy_level, t.allowed_orders, t.allowed_peripheral_operations, t.properties, t.create_by, t.update_by, t.create_time, t.update_time, t.del_flag
         FROM tcs_vehicle_type t
         LEFT JOIN tcs_brand b ON t.brand_id = b.id AND b.del_flag = '0'
     </sql>
 
     <select id="selectPageVehicleType" parameterType="org.opentcs.vehicle.persistence.entity.VehicleTypeEntity"
-            resultType="org.opentcs.vehicle.persistence.entity.VehicleTypeEntity">
+            resultMap="VehicleTypeResult">
         <include refid="selectVehicleTypeVo"/>
         <where>
             <if test="vehicleType.name != null and vehicleType.name != ''">

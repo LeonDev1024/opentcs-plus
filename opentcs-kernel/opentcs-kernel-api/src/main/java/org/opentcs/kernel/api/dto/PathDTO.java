@@ -17,6 +17,11 @@ public class PathDTO {
 
     private Long navigationMapId;
 
+    /**
+     * 场景ID（仅查询条件，不落库）
+     */
+    private Long factoryModelId;
+
     private Long layerId;
 
     private String pathId;

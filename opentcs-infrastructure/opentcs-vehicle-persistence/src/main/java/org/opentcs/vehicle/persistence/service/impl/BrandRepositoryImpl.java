@@ -26,10 +26,16 @@ public class BrandRepositoryImpl extends ServiceImpl<BrandMapper, BrandEntity> i
 
     @Override
     public TableDataInfo<BrandEntity> selectPageBrand(BrandEntity brand, PageQuery pageQuery) {
-        LambdaQueryWrapper<BrandEntity> wrapper = new LambdaQueryWrapper<BrandEntity>()
-                .like(StringUtils.hasText(brand.getName()), BrandEntity::getName, brand.getName())
-                .like(StringUtils.hasText(brand.getCode()), BrandEntity::getCode, brand.getCode())
-                .eq(brand.getEnabled() != null, BrandEntity::getEnabled, brand.getEnabled())
+        LambdaQueryWrapper<BrandEntity> wrapper = new LambdaQueryWrapper<>();
+        if (StringUtils.hasText(brand.getKeyword())) {
+            wrapper.and(w -> w.like(BrandEntity::getName, brand.getKeyword())
+                    .or()
+                    .like(BrandEntity::getCode, brand.getKeyword()));
+        } else {
+            wrapper.like(StringUtils.hasText(brand.getName()), BrandEntity::getName, brand.getName())
+                    .like(StringUtils.hasText(brand.getCode()), BrandEntity::getCode, brand.getCode());
+        }
+        wrapper.eq(brand.getEnabled() != null, BrandEntity::getEnabled, brand.getEnabled())
                 .eq(BrandEntity::getDelFlag, "0")
                 .orderByAsc(BrandEntity::getSort)
                 .orderByDesc(BrandEntity::getCreateTime);

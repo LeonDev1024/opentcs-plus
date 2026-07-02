@@ -1,10 +1,15 @@
-package org.opentcs.web.controller;
+package org.opentcs.algorithm.web;
 
 import lombok.RequiredArgsConstructor;
 import org.opentcs.algorithm.loader.AlgorithmPluginRegistry;
 import org.opentcs.algorithm.spi.AlgorithmDescriptor;
 import org.opentcs.common.core.domain.R;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Map;
@@ -15,31 +20,21 @@ import java.util.Map;
 @RestController
 @RequestMapping("/algorithm")
 @RequiredArgsConstructor
+@ConditionalOnBean(AlgorithmPluginRegistry.class)
 public class AlgorithmManagementController {
 
     private final AlgorithmPluginRegistry algorithmPluginRegistry;
 
-    /**
-     * 查询所有已注册的算法插件。
-     */
     @GetMapping("/list")
     public R<List<AlgorithmDescriptor>> listAlgorithms() {
         return R.ok(algorithmPluginRegistry.listAllDescriptors());
     }
 
-    /**
-     * 查询当前激活的算法插件。
-     */
     @GetMapping("/active")
     public R<AlgorithmDescriptor> getActive() {
         return R.ok(algorithmPluginRegistry.getActiveDescriptor());
     }
 
-    /**
-     * 运行时切换算法（热切换，无需重启服务）。
-     *
-     * @param body 请求体，包含 {@code provider} 字段（算法插件名）
-     */
     @PostMapping("/switch")
     public R<String> switchAlgorithm(@RequestBody Map<String, String> body) {
         String provider = body.get("provider");

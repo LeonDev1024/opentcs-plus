@@ -17,9 +17,9 @@ INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, com
 INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (108, '日志管理', 1, 9, 'log', '', '', 1, 0, 'M', '0', '0', '', 'log', 103, 1, '2026-03-16 09:23:44', null, null, '日志管理菜单');
 INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (109, '在线用户', 2, 1, 'online', 'monitor/online/index', '', 1, 0, 'C', '0', '0', 'monitor:online:list', 'online', 103, 1, '2026-03-16 09:23:44', null, null, '在线用户菜单');
 INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (113, '缓存监控', 2, 5, 'cache', 'monitor/cache/index', '', 1, 0, 'C', '0', '0', 'monitor:cache:list', 'redis', 103, 1, '2026-03-16 09:23:44', null, null, '缓存监控菜单');
-INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (117, 'Admin监控', 2, 5, 'Admin', 'monitor/admin/index', '', 1, 0, 'C', '0', '0', 'monitor:admin:list', 'dashboard', 103, 1, '2026-03-16 09:23:45', null, null, 'Admin监控菜单');
 INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (118, '文件管理', 1, 10, 'oss', 'system/oss/index', '', 1, 0, 'C', '0', '0', 'system:oss:list', 'upload', 103, 1, '2026-03-16 09:23:45', null, null, '文件管理菜单');
-INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (120, '任务调度中心', 2, 6, 'snailjob', 'monitor/snailjob/index', '', 1, 0, 'C', '0', '0', 'monitor:snailjob:list', 'job', 103, 1, '2026-03-16 09:23:45', null, null, 'SnailJob控制台菜单');
+INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (120, '定时任务', 2, 3, 'job', 'monitor/job/index', '', 1, 0, 'C', '0', '0', 'monitor:job:list', 'job', 103, 1, '2026-03-16 09:23:45', null, null, 'Quartz定时任务管理');
+INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (134, '定时任务日志', 2, 7, 'job-log', 'system/monitor/job/log', '', 1, 1, 'C', '1', '0', 'monitor:job:list', '#', 103, 1, '2026-03-16 09:23:45', null, null, '定时任务执行日志');
 INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (121, '租户管理', 6, 1, 'tenant', 'system/tenant/index', '', 1, 0, 'C', '0', '0', 'system:tenant:list', 'list', 103, 1, '2026-03-16 09:23:44', null, null, '租户管理菜单');
 INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (122, '租户套餐管理', 6, 2, 'tenantPackage', 'system/tenantPackage/index', '', 1, 0, 'C', '0', '0', 'system:tenantPackage:list', 'form', 103, 1, '2026-03-16 09:23:44', null, null, '租户套餐管理菜单');
 INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (123, '客户端管理', 1, 11, 'client', 'system/client/index', '', 1, 0, 'C', '0', '0', 'system:client:list', 'international', 103, 1, '2026-03-16 09:23:44', null, null, '客户端管理菜单');
@@ -101,23 +101,9 @@ INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, com
 INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (1621, '配置添加', 118, 6, '#', '', '', 1, 0, 'F', '0', '0', 'system:ossConfig:add', '#', 103, 1, '2026-03-16 09:23:54', null, null, '');
 INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (1622, '配置编辑', 118, 6, '#', '', '', 1, 0, 'F', '0', '0', 'system:ossConfig:edit', '#', 103, 1, '2026-03-16 09:23:54', null, null, '');
 INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (1623, '配置删除', 118, 6, '#', '', '', 1, 0, 'F', '0', '0', 'system:ossConfig:remove', '#', 103, 1, '2026-03-16 09:23:54', null, null, '');
-INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (2033477517960044545, '地图管理', 0, 2, 'map', null, null, 1, 0, 'M', '0', '0', null, 'model', 103, 1, '2026-03-16 17:36:35', 1, '2026-03-17 14:00:36', '');
-INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (2033478641265958914, '工厂管理', 2033477517960044545, 1, 'factory', 'opentcs/factory/index', null, 1, 0, 'C', '0', '0', null, 'build', 103, 1, '2026-03-16 17:41:03', 1, '2026-03-17 10:20:33', '');
-INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (2033484413261602817, '地图列表', 2033477517960044545, 3, 'maplist', 'opentcs/map/index', null, 1, 0, 'C', '0', '0', null, 'map', 103, 1, '2026-03-16 18:03:59', 1, '2026-03-17 16:52:16', '');
-INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (2033484413261602818, '地图新增', 2033484413261602817, 1, '#', '', '', 1, 0, 'F', '0', '0', 'opentcs:map:add', '#', 103, 1, '2026-03-19 13:00:00', null, null, '');
-INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (2033484413261602819, '地图编辑', 2033484413261602817, 2, '#', '', '', 1, 0, 'F', '0', '0', 'opentcs:map:edit', '#', 103, 1, '2026-03-19 13:00:00', null, null, '');
-INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (2033484413261602820, '地图删除', 2033484413261602817, 3, '#', '', '', 1, 0, 'F', '0', '0', 'opentcs:map:remove', '#', 103, 1, '2026-03-19 13:00:00', null, null, '');
-INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (2033536149259051009, '路径管理', 2033477517960044545, 4, 'path', null, null, 1, 0, 'M', '0', '0', null, 'dashed-link', 103, 1, '2026-03-16 21:29:34', 1, '2026-03-16 21:32:04', '');
-INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (2033536315756142593, '区域管理', 2033477517960044545, 6, 'block', 'opentcs/factory/block', null, 1, 0, 'C', '0', '0', null, 'rule-region', 103, 1, '2026-03-16 21:30:14', 1, '2026-03-16 21:32:28', '');
-INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (2033536484035813377, '跨层连接', 2033477517960044545, 5, 'connections', 'opentcs/factory/connections', null, 1, 0, 'C', '0', '0', null, 'dashed-link', 103, 1, '2026-03-16 21:30:54', 1, '2026-03-16 21:32:17', '');
-INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (2033730612053004290, '站点类型', 2033477517960044545, 2, 'locationtype', 'opentcs/map/location/index', null, 1, 0, 'C', '0', '0', null, 'maxkey', 103, 1, '2026-03-17 10:22:17', 1, '2026-03-17 11:08:17', '');
 INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (2033785761135878145, 'AMR管理', 0, 1, 'vehicle', null, null, 1, 0, 'M', '0', '0', null, 'agv', 103, 1, '2026-03-17 14:01:26', 1, '2026-03-17 14:05:31', '');
-INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (2033787339884486658, 'AMR类型', 2033785761135878145, 1, 'vehicletype', 'opentcs/vehicle/type/index', null, 1, 0, 'C', '0', '0', null, 'logininfor', 103, 1, '2026-03-17 14:07:42', 1, '2026-03-17 14:07:42', '');
-INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (2033787597502832641, 'AMR列表', 2033785761135878145, 2, 'vehiclelist', 'opentcs/vehicle/index', null, 1, 0, 'C', '0', '0', null, 'list', 103, 1, '2026-03-17 14:08:44', 1, '2026-03-17 16:19:28', '');
-INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (2033794847118274562, '任务编排', 0, 3, 'template', null, null, 1, 0, 'M', '0', '0', null, 'category', 103, 1, '2026-03-17 14:37:32', 1, '2026-03-17 14:37:44', '');
-INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (2033795781630177282, '运维管理', 0, 4, 'ops', null, null, 1, 0, 'M', '0', '0', null, 'guide', 103, 1, '2026-03-17 14:41:15', 1, '2026-03-17 14:41:15', '');
-INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (2033796119204540417, 'AMR管理', 2033795781630177282, 1, 'amrops', 'opentcs/ops/amr/index', null, 1, 0, 'C', '0', '0', null, 'agv', 103, 1, '2026-03-17 14:42:36', 1, '2026-03-17 14:42:57', '');
-INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (2033796453461209089, '订单管理', 2033795781630177282, 1, 'orderops', 'opentcs/ops/order/index', null, 1, 0, 'C', '0', '0', null, 'build', 103, 1, '2026-03-17 14:43:55', 1, '2026-03-17 14:43:55', '');
+INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (2033787339884486658, 'AMR类型', 2033785761135878145, 1, 'vehicletype', 'vehicle/type/index', null, 1, 0, 'C', '0', '0', null, 'logininfor', 103, 1, '2026-03-17 14:07:42', 1, '2026-03-17 14:07:42', '');
+INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (2033787597502832641, 'AMR列表', 2033785761135878145, 2, 'vehiclelist', 'vehicle/list/index', null, 1, 0, 'C', '0', '0', null, 'list', 103, 1, '2026-03-17 14:08:44', 1, '2026-03-17 16:19:28', '');
 
 
 -- ---- fix_utf8_mojibake_sys_menu.sql ----
@@ -201,19 +187,19 @@ VALUES (2001, '设备管理', 2000, 1, 'device', NULL, '', 1, 0, 'M', '0', '0', 
 INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (2011, 'AMR品牌', 2001, 1, 'brand', 'deploy/device/brand/index', '', 1, 0, 'C', '0', '0', 'vehicle:brand:list', 'brand',
+VALUES (2011, 'AMR品牌', 2001, 1, 'brand', 'vehicle/brand/index', '', 1, 0, 'C', '0', '0', 'vehicle:brand:list', 'brand',
   103, 1, NOW(), NULL, NULL, 'AMR品牌管理菜单');
 
 INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (2012, 'AMR型号', 2001, 2, 'type', 'deploy/device/type/index', '', 1, 0, 'C', '0', '0', 'vehicle:type:list', 'model',
+VALUES (2012, 'AMR型号', 2001, 2, 'type', 'vehicle/type/index', '', 1, 0, 'C', '0', '0', 'vehicle:type:list', 'model',
   103, 1, NOW(), NULL, NULL, 'AMR型号管理菜单');
 
 INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (2013, 'AMR列表', 2001, 3, 'list', 'deploy/device/list/index', '', 1, 0, 'C', '0', '0', 'vehicle:list:list', 'list',
+VALUES (2013, 'AMR列表', 2001, 3, 'list', 'vehicle/list/index', '', 1, 0, 'C', '0', '0', 'vehicle:list:list', 'list',
   103, 1, NOW(), NULL, NULL, 'AMR列表管理菜单');
 
 -- 2.2 工厂管理（二级目录）
@@ -226,19 +212,19 @@ VALUES (2002, '工厂管理', 2000, 2, 'factory', NULL, '', 1, 0, 'M', '0', '0',
 INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (2021, '工厂模型', 2002, 1, 'model', 'deploy/factory/model/index', '', 1, 0, 'C', '0', '0', 'factory:model:list', 'tree-table',
+VALUES (2021, '工厂模型', 2002, 1, 'model', 'map/scene/index', '', 1, 0, 'C', '0', '0', 'factory:model:list', 'tree-table',
   103, 1, NOW(), NULL, NULL, '工厂模型管理菜单');
 
 INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (2022, '站点类型', 2002, 2, 'location-type', 'deploy/factory/location-type/index', '', 1, 0, 'C', '0', '0', 'factory:locationType:list', 'location',
+VALUES (2022, '站点类型', 2002, 2, 'location-type', 'map/scene/location-type/index', '', 1, 0, 'C', '0', '0', 'factory:locationType:list', 'location',
   103, 1, NOW(), NULL, NULL, '站点类型管理菜单');
 
 INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (2023, '地图管理', 2002, 3, 'map', 'deploy/factory/map/index', '', 1, 0, 'C', '0', '0', 'factory:map:list', 'map',
+VALUES (2023, '地图管理', 2002, 3, 'map', 'map/scene/data/index', '', 1, 0, 'C', '0', '0', 'factory:map:list', 'map',
   103, 1, NOW(), NULL, NULL, '地图管理菜单');
 
 -- 2.3 任务配置（二级目录）
@@ -251,7 +237,7 @@ VALUES (2003, '任务配置', 2000, 3, 'task-config', NULL, '', 1, 0, 'M', '0', 
 INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (2031, '任务模板配置', 2003, 1, 'template', 'deploy/task-config/template/index', '', 1, 0, 'C', '0', '0', 'task:template:list', 'edit',
+VALUES (2031, '任务模板配置', 2003, 1, 'template', 'task/template/index', '', 1, 0, 'C', '0', '0', 'task:template:list', 'edit',
   103, 1, NOW(), NULL, NULL, '任务模板配置菜单');
 
 -- ================================================================
@@ -273,13 +259,13 @@ VALUES (3001, '运维管理', 3000, 1, 'management', NULL, '', 1, 0, 'M', '0', '
 INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (3011, 'AMR运维管理', 3001, 1, 'amr', 'ops/amr/index', '', 1, 0, 'C', '0', '0', 'ops:amr:list', 'robot',
+VALUES (3011, 'AMR运维管理', 3001, 1, 'amr', 'vehicle/amr/index', '', 1, 0, 'C', '0', '0', 'ops:amr:list', 'robot',
   103, 1, NOW(), NULL, NULL, 'AMR运维管理菜单');
 
 INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (3012, '订单任务管理', 3001, 2, 'order', 'ops/order/index', '', 1, 0, 'C', '0', '0', 'ops:order:list', 'order',
+VALUES (3012, '订单任务管理', 3001, 2, 'order', 'task/operation/index', '', 1, 0, 'C', '0', '0', 'ops:order:list', 'order',
   103, 1, NOW(), NULL, NULL, '订单任务管理菜单');
 
 -- 3.2 实时监控（二级目录）
@@ -292,13 +278,13 @@ VALUES (3003, '实时监控', 3000, 3, 'monitor', NULL, '', 1, 0, 'M', '0', '0',
 INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (3031, '监控大屏', 3003, 1, 'live', 'ops/monitor/live/index', '', 1, 0, 'C', '0', '0', 'ops:monitor:live', 'fullscreen',
+VALUES (3031, '监控大屏', 3003, 1, 'live', 'monitor/live/index', '', 1, 0, 'C', '0', '0', 'ops:monitor:live', 'fullscreen',
   103, 1, NOW(), NULL, NULL, '监控大屏菜单');
 
 INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (3032, '锁资源监控', 3003, 2, 'lock', 'ops/monitor/lock/index', '', 1, 0, 'C', '0', '0', 'ops:monitor:lock', 'lock',
+VALUES (3032, '锁资源监控', 3003, 2, 'lock', 'monitor/lock/index', '', 1, 0, 'C', '0', '0', 'ops:monitor:lock', 'lock',
   103, 1, NOW(), NULL, NULL, '锁资源监控菜单');
 
 -- ================================================================
@@ -442,11 +428,10 @@ UPDATE sys_menu SET component = 'system/management/notice/index' WHERE menu_id =
 UPDATE sys_menu SET component = 'system/management/oss/index' WHERE menu_id = 118;
 UPDATE sys_menu SET component = 'system/management/client/index' WHERE menu_id = 123;
 
--- 2. 系统监控（2、109、113、117、120）: monitor/* → system/monitor/*
+-- 2. 系统监控（2、109、113、120）: monitor/* → system/monitor/*
 UPDATE sys_menu SET component = 'system/monitor/online/index' WHERE menu_id = 109;
 UPDATE sys_menu SET component = 'system/monitor/cache/index' WHERE menu_id = 113;
-UPDATE sys_menu SET component = 'system/monitor/admin/index' WHERE menu_id = 117;
-UPDATE sys_menu SET component = 'system/monitor/snailjob/index' WHERE menu_id = 120;
+UPDATE sys_menu SET component = 'system/monitor/job/index' WHERE menu_id = 120;
 
 -- 3. 日志管理（500、501）: monitor/* → system/management/*
 UPDATE sys_menu SET component = 'system/management/operlog/index' WHERE menu_id = 500;
@@ -491,19 +476,19 @@ VALUES (2000, '车辆管理', 0, 1, 'vehicle', NULL, '', 1, 0, 'M', '0', '0', ''
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (2011, '品牌管理', 2000, 1, 'brand', 'deploy/device/brand/index', '', 1, 0, 'C', '0', '0', 'vehicle:brand:list', 'pinpai',
+VALUES (2011, '品牌管理', 2000, 1, 'brand', 'vehicle/brand/index', '', 1, 0, 'C', '0', '0', 'vehicle:brand:list', 'pinpai',
   103, 1, NOW(), NULL, NULL, '品牌管理菜单');
 
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (2012, '车辆型号', 2000, 2, 'type', 'deploy/device/type/index', '', 1, 0, 'C', '0', '0', 'vehicle:type:list', 'model',
+VALUES (2012, '车辆型号', 2000, 2, 'type', 'vehicle/type/index', '', 1, 0, 'C', '0', '0', 'vehicle:type:list', 'model',
   103, 1, NOW(), NULL, NULL, '车辆型号菜单');
 
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (2013, '机器人列表', 2000, 3, 'list', 'deploy/device/list/index', '', 1, 0, 'C', '0', '0', 'vehicle:list:list', 'jiqi-ren',
+VALUES (2013, '机器人列表', 2000, 3, 'list', 'vehicle/list/index', '', 1, 0, 'C', '0', '0', 'vehicle:list:list', 'jiqi-ren',
   103, 1, NOW(), NULL, NULL, '机器人列表菜单');
 
 -- 2. 任务管理
@@ -516,13 +501,13 @@ VALUES (3000, '任务管理', 0, 2, 'task', NULL, '', 1, 0, 'M', '0', '0', '', '
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (3011, '任务运维管理', 3000, 1, 'operation', 'ops/order/index', '', 1, 0, 'C', '0', '0', 'ops:order:list', 'my-task',
+VALUES (3011, '任务运维管理', 3000, 1, 'operation', 'task/operation/index', '', 1, 0, 'C', '0', '0', 'ops:order:list', 'my-task',
   103, 1, NOW(), NULL, NULL, '任务运维管理菜单');
 
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (3012, '任务模版管理', 3000, 2, 'template', 'deploy/task-config/template/index', '', 1, 0, 'C', '0', '0', 'task:template:list', 'edit',
+VALUES (3012, '任务模版管理', 3000, 2, 'template', 'task/template/index', '', 1, 0, 'C', '0', '0', 'task:template:list', 'edit',
   103, 1, NOW(), NULL, NULL, '任务模版管理菜单');
 
 -- 3. 地图管理
@@ -535,20 +520,26 @@ VALUES (4000, '地图管理', 0, 3, 'map', NULL, '', 1, 0, 'M', '0', '0', '', 'm
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (4011, '场景管理', 4000, 1, 'scene', 'deploy/factory/model/index', '', 1, 0, 'C', '0', '0', 'factory:model:list', 'factory',
+VALUES (4011, '场景管理', 4000, 1, 'scene', 'map/scene/index', '', 1, 0, 'C', '0', '0', 'factory:model:list', 'factory',
   103, 1, NOW(), NULL, NULL, '场景管理菜单');
 
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (4012, '地图控制台', 4000, 2, 'console', 'deploy/map-editor/MapEditorTabs', '', 1, 0, 'C', '0', '0', 'factory:map:editor', 'map-model',
+VALUES (4012, '地图控制台', 4000, 2, 'console', 'map/scene/console/index', '', 1, 0, 'C', '0', '0', 'factory:map:editor', 'map-model',
   103, 1, NOW(), NULL, NULL, '地图控制台菜单');
 
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (4013, '地图数据管理', 4000, 3, 'data', 'deploy/factory/map/index', '', 1, 0, 'C', '0', '0', 'factory:map:list', 'map',
-  103, 1, NOW(), NULL, NULL, '地图数据管理菜单');
+VALUES (4015, '区域管理', 4000, 3, 'areas', 'map/scene/areas/index', '', 1, 0, 'C', '0', '0', 'factory:block:list', 'area',
+  103, 1, NOW(), NULL, NULL, '区域管理菜单');
+
+INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
+  is_frame, is_cache, menu_type, visible, status, perms, icon,
+  create_dept, create_by, create_time, update_by, update_time, remark)
+VALUES (4013, '地图数据', 4000, 4, 'data', 'map/scene/data/index', '', 1, 0, 'C', '0', '0', 'factory:map:list', 'map',
+  103, 1, NOW(), NULL, NULL, '地图数据菜单');
 
 -- 4. 监控管理
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
@@ -560,13 +551,13 @@ VALUES (4500, '监控管理', 0, 4, 'monitoring', NULL, '', 1, 0, 'M', '0', '0',
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (4511, '场景监控', 4500, 1, 'scene', 'ops/monitor/operationsdesk/index', '', 1, 0, 'C', '0', '0', 'ops:monitor:scene', 'monitoring-screen',
+VALUES (4511, '场景监控', 4500, 1, 'scene', 'monitor/operationsdesk/index', '', 1, 0, 'C', '0', '0', 'ops:monitor:scene', 'monitoring-screen',
   103, 1, NOW(), NULL, NULL, '场景监控菜单');
 
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (4512, '锁资源监控', 4500, 2, 'lock', 'ops/monitor/lock/index', '', 1, 0, 'C', '0', '0', 'ops:monitor:lock', 'lock',
+VALUES (4512, '锁资源监控', 4500, 2, 'lock', 'monitor/lock/index', '', 1, 0, 'C', '0', '0', 'ops:monitor:lock', 'lock',
   103, 1, NOW(), NULL, NULL, '锁资源监控菜单');
 
 -- 5. 若依框架菜单放到业务菜单之后
@@ -616,14 +607,14 @@ WHERE menu_id = @vehicle_root_id;
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-SELECT 2011, '品牌管理', @vehicle_root_id, 1, 'brand', 'deploy/device/brand/index', '',
+SELECT 2011, '品牌管理', @vehicle_root_id, 1, 'brand', 'vehicle/brand/index', '',
   1, 0, 'C', '0', '0', 'vehicle:brand:list', 'pinpai',
   103, 1, NOW(), NULL, NULL, '品牌管理菜单'
 WHERE NOT EXISTS (
   SELECT 1
   FROM sys_menu
   WHERE parent_id = @vehicle_root_id
-    AND (component IN ('deploy/device/brand/index', 'opentcs/vehicle/brand/index')
+    AND (component IN ('vehicle/brand/index', 'vehicle/brand/index')
       OR menu_name IN ('AMR品牌', '品牌管理'))
 );
 
@@ -632,7 +623,7 @@ SET parent_id = @vehicle_root_id,
     order_num = 1,
     menu_name = '品牌管理',
     path = 'brand',
-    component = 'deploy/device/brand/index',
+    component = 'vehicle/brand/index',
     menu_type = 'C',
     visible = '0',
     status = '0',
@@ -640,7 +631,7 @@ SET parent_id = @vehicle_root_id,
     icon = 'pinpai',
     remark = '品牌管理菜单'
 WHERE parent_id = @vehicle_root_id
-  AND (component IN ('deploy/device/brand/index', 'opentcs/vehicle/brand/index')
+  AND (component IN ('vehicle/brand/index', 'vehicle/brand/index')
     OR menu_name IN ('AMR品牌', '品牌管理'));
 
 UPDATE sys_menu
@@ -648,7 +639,7 @@ SET parent_id = @vehicle_root_id,
     order_num = 2,
     menu_name = '车辆型号',
     path = 'type',
-    component = 'deploy/device/type/index',
+    component = 'vehicle/type/index',
     menu_type = 'C',
     visible = '0',
     status = '0',
@@ -656,7 +647,7 @@ SET parent_id = @vehicle_root_id,
     icon = 'model',
     remark = '车辆型号菜单'
 WHERE parent_id = @vehicle_root_id
-  AND (component IN ('deploy/device/type/index', 'opentcs/vehicle/type/index')
+  AND (component IN ('vehicle/type/index', 'vehicle/type/index')
     OR menu_name IN ('AMR型号', 'AMR类型', '车辆类型', '车辆型号'));
 
 UPDATE sys_menu
@@ -664,7 +655,7 @@ SET parent_id = @vehicle_root_id,
     order_num = 3,
     menu_name = '机器人列表',
     path = 'list',
-    component = 'deploy/device/list/index',
+    component = 'vehicle/list/index',
     menu_type = 'C',
     visible = '0',
     status = '0',
@@ -672,7 +663,7 @@ SET parent_id = @vehicle_root_id,
     icon = 'jiqi-ren',
     remark = '机器人列表菜单'
 WHERE parent_id = @vehicle_root_id
-  AND (component IN ('deploy/device/list/index', 'opentcs/vehicle/index')
+  AND (component IN ('vehicle/list/index', 'vehicle/list/index')
     OR menu_name IN ('AMR列表', '机器人管理', '机器人列表'));
 
 
@@ -703,7 +694,7 @@ WHERE menu_id = 2;
 
 UPDATE sys_menu
 SET parent_id = 2
-WHERE menu_id IN (109, 113, 117, 120);
+WHERE menu_id IN (109, 113, 120);
 
 UPDATE sys_menu
 SET parent_id = 0,
@@ -722,3 +713,78 @@ WHERE menu_id = 5001;
 UPDATE sys_menu
 SET parent_id = 5001
 WHERE menu_id IN (100, 101, 102, 103, 104, 105, 106, 107, 108, 118, 123);
+
+-- 移除已废弃的 Admin 监控菜单
+DELETE FROM sys_role_menu WHERE menu_id = 117;
+DELETE FROM sys_menu WHERE menu_id = 117 OR parent_id = 117;
+
+-- Quartz 定时任务菜单
+UPDATE sys_menu
+SET menu_name = '定时任务',
+    order_num = 3,
+    path = 'job',
+    component = 'system/monitor/job/index',
+    perms = 'monitor:job:list',
+    icon = 'job',
+    remark = 'Quartz定时任务管理'
+WHERE menu_id = 120;
+
+INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_dept, create_by, create_time, update_by, update_time, remark)
+VALUES (134, '定时任务日志', 2, 7, 'job-log', 'system/monitor/job/log', '', 1, 1, 'C', '1', '0', 'monitor:job:list', '#', 103, 1, NOW(), NULL, NULL, '定时任务执行日志');
+
+INSERT IGNORE INTO sys_role_menu (role_id, menu_id) VALUES (1, 134);
+
+-- 移除任务编排、运维管理（及下属 AMR管理/订单管理）
+DELETE FROM sys_role_menu WHERE menu_id IN (2033796119204540417, 2033796453461209089, 2033795781630177282, 2033794847118274562, 3001, 3004);
+DELETE FROM sys_menu WHERE menu_id IN (2033796119204540417, 2033796453461209089, 2033795781630177282, 2033794847118274562, 3001, 3004);
+DELETE FROM sys_menu WHERE menu_id = 3000 AND menu_name = '运维管理';
+
+DELETE rm FROM sys_role_menu rm
+INNER JOIN sys_menu m ON rm.menu_id = m.menu_id
+INNER JOIN sys_menu p ON m.parent_id = p.menu_id
+WHERE p.menu_name = '运维管理' AND p.parent_id = 0
+  AND m.menu_name IN ('AMR管理', '订单管理', 'AMR运维管理', '订单任务管理');
+
+DELETE m FROM sys_menu m
+INNER JOIN sys_menu p ON m.parent_id = p.menu_id
+WHERE p.menu_name = '运维管理' AND p.parent_id = 0
+  AND m.menu_name IN ('AMR管理', '订单管理', 'AMR运维管理', '订单任务管理');
+
+DELETE FROM sys_role_menu WHERE menu_id IN (SELECT menu_id FROM (SELECT menu_id FROM sys_menu WHERE menu_name IN ('任务编排', '运维管理') AND parent_id = 0) t);
+DELETE FROM sys_menu WHERE menu_name IN ('任务编排', '运维管理') AND parent_id = 0;
+
+-- 移除旧版「地图管理」菜单树（雪花 ID，保留 menu_id=4000 新版）
+DELETE FROM sys_role_menu WHERE menu_id IN (2033484413261602818, 2033484413261602819, 2033484413261602820);
+DELETE FROM sys_menu WHERE menu_id IN (2033484413261602818, 2033484413261602819, 2033484413261602820);
+DELETE rm FROM sys_role_menu rm INNER JOIN sys_menu m ON rm.menu_id = m.menu_id WHERE m.parent_id = 2033536149259051009;
+DELETE FROM sys_menu WHERE parent_id = 2033536149259051009;
+DELETE FROM sys_role_menu WHERE menu_id IN (2033478641265958914, 2033730612053004290, 2033484413261602817, 2033536149259051009, 2033536484035813377, 2033536315756142593);
+DELETE FROM sys_menu WHERE menu_id IN (2033478641265958914, 2033730612053004290, 2033484413261602817, 2033536149259051009, 2033536484035813377, 2033536315756142593);
+DELETE FROM sys_role_menu WHERE menu_id = 2033477517960044545;
+DELETE FROM sys_menu WHERE menu_id = 2033477517960044545;
+
+-- 前端视图领域路径（vehicle / task）
+UPDATE sys_menu SET component = 'vehicle/brand/index', path = 'brand' WHERE menu_id = 2011;
+UPDATE sys_menu SET component = 'vehicle/type/index', path = 'type' WHERE menu_id = 2012;
+UPDATE sys_menu SET component = 'vehicle/list/index', path = 'list' WHERE menu_id = 2013;
+UPDATE sys_menu SET component = 'vehicle/brand/index' WHERE component IN ('deploy/device/brand/index', 'opentcs/vehicle/brand/index');
+UPDATE sys_menu SET component = 'vehicle/type/index' WHERE component IN ('deploy/device/type/index', 'opentcs/vehicle/type/index');
+UPDATE sys_menu SET component = 'vehicle/list/index' WHERE component IN ('deploy/device/list/index', 'opentcs/vehicle/index');
+UPDATE sys_menu SET component = 'task/operation/index', path = 'operation' WHERE menu_id = 3011;
+UPDATE sys_menu SET component = 'task/template/index', path = 'template' WHERE menu_id = 3012;
+UPDATE sys_menu SET component = 'task/template/index' WHERE component IN ('deploy/task-config/template/index');
+UPDATE sys_menu SET component = 'task/operation/index' WHERE component IN ('ops/order/index');
+
+-- 监控视图领域路径（monitor）
+UPDATE sys_menu SET component = 'monitor/operationsdesk/index', path = 'scene' WHERE menu_id = 4511;
+UPDATE sys_menu SET component = 'monitor/lock/index', path = 'lock' WHERE menu_id = 4512;
+UPDATE sys_menu SET component = 'monitor/operationsdesk/index' WHERE component = 'ops/monitor/operationsdesk/index';
+UPDATE sys_menu SET component = 'monitor/lock/index' WHERE component = 'ops/monitor/lock/index';
+UPDATE sys_menu SET component = 'monitor/live/index' WHERE component = 'ops/monitor/live/index';
+
+-- 地图视图目录（console 归入 scene，主数据归入 map/scene/data）
+UPDATE sys_menu SET component = 'map/scene/console/index' WHERE menu_id = 4012;
+UPDATE sys_menu SET menu_name = '区域管理', order_num = 3, component = 'map/scene/areas/index', remark = '区域管理菜单' WHERE menu_id = 4015;
+UPDATE sys_menu SET component = 'map/scene/data/index', menu_name = '地图数据', order_num = 4, remark = '地图数据菜单' WHERE menu_id = 4013;
+DELETE FROM sys_role_menu WHERE menu_id = 4014;
+DELETE FROM sys_menu WHERE menu_id = 4014;

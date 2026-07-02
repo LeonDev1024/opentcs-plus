@@ -40,6 +40,11 @@ public interface LocationRepository extends IService<LocationEntity> {
     TableDataInfo<LocationDTO> selectPageDTO(LocationDTO location, PageQuery pageQuery);
 
     /**
+     * 按地图ID列表分页查询位置（DTO）
+     */
+    TableDataInfo<LocationDTO> selectPageByMapIdsDTO(List<Long> mapIds, LocationDTO location, PageQuery pageQuery);
+
+    /**
      * 保存位置（DTO）
      * @param location 位置数据
      * @return 是否保存成功

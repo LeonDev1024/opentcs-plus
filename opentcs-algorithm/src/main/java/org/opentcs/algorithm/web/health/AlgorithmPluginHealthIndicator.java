@@ -1,9 +1,10 @@
-package org.opentcs.web.health;
+package org.opentcs.algorithm.web.health;
 
 import org.opentcs.algorithm.loader.AlgorithmPluginRegistry;
 import org.opentcs.algorithm.spi.AlgorithmDescriptor;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -11,19 +12,9 @@ import java.util.stream.Collectors;
 
 /**
  * 算法插件健康检查。
- * <p>
- * 检查是否有至少一个 {@link org.opentcs.algorithm.spi.RoutingAlgorithmPlugin} 已注册并可用。
- * 通过 Spring Boot Actuator 的 {@code /actuator/health} 端点暴露。
- * </p>
- *
- * <p>健康状态含义：
- * <ul>
- *   <li>UP — 至少一个路由算法插件已注册</li>
- *   <li>DOWN — 无任何算法插件（系统无法进行路径规划）</li>
- * </ul>
- * </p>
  */
 @Component("algorithmPlugin")
+@ConditionalOnBean(AlgorithmPluginRegistry.class)
 public class AlgorithmPluginHealthIndicator implements HealthIndicator {
 
     private final AlgorithmPluginRegistry registry;

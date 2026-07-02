@@ -12,4 +12,10 @@
         </if>
     </select>
 
+    <select id="selectMaxSceneCodeNumber" resultType="java.lang.Integer">
+        SELECT MAX(CAST(SUBSTRING(factory_id, 2) AS UNSIGNED))
+        FROM tcs_factory_model
+        WHERE factory_id REGEXP '^C[0-9]+$'
+    </select>
+
 </mapper>
