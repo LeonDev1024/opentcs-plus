@@ -16,7 +16,7 @@ import java.util.Date;
  * 配置表：brand 品牌表
  */
 @Data
-@TableName("brand")
+@TableName("tcs_brand")
 public class BrandEntity implements Serializable {
 
     @Serial

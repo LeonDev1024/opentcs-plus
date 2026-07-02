@@ -22,7 +22,7 @@ import java.util.List;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@TableName("location_type")
+@TableName("tcs_location_type")
 public class LocationTypeEntity extends ConfigEntity {
 
     /**

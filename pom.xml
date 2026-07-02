@@ -74,6 +74,11 @@
         <skipTests>true</skipTests>
         <!-- 测试框架版本 -->
         <mockito.version>5.14.0</mockito.version>
+        <flyway.version>10.20.1</flyway.version>
+        <testcontainers.version>1.20.4</testcontainers.version>
+        <flyway.url>jdbc:mysql://127.0.0.1:3306/opentcsplus?useUnicode=true&amp;characterEncoding=UTF-8&amp;zeroDateTimeBehavior=convertToNull&amp;useSSL=false&amp;serverTimezone=GMT%2B8&amp;allowPublicKeyRetrieval=true</flyway.url>
+        <flyway.user>root</flyway.user>
+        <flyway.password></flyway.password>
     </properties>
 
     <profiles>
@@ -185,6 +190,14 @@
                 <artifactId>archunit-junit5</artifactId>
                 <version>1.3.0</version>
                 <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-bom</artifactId>
+                <version>${testcontainers.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
             <!-- driver 的依赖配置-->
@@ -485,6 +498,38 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <!-- 数据库迁移 -->
+            <plugin>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <version>${flyway.version}</version>
+                <configuration>
+                    <url>${flyway.url}</url>
+                    <user>${flyway.user}</user>
+                    <password>${flyway.password}</password>
+                    <locations>
+                        <location>filesystem:${project.basedir}/db/migration</location>
+                        <location>filesystem:${project.basedir}/db/repeatable</location>
+                    </locations>
+                    <table>flyway_schema_history</table>
+                    <encoding>UTF-8</encoding>
+                    <validateOnMigrate>true</validateOnMigrate>
+                    <outOfOrder>false</outOfOrder>
+                    <cleanDisabled>true</cleanDisabled>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.flywaydb</groupId>
+                        <artifactId>flyway-mysql</artifactId>
+                        <version>${flyway.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.mysql</groupId>
+                        <artifactId>mysql-connector-j</artifactId>
+                        <version>9.1.0</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
         <resources>

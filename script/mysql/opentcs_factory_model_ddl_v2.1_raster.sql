@@ -4,18 +4,18 @@
 -- ============================================================
 
 -- Step 1: 删除 map_type 字段（目前只支持2D栅格地图）
-ALTER TABLE navigation_map
+ALTER TABLE tcs_navigation_map
 DROP COLUMN IF EXISTS map_type;
 
 -- Step 2: 添加车辆类型ID和地图定位参数字段
-ALTER TABLE navigation_map
+ALTER TABLE tcs_navigation_map
 ADD COLUMN vehicle_type_id BIGINT COMMENT '车辆类型ID（必填，对应vehicle_type.id)' AFTER floor_number,
 ADD COLUMN origin_x DECIMAL(12,4) DEFAULT 0 COMMENT '地图原点X坐标(毫米)' AFTER vehicle_type_id,
 ADD COLUMN origin_y DECIMAL(12,4) DEFAULT 0 COMMENT '地图原点Y坐标(毫米)' AFTER origin_x,
 ADD COLUMN rotation DECIMAL(10,4) DEFAULT 0 COMMENT '地图旋转角度(度)' AFTER origin_y;
 
 -- Step 3: 添加栅格底图相关字段
-ALTER TABLE navigation_map
+ALTER TABLE tcs_navigation_map
 ADD COLUMN raster_url VARCHAR(500) COMMENT '栅格地图OSS存储路径' AFTER rotation,
 ADD COLUMN raster_version INT DEFAULT 0 COMMENT '栅格地图版本号' AFTER raster_url,
 ADD COLUMN raster_width INT COMMENT '栅格地图宽度(像素)' AFTER raster_version,

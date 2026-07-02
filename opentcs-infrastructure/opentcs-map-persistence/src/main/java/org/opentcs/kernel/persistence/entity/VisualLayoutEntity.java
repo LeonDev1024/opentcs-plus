@@ -15,7 +15,7 @@ import java.math.BigDecimal;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@TableName("visual_layout")
+@TableName("tcs_visual_layout")
 public class VisualLayoutEntity extends ConfigEntity {
 
     /**

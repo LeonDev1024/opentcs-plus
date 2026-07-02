@@ -17,7 +17,7 @@ import java.util.List;
  * 配置表，完整审计字段
  */
 @Data
-@TableName(value = "vehicle_type", autoResultMap = true)
+@TableName(value = "tcs_vehicle_type", autoResultMap = true)
 public class VehicleTypeEntity extends ConfigEntity {
 
     /**

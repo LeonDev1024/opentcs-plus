@@ -13,7 +13,7 @@ import org.opentcs.common.mybatis.core.domain.ConfigEntity;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@TableName("factory_layer_group")
+@TableName("tcs_factory_layer_group")
 public class LayerGroupEntity extends ConfigEntity {
 
     /**

@@ -4,9 +4,9 @@
 -- 用于持久化前端编辑的 path.layoutControlPoints
 -- ============================================================
 
-USE opentcs;
+USE opentcsplus;
 
-ALTER TABLE path
+ALTER TABLE tcs_path
     ADD COLUMN layout JSON COMMENT '路径布局（connectionType + controlPoints）'
     AFTER properties;
 

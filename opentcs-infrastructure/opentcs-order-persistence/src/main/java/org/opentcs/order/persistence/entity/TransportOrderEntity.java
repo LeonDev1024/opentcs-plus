@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
  * 业务主表，保留完整审计字段
  */
 @Data
-@TableName("transport_order")
+@TableName("tcs_transport_order")
 public class TransportOrderEntity extends BusinessEntity {
 
     /**

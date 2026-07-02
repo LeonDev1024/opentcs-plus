@@ -16,7 +16,7 @@ import java.math.BigDecimal;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@TableName("vehicle")
+@TableName("tcs_vehicle")
 public class VehicleEntity extends BusinessEntity {
 
     /**

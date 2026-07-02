@@ -15,7 +15,7 @@ import java.math.BigDecimal;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@TableName("factory_model")
+@TableName("tcs_factory_model")
 public class FactoryModelEntity extends BusinessEntity {
 
     /**

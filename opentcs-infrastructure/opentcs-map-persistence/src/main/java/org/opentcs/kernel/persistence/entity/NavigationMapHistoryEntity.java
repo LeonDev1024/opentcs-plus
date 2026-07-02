@@ -14,7 +14,7 @@ import java.util.Date;
  * 导航地图历史版本实体
  */
 @Data
-@TableName("navigation_map_history")
+@TableName("tcs_navigation_map_history")
 public class NavigationMapHistoryEntity implements Serializable {
 
     @Serial

@@ -5,7 +5,7 @@
 <mapper namespace="org.opentcs.kernel.persistence.mapper.ElevatorScheduleMapper">
 
     <select id="selectPageElevatorSchedule" resultType="org.opentcs.kernel.persistence.entity.ElevatorScheduleEntity">
-        SELECT * FROM elevator_schedule
+        SELECT * FROM tcs_elevator_schedule
         WHERE 1=1
         <if test="schedule.connectionId != null and schedule.connectionId != ''">
             AND connection_id = #{schedule.connectionId}
@@ -17,19 +17,19 @@
     </select>
 
     <select id="selectByConnectionId" resultType="org.opentcs.kernel.persistence.entity.ElevatorScheduleEntity">
-        SELECT * FROM elevator_schedule
+        SELECT * FROM tcs_elevator_schedule
         WHERE connection_id = #{connectionId}
         ORDER BY create_time DESC
     </select>
 
     <select id="selectByVehicleId" resultType="org.opentcs.kernel.persistence.entity.ElevatorScheduleEntity">
-        SELECT * FROM elevator_schedule
+        SELECT * FROM tcs_elevator_schedule
         WHERE vehicle_id = #{vehicleId}
         ORDER BY create_time DESC
     </select>
 
     <select id="selectPendingSchedules" resultType="org.opentcs.kernel.persistence.entity.ElevatorScheduleEntity">
-        SELECT * FROM elevator_schedule
+        SELECT * FROM tcs_elevator_schedule
         WHERE status IN ('PENDING', 'RUNNING')
         ORDER BY pickup_time ASC
     </select>

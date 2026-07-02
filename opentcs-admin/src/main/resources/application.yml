@@ -60,6 +60,10 @@ user:
 spring:
   application:
     name: RuoYi-Vue-Plus
+  flyway:
+    # 默认关闭，避免生产/测试环境仅因引入运行时依赖就自动变更数据库。
+    # 本地 dev 环境在 application-dev.yml 中显式开启。
+    enabled: false
   threads:
     # 开启虚拟线程 仅jdk21可用
     virtual:
@@ -236,7 +240,7 @@ management:
     logfile:
       external-file: ./logs/sys-console.log
     prometheus:
-      enabled: true
+      access: read-only
   # Micrometer Prometheus 指标暴露
   prometheus:
     metrics:
