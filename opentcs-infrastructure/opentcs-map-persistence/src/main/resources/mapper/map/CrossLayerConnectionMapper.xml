@@ -5,7 +5,7 @@
 <mapper namespace="org.opentcs.kernel.persistence.mapper.CrossLayerConnectionMapper">
 
     <select id="selectPageCrossLayerConnection" resultType="org.opentcs.kernel.persistence.entity.CrossLayerConnectionEntity">
-        SELECT * FROM cross_layer_connection
+        SELECT * FROM tcs_cross_layer_connection
         WHERE del_flag = '0'
         <if test="connection.factoryModelId != null">
             AND factory_model_id = #{connection.factoryModelId}
@@ -16,14 +16,14 @@
     </select>
 
     <select id="selectByFactoryModelId" resultType="org.opentcs.kernel.persistence.entity.CrossLayerConnectionEntity">
-        SELECT * FROM cross_layer_connection
+        SELECT * FROM tcs_cross_layer_connection
         WHERE factory_model_id = #{factoryModelId}
           AND del_flag = '0'
         ORDER BY name ASC
     </select>
 
     <select id="selectBySourceAndDest" resultType="org.opentcs.kernel.persistence.entity.CrossLayerConnectionEntity">
-        SELECT * FROM cross_layer_connection
+        SELECT * FROM tcs_cross_layer_connection
         WHERE source_navigation_map_id = #{sourceMapId}
           AND dest_navigation_map_id = #{destMapId}
           AND del_flag = '0'
@@ -31,7 +31,7 @@
     </select>
 
     <select id="selectAvailableConnections" resultType="org.opentcs.kernel.persistence.entity.CrossLayerConnectionEntity">
-        SELECT * FROM cross_layer_connection
+        SELECT * FROM tcs_cross_layer_connection
         WHERE factory_model_id = #{factoryModelId}
           AND del_flag = '0'
           AND available = 1

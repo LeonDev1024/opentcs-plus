@@ -38,7 +38,13 @@ public class VehicleApplicationRunner implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        List<VehicleEntity> entities = vehicleRepository.getAllVehicleStatus();
+        List<VehicleEntity> entities;
+        try {
+            entities = vehicleRepository.getAllVehicleStatus();
+        } catch (Exception e) {
+            log.warn("启动时加载车辆失败，跳过内核/驱动初始化: {}", e.getMessage());
+            return;
+        }
         int kernelCount = 0;
         int driverCount = 0;
 

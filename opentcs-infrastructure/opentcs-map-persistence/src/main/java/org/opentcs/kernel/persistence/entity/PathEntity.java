@@ -15,7 +15,7 @@ import java.math.BigDecimal;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@TableName("path")
+@TableName("tcs_path")
 public class PathEntity extends DataEntity {
 
     /**

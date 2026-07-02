@@ -16,7 +16,7 @@ import java.util.Date;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@TableName("cross_layer_connection")
+@TableName("tcs_cross_layer_connection")
 public class CrossLayerConnectionEntity extends ConfigEntity {
 
     /**

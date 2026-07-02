@@ -5,7 +5,7 @@
 <mapper namespace="org.opentcs.kernel.persistence.mapper.PointMapper">
 
     <select id="selectPagePoint" resultType="org.opentcs.kernel.persistence.entity.PointEntity">
-        SELECT * FROM point
+        SELECT * FROM tcs_point
         <where>
             <if test="name != null and name != ''">AND name LIKE CONCAT('%', #{name}, '%')</if>
             <if test="status != null and status != ''">AND status = #{status}</if>

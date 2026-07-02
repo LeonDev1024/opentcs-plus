@@ -21,7 +21,7 @@
 
     <sql id="selectBrandVo">
         SELECT id, name, code, logo, website, description, contact, enabled, sort, create_by, update_by, create_time, update_time, del_flag
-        FROM brand
+        FROM tcs_brand
     </sql>
 
     <select id="selectPageBrand" parameterType="org.opentcs.vehicle.persistence.entity.BrandEntity"

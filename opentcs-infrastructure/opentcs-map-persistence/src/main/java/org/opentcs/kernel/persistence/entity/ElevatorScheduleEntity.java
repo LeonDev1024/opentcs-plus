@@ -14,7 +14,7 @@ import java.util.Date;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@TableName("elevator_schedule")
+@TableName("tcs_elevator_schedule")
 public class ElevatorScheduleEntity extends ConfigEntity {
 
     /**

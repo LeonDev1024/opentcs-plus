@@ -1,0 +1,6 @@
+# 数据库治理 — 变更需 DBA / 后端负责人评审
+/db/ @backend-leads
+/db/migration/ @backend-leads
+/db/repeatable/ @backend-leads
+/db/snapshot/ @backend-leads
+/script/db/ @backend-leads

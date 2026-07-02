@@ -13,7 +13,7 @@ import org.opentcs.common.mybatis.core.domain.DataEntity;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@TableName("block")
+@TableName("tcs_block")
 public class BlockEntity extends DataEntity {
 
     /**

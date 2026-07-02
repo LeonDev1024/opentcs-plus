@@ -1,0 +1,77 @@
+name: Database Governance
+
+on:
+  pull_request:
+    paths:
+      - 'db/**'
+      - 'script/db/**'
+      - 'pom.xml'
+      - 'opentcs-admin/pom.xml'
+      - 'opentcs-admin/src/main/resources/application*.yml'
+      - 'opentcs-admin/src/test/**'
+      - '.github/workflows/db-validate.yml'
+  push:
+    branches: [main, master, dev-1.0.2, dev-2.0.1]
+    paths:
+      - 'db/**'
+      - 'script/db/**'
+      - 'pom.xml'
+      - 'opentcs-admin/pom.xml'
+      - '.github/workflows/db-validate.yml'
+
+env:
+  JAVA_VERSION: '21'
+  FLYWAY_HOST: 127.0.0.1
+  FLYWAY_PORT: 3306
+  FLYWAY_DATABASE: opentcsplus
+  FLYWAY_USER: root
+  FLYWAY_PASSWORD: root
+
+jobs:
+  db-validate:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: opentcsplus
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: temurin
+          cache: maven
+
+      - name: Install MySQL client
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq mysql-client
+
+      - name: Wait for MySQL
+        run: |
+          for i in $(seq 1 30); do
+            if mysqladmin ping -h"$FLYWAY_HOST" -P"$FLYWAY_PORT" -uroot -proot --silent; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "MySQL not ready"
+          exit 1
+
+      - name: CI validate (migrate + snapshot)
+        run: |
+          chmod +x script/db/*.sh
+          ./script/db/ci-validate.sh
+
+      - name: Testcontainers Flyway integration test
+        run: mvn test -pl opentcs-admin -Dtest=FlywayMigrationIT -Pdev -B

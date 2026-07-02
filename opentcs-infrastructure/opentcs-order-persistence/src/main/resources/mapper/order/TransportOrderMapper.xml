@@ -16,7 +16,7 @@
                 WHEN state = 'FAILED' THEN '4'
                 ELSE state
             END as status
-        FROM transport_order
+        FROM tcs_transport_order
         <where>
             <if test="transportOrder.orderNo != null and transportOrder.orderNo != ''">AND order_no = #{transportOrder.orderNo}</if>
             <if test="transportOrder.vehicleVin != null and transportOrder.vehicleVin != ''">AND processing_vehicle = #{transportOrder.vehicleVin}</if>

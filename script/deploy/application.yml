@@ -1,21 +1,19 @@
-# 生产环境配置文件
-# 此文件作为 application-prod.yml 的替代，与 application.yml 基础配置合并使用
+# 生产环境部署配置 (优先级高于 jar 包内的 application-prod.yml)
+# 敏感值通过环境变量注入，此处为默认兜底值
 spring:
   datasource:
     dynamic:
       datasource:
         master:
-          # 使用容器名称 mysql 访问 MySQL
-          url: jdbc:mysql://mysql:3306/opentcs?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true&connectionCollation=utf8mb4_unicode_ci
-          username: opentcs
-          password: Opentcs@2024!DB
+          url: jdbc:mysql://mysql:3306/opentcsplus?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true
+          username: ${SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_USERNAME:opentcs}
+          password: ${SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_PASSWORD:Opentcs@2024!DB}
           driver-class-name: com.mysql.cj.jdbc.Driver
   data:
     redis:
-      # 使用容器名称 redis 访问 Redis
-      host: redis
-      port: 6379
-      password: Redis@2024!Cache
+      host: ${SPRING_DATA_REDIS_HOST:redis}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      password: ${SPRING_DATA_REDIS_PASSWORD:Redis@2024!Cache}
       database: 0
 
 server:
@@ -23,7 +21,6 @@ server:
 
 # 安全配置 (必须保留，否则登录接口会被拦截)
 security:
-  # 排除路径
   excludes:
     - /*.html
     - /**/*.html
@@ -36,17 +33,27 @@ security:
     - /auth/**
     - /resource/**
 
-# 禁用 XXL-Job (如需启用请配置相应参数)
+# MQTT 配置 (通过 EMQX 中间件)
+mqtt:
+  enabled: ${MQTT_ENABLED:true}
+  broker-url: ${MQTT_BROKER_URL:tcp://emqx:1883}
+  username: ${MQTT_USERNAME:opentcs}
+  password: ${MQTT_PASSWORD:Opentcs@2024!MQTT}
+  client-id: ${MQTT_CLIENT_ID:opentcs-server}
+  qos: 1
+  keep-alive: 60
+  topics:
+    vehicle-status: opentcs/vehicle/+/status
+    vehicle-command: opentcs/vehicle/+/command
+    order-event: opentcs/order/event
+
+# 定时任务 (按需启用)
 xxl:
   job:
     enabled: false
 
-# 禁用 MQTT (如需启用请配置相应参数)
-mqtt:
-  enabled: false
-
-# 文件上传配置
+# 文件上传
 file:
-  domain: http://localhost:9000
-  path: /usr/share/nginx/html
-  prefix: /statics
+  domain: http://localhost:8088
+  path: /app/upload
+  prefix: /upload

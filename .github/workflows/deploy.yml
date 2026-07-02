@@ -8,12 +8,10 @@ on:
 
 env:
   JAVA_VERSION: '21'
-  # 阿里云ACR配置 (使用Secrets)
   IMAGE_NAME: opentcs-admin
   IMAGE_TAG: latest
 
 jobs:
-  #=================== 测试 ===================
   test:
     runs-on: ubuntu-latest
     steps:
@@ -23,20 +21,12 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
-          distribution: 'temurin'
-
-      # 显式Maven缓存
-      - name: Cache Maven packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2-
+          distribution: temurin
+          cache: maven
 
       - name: Run tests
         run: mvn test -Pdev -B
 
-  #=================== 构建并部署 ===================
   build-deploy:
     needs: test
     runs-on: ubuntu-latest
@@ -49,28 +39,18 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
-          distribution: 'temurin'
-
-      # 显式Maven缓存
-      - name: Cache Maven packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2-
+          distribution: temurin
+          cache: maven
 
       - name: Build JAR
         run: mvn clean package -DskipTests -Pprod
 
-      # 构建Docker镜像
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
       - name: Build Docker image
-        run: |
-          docker build -t ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} -f opentcs-plus/script/deploy/backend/Dockerfile .
+        run: docker build -t ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} -f script/deploy/backend/Dockerfile .
 
-      # 登录阿里云ACR
       - name: Login to Aliyun ACR
         uses: docker/login-action@v3
         with:
@@ -78,13 +58,11 @@ jobs:
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
-      # 推送到阿里云ACR
       - name: Push to Aliyun ACR
         run: |
           docker tag ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} ${{ secrets.ACR_HOST }}/opentcs/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
           docker push ${{ secrets.ACR_HOST }}/opentcs/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
 
-      # 在服务器上部署
       - name: Deploy to Server
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -92,21 +70,27 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
-            # 登录阿里云ACR
+            set -e
             docker login --username=${{ secrets.ACR_USERNAME }} --password=${{ secrets.ACR_PASSWORD }} ${{ secrets.ACR_HOST }}
 
-            # 拉取最新镜像
             docker pull ${{ secrets.ACR_HOST }}/opentcs/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
 
-            # 停止并删除旧容器
-            cd /opt/opentcs-deploy
+            DEPLOY_DIR=/opt/opentcs-deploy
+            cd "$DEPLOY_DIR"
+
+            if [[ -x ./flyway-migrate.sh ]]; then
+              echo "Running database migration..."
+              ./flyway-migrate.sh
+            else
+              echo "WARN: flyway-migrate.sh not found, skipping DB migration"
+            fi
+
             docker rm -f opentcs-admin 2>/dev/null || true
 
-            # 启动新容器
             docker run -d --name opentcs-admin --network opentcs-network -p 8088:8088 \
               -e SPRING_PROFILES_ACTIVE=prod \
               -e TZ=Asia/Shanghai \
-              -e SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_URL='jdbc:mysql://opentcs-mysql:3306/opentcs?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true' \
+              -e SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_URL='jdbc:mysql://opentcs-mysql:3306/opentcsplus?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true' \
               -e SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_USERNAME=opentcs \
               -e SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_PASSWORD='Opentcs@2024!DB' \
               -e SPRING_DATA_REDIS_HOST=opentcs-redis \

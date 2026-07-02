@@ -16,7 +16,7 @@ import java.math.BigDecimal;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@TableName("navigation_map")
+@TableName("tcs_navigation_map")
 public class NavigationMapEntity extends BusinessEntity {
 
     /**

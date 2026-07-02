@@ -25,8 +25,8 @@
 
     <sql id="selectVehicleTypeVo">
         SELECT t.id, t.brand_id, b.name as brand_name, t.name, t.length, t.width, t.height, t.max_velocity, t.max_reverse_velocity, t.energy_level, t.allowed_orders, t.allowed_peripheral_operations, t.properties, t.create_by, t.update_by, t.create_time, t.update_time, t.del_flag
-        FROM vehicle_type t
-        LEFT JOIN brand b ON t.brand_id = b.id AND b.del_flag = '0'
+        FROM tcs_vehicle_type t
+        LEFT JOIN tcs_brand b ON t.brand_id = b.id AND b.del_flag = '0'
     </sql>
 
     <select id="selectPageVehicleType" parameterType="org.opentcs.vehicle.persistence.entity.VehicleTypeEntity"

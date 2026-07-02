@@ -2,18 +2,18 @@
 -- OpenTCS Plus 车辆管理 SQL
 -- ============================================================
 
-USE opentcs;
+USE opentcsplus;
 
 -- ============================================================
 -- 删除所有相关表（按外键依赖顺序）
 -- ============================================================
-DROP TABLE IF EXISTS vehicle;
-DROP TABLE IF EXISTS vehicle_type;
+DROP TABLE IF EXISTS tcs_vehicle;
+DROP TABLE IF EXISTS tcs_vehicle_type;
 
 -- ============================================================
 -- 车辆类型表 (VehicleType) - 配置表，完整审计字段
 -- ============================================================
-CREATE TABLE vehicle_type (
+CREATE TABLE tcs_vehicle_type (
     id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     name VARCHAR(100) NOT NULL COMMENT '车辆类型名称',
     length DECIMAL(10,2) DEFAULT NULL COMMENT '车辆长度(mm)',
@@ -36,7 +36,7 @@ CREATE TABLE vehicle_type (
 -- ============================================================
 -- 车辆表 (Vehicle) - 业务主表，完整审计字段
 -- ============================================================
-CREATE TABLE vehicle (
+CREATE TABLE tcs_vehicle (
     id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     name VARCHAR(100) NOT NULL COMMENT '车辆名称',
     vin_code VARCHAR(50) DEFAULT NULL COMMENT '车辆VIN码',
@@ -56,7 +56,7 @@ CREATE TABLE vehicle (
     version INT DEFAULT 0 COMMENT '乐观锁版本',
     del_flag CHAR(1) DEFAULT '0' COMMENT '删除标志',
     CONSTRAINT pk_vehicle PRIMARY KEY (id),
-    CONSTRAINT fk_vehicle_type FOREIGN KEY (vehicle_type_id) REFERENCES vehicle_type(id) ON DELETE RESTRICT
+    CONSTRAINT fk_vehicle_type FOREIGN KEY (vehicle_type_id) REFERENCES tcs_vehicle_type(id) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='车辆表';
 
 -- ============================================================
@@ -64,5 +64,5 @@ CREATE TABLE vehicle (
 -- ============================================================
 
 -- 插入默认车辆类型
-INSERT INTO vehicle_type (name, length, width, height, max_velocity, max_reverse_velocity, energy_level, allowed_orders, allowed_peripheral_operations) VALUES
+INSERT INTO tcs_vehicle_type (name, length, width, height, max_velocity, max_reverse_velocity, energy_level, allowed_orders, allowed_peripheral_operations) VALUES
 ('默认车型', 1000.00, 500.00, 500.00, 2000.00, 1000.00, 100.00, '[]', '[]');

@@ -6,8 +6,8 @@
 
     <select id="selectPageNavigationMap" resultType="org.opentcs.kernel.api.dto.NavigationMapDTO">
         SELECT m.*, f.name as factoryName, f.factory_id as factoryId
-        FROM navigation_map m
-        LEFT JOIN factory_model f ON m.factory_model_id = f.id
+        FROM tcs_navigation_map m
+        LEFT JOIN tcs_factory_model f ON m.factory_model_id = f.id
         WHERE m.del_flag = '0'
         <if test="navigationMap.factoryModelId != null">
             AND m.factory_model_id = #{navigationMap.factoryModelId}
@@ -19,8 +19,8 @@
 
     <select id="selectByFactoryModelId" resultType="org.opentcs.kernel.api.dto.NavigationMapDTO">
         SELECT m.*, f.name as factoryName, f.factory_id as factoryId
-        FROM navigation_map m
-        LEFT JOIN factory_model f ON m.factory_model_id = f.id
+        FROM tcs_navigation_map m
+        LEFT JOIN tcs_factory_model f ON m.factory_model_id = f.id
         WHERE m.factory_model_id = #{factoryModelId}
           AND m.del_flag = '0'
         ORDER BY m.floor_number ASC, m.name ASC
@@ -28,8 +28,8 @@
 
     <select id="selectByFactoryModelIdAndFloor" resultType="org.opentcs.kernel.api.dto.NavigationMapDTO">
         SELECT m.*, f.name as factoryName, f.factory_id as factoryId
-        FROM navigation_map m
-        LEFT JOIN factory_model f ON m.factory_model_id = f.id
+        FROM tcs_navigation_map m
+        LEFT JOIN tcs_factory_model f ON m.factory_model_id = f.id
         WHERE m.factory_model_id = #{factoryModelId}
           AND m.floor_number = #{floorNumber}
           AND m.del_flag = '0'
@@ -38,8 +38,8 @@
 
     <select id="selectByMapId" resultType="org.opentcs.kernel.api.dto.NavigationMapDTO">
         SELECT m.*, f.name as factoryName, f.factory_id as factoryId
-        FROM navigation_map m
-        LEFT JOIN factory_model f ON m.factory_model_id = f.id
+        FROM tcs_navigation_map m
+        LEFT JOIN tcs_factory_model f ON m.factory_model_id = f.id
         WHERE m.map_id = #{mapId}
           AND m.del_flag = '0'
         LIMIT 1

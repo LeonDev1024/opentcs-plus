@@ -5,7 +5,7 @@
 <mapper namespace="org.opentcs.kernel.persistence.mapper.PathMapper">
 
     <select id="selectPagePath" resultType="org.opentcs.kernel.persistence.entity.PathEntity">
-        SELECT * FROM path
+        SELECT * FROM tcs_path
         <where>
             <if test="name != null and name != ''">AND name LIKE CONCAT('%', #{name}, '%')</if>
             <if test="status != null and status != ''">AND status = #{status}</if>

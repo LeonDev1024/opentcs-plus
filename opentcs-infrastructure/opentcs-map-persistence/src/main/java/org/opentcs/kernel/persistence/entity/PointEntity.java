@@ -18,7 +18,7 @@ import java.math.BigDecimal;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@TableName("point")
+@TableName("tcs_point")
 public class PointEntity extends DataEntity {
 
     /**
