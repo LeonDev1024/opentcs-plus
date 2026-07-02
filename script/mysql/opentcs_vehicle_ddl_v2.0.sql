@@ -15,6 +15,7 @@ DROP TABLE IF EXISTS tcs_vehicle_type;
 -- ============================================================
 CREATE TABLE tcs_vehicle_type (
     id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    brand_id BIGINT DEFAULT NULL COMMENT '所属品牌ID',
     name VARCHAR(100) NOT NULL COMMENT '车辆类型名称',
     length DECIMAL(10,2) DEFAULT NULL COMMENT '车辆长度(mm)',
     width DECIMAL(10,2) DEFAULT NULL COMMENT '车辆宽度(mm)',
@@ -30,7 +31,8 @@ CREATE TABLE tcs_vehicle_type (
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     del_flag CHAR(1) DEFAULT '0' COMMENT '删除标志',
-    CONSTRAINT pk_vehicle_type PRIMARY KEY (id)
+    CONSTRAINT pk_vehicle_type PRIMARY KEY (id),
+    KEY idx_vehicle_type_brand_id (brand_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='车辆类型表';
 
 -- ============================================================

@@ -944,6 +944,7 @@ CREATE TABLE `tcs_vehicle` (
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `tcs_vehicle_type` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `brand_id` bigint DEFAULT NULL COMMENT '所属品牌ID',
   `name` varchar(100) NOT NULL COMMENT '车辆类型名称',
   `length` decimal(10,2) DEFAULT NULL COMMENT '车辆长度(mm)',
   `width` decimal(10,2) DEFAULT NULL COMMENT '车辆宽度(mm)',
@@ -959,7 +960,8 @@ CREATE TABLE `tcs_vehicle_type` (
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `del_flag` char(1) DEFAULT '0' COMMENT '删除标志',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_vehicle_type_brand_id` (`brand_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='车辆类型表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
