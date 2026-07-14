@@ -30,7 +30,6 @@ ALTER TABLE tcs_navigation_map
 CREATE INDEX idx_navigation_map_version ON tcs_navigation_map(map_version);
 CREATE INDEX idx_navigation_map_status ON tcs_navigation_map(status);
 CREATE INDEX idx_path_layer ON tcs_path(layer_id);
-CREATE INDEX idx_location_layer ON tcs_location(layer_id);
 
 CREATE TABLE IF NOT EXISTS tcs_navigation_map_history (
     id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -54,7 +53,6 @@ CREATE TABLE IF NOT EXISTS tcs_brand (
     name        VARCHAR(100) NOT NULL COMMENT '品牌名称',
     code        VARCHAR(50)           COMMENT '品牌代码',
     logo        VARCHAR(255)          COMMENT 'Logo URL',
-    website     VARCHAR(255)          COMMENT '官网',
     description VARCHAR(500)          COMMENT '描述',
     contact     VARCHAR(200)          COMMENT '联系方式',
     enabled     TINYINT(1)   NOT NULL DEFAULT 1 COMMENT '是否启用',

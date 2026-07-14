@@ -32,9 +32,9 @@ class ResourceLockServiceTest {
 
     @Test
     void shouldAcquireResourceLockAndRejectConflict() {
-        var acquired = service.tryAcquire(ResourceType.BLOCK, "narrow-block", "vehicle-1", "order-1",
+        var acquired = service.tryAcquire(ResourceType.PATH, "path-1", "vehicle-1", "order-1",
                 Duration.ofSeconds(30));
-        var conflict = service.tryAcquire(ResourceType.BLOCK, "narrow-block", "vehicle-2", "order-2",
+        var conflict = service.tryAcquire(ResourceType.PATH, "path-1", "vehicle-2", "order-2",
                 Duration.ofSeconds(30));
 
         assertTrue(acquired.isPresent());
@@ -43,7 +43,7 @@ class ResourceLockServiceTest {
         verify(eventPublisher).publishEvent((Object) argThat(event ->
                 event instanceof ResourceLockChangedEvent changed
                         && changed.getStatus() == ResourceLockStatus.HELD
-                        && changed.getResourceType() == ResourceType.BLOCK
+                        && changed.getResourceType() == ResourceType.PATH
                         && "ACQUIRED".equals(changed.getReason())));
     }
 

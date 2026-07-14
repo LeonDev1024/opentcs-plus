@@ -79,7 +79,6 @@ public class VehicleBrandApiAdapter implements VehicleBrandApi {
         dto.setName(entity.getName());
         dto.setCode(entity.getCode());
         dto.setLogo(entity.getLogo());
-        dto.setWebsite(entity.getWebsite());
         dto.setDescription(entity.getDescription());
         dto.setContact(entity.getContact());
         dto.setEnabled(entity.getEnabled());
@@ -95,7 +94,6 @@ public class VehicleBrandApiAdapter implements VehicleBrandApi {
         entity.setName(dto.getName());
         entity.setCode(dto.getCode());
         entity.setLogo(dto.getLogo());
-        entity.setWebsite(dto.getWebsite());
         entity.setDescription(dto.getDescription());
         entity.setContact(dto.getContact());
         entity.setEnabled(dto.getEnabled());

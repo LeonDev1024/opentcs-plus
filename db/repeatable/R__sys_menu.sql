@@ -784,7 +784,55 @@ UPDATE sys_menu SET component = 'monitor/live/index' WHERE component = 'ops/moni
 
 -- 地图视图目录（console 归入 scene，主数据归入 map/scene/data）
 UPDATE sys_menu SET component = 'map/scene/console/index' WHERE menu_id = 4012;
-UPDATE sys_menu SET menu_name = '区域管理', order_num = 3, component = 'map/scene/areas/index', remark = '区域管理菜单' WHERE menu_id = 4015;
-UPDATE sys_menu SET component = 'map/scene/data/index', menu_name = '地图数据', order_num = 4, remark = '地图数据菜单' WHERE menu_id = 4013;
+UPDATE sys_menu SET component = 'map/scene/data/index', menu_name = '地图数据', order_num = 3, remark = '地图数据菜单' WHERE menu_id = 4013;
 DELETE FROM sys_role_menu WHERE menu_id = 4014;
 DELETE FROM sys_menu WHERE menu_id = 4014;
+
+-- 地图模型极简化：删除位置类型 / Location / Block 相关菜单，仅保留点与路径。
+DELETE FROM sys_role_menu
+WHERE menu_id IN (
+    SELECT menu_id FROM (
+        SELECT menu_id
+        FROM sys_menu
+        WHERE menu_id IN (2022, 4015)
+           OR perms IN (
+                'factory:block:list',
+                'factory:block:add',
+                'factory:block:edit',
+                'factory:block:remove',
+                'opentcs:locationType:list',
+                'opentcs:locationType:add',
+                'opentcs:locationType:edit',
+                'opentcs:locationType:remove',
+                'opentcs:locationType:query',
+                'factory:locationType:list'
+           )
+           OR path IN ('areas', 'location-type', 'location')
+           OR component IN (
+                'map/scene/areas/index',
+                'map/scene/location-type/index',
+                'deploy/factory/location-type/index'
+           )
+    ) t
+);
+
+DELETE FROM sys_menu
+WHERE menu_id IN (2022, 4015)
+   OR perms IN (
+        'factory:block:list',
+        'factory:block:add',
+        'factory:block:edit',
+        'factory:block:remove',
+        'opentcs:locationType:list',
+        'opentcs:locationType:add',
+        'opentcs:locationType:edit',
+        'opentcs:locationType:remove',
+        'opentcs:locationType:query',
+        'factory:locationType:list'
+   )
+   OR path IN ('areas', 'location-type', 'location')
+   OR component IN (
+        'map/scene/areas/index',
+        'map/scene/location-type/index',
+        'deploy/factory/location-type/index'
+   );

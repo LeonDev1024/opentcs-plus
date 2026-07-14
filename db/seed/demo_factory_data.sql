@@ -13,7 +13,6 @@ CREATE TABLE IF NOT EXISTS tcs_brand (
     name        VARCHAR(100) NOT NULL COMMENT '品牌名称',
     code        VARCHAR(50)           COMMENT '品牌代码',
     logo        VARCHAR(255)          COMMENT 'Logo URL',
-    website     VARCHAR(255)          COMMENT '官网',
     description VARCHAR(500)          COMMENT '描述',
     contact     VARCHAR(200)          COMMENT '联系方式',
     enabled     TINYINT(1)   NOT NULL DEFAULT 1 COMMENT '是否启用',
@@ -132,20 +131,3 @@ VALUES
     (1, 'PA020', 'P008→P003', 'P008', 'P003', 2000, 2.0, 0.5, 0, 1, 1, NOW(), 1, NOW(), '0'),
     (1, 'PA021', 'P005→P010', 'P005', 'P010', 2000, 2.0, 0.5, 0, 1, 1, NOW(), 1, NOW(), '0'),
     (1, 'PA022', 'P010→P005', 'P010', 'P005', 2000, 2.0, 0.5, 0, 1, 1, NOW(), 1, NOW(), '0');
-
--- ---------------------------------------------------------------
--- 演示位置类型和位置（货架 + 充电桩）
--- ---------------------------------------------------------------
-INSERT INTO tcs_location_type (id, name, allowed_actions, create_by, create_time, update_by, update_time, del_flag)
-VALUES
-    (1, '货架', '["LOAD", "UNLOAD"]', 1, NOW(), 1, NOW(), '0'),
-    (2, '充电桩', '["CHARGE"]',        1, NOW(), 1, NOW(), '0')
-ON DUPLICATE KEY UPDATE name = VALUES(name);
-
-INSERT INTO tcs_location (navigation_map_id, location_id, name, location_type_id, linked_point_id, x_position, y_position, z_position, layer_id, create_by, create_time, update_by, update_time, del_flag)
-VALUES
-    (1, 'L001', '入库货架-A', 1, 'P001',  800,  1000, 0, 1, 1, NOW(), 1, NOW(), '0'),
-    (1, 'L002', '入库货架-B', 1, 'P006',  800,  3000, 0, 1, 1, NOW(), 1, NOW(), '0'),
-    (1, 'L003', '出库货架-A', 1, 'P005', 9200,  1000, 0, 1, 1, NOW(), 1, NOW(), '0'),
-    (1, 'L004', '出库货架-B', 1, 'P010', 9200,  3000, 0, 1, 1, NOW(), 1, NOW(), '0'),
-    (1, 'L005', '充电桩-1',   2, 'P003',  5000,  800, 0, 1, 1, NOW(), 1, NOW(), '0');

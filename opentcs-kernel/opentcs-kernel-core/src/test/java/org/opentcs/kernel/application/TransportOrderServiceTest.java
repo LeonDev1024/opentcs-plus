@@ -4,8 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.opentcs.kernel.api.dto.BlockDTO;
-import org.opentcs.kernel.api.dto.LocationDTO;
 import org.opentcs.kernel.api.dto.NavigationMapDTO;
 import org.opentcs.kernel.api.dto.OrderSpecDTO;
 import org.opentcs.kernel.api.dto.OrderStateDTO;
@@ -64,8 +62,6 @@ class TransportOrderServiceTest {
                 point("P2", 10, 0)
         ));
         when(mapSceneApi.listPathsByMap(100L)).thenReturn(List.of(path("PATH-1", "P1", "P2")));
-        when(mapSceneApi.listLocationsByMap(100L)).thenReturn(List.of(location("LOC-1")));
-        when(mapSceneApi.listBlocksByMap(100L)).thenReturn(List.of(block("BLOCK-1")));
     }
 
     @Test
@@ -252,18 +248,6 @@ class TransportOrderServiceTest {
         path.setDestPointId(destPointId);
         path.setLength(BigDecimal.TEN);
         return path;
-    }
-
-    private LocationDTO location(String locationId) {
-        LocationDTO location = new LocationDTO();
-        location.setLocationId(locationId);
-        return location;
-    }
-
-    private BlockDTO block(String blockId) {
-        BlockDTO block = new BlockDTO();
-        block.setBlockId(blockId);
-        return block;
     }
 
     private static class PassThroughRoutingAlgorithm implements RoutingAlgorithm {

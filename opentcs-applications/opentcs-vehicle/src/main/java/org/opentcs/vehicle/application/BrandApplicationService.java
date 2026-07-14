@@ -76,7 +76,6 @@ public class BrandApplicationService {
         bo.setEnglishName(entity.getEnglishName());
         bo.setCode(entity.getCode());
         bo.setLogo(entity.getLogo());
-        bo.setWebsite(entity.getWebsite());
         bo.setDescription(entity.getDescription());
         bo.setContact(entity.getContact());
         bo.setEnabled(entity.getEnabled());
@@ -96,7 +95,6 @@ public class BrandApplicationService {
         entity.setEnglishName(bo.getEnglishName());
         entity.setCode(bo.getCode());
         entity.setLogo(bo.getLogo());
-        entity.setWebsite(bo.getWebsite());
         entity.setDescription(bo.getDescription());
         entity.setContact(bo.getContact());
         entity.setEnabled(bo.getEnabled());

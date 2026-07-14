@@ -185,25 +185,11 @@ public class RoutePlannerImpl implements RoutePlannerApi {
     private boolean isRoutePathAvailable(Path path) {
         return !lockedResources.contains(resourceKey(ResourceType.PATH, path.getPathId()))
                 && !isPointResourceLocked(path.getSourcePointId())
-                && !isPointResourceLocked(path.getDestPointId())
-                && !hasLockedBlock(path);
+                && !isPointResourceLocked(path.getDestPointId());
     }
 
     private boolean isPointResourceLocked(String pointId) {
         return lockedResources.contains(resourceKey(ResourceType.POINT, pointId));
-    }
-
-    private boolean hasLockedBlock(Path path) {
-        String blockIds = path.getProperties().get("blockIds");
-        if (blockIds == null || blockIds.isBlank()) {
-            return false;
-        }
-        for (String blockId : blockIds.split(",")) {
-            if (lockedResources.contains(resourceKey(ResourceType.BLOCK, blockId.trim()))) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private String resourceKey(ResourceType resourceType, String resourceId) {

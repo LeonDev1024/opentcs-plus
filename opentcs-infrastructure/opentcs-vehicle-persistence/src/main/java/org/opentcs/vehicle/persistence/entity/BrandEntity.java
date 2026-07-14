@@ -49,11 +49,6 @@ public class BrandEntity implements Serializable {
     private String logo;
 
     /**
-     * 官网地址
-     */
-    private String website;
-
-    /**
      * 品牌描述
      */
     private String description;

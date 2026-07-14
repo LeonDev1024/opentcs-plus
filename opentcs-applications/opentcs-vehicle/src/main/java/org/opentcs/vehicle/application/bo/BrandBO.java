@@ -26,9 +26,6 @@ public class BrandBO {
     /** 品牌缩略图（Base64 Data URL） */
     private String logo;
 
-    /** 官网地址 */
-    private String website;
-
     /** 品牌描述 */
     private String description;
 
