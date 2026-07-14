@@ -1,6 +1,5 @@
 package org.opentcs.kernel.persistence.service.impl;
 
-import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -40,17 +39,26 @@ public class FactoryModelServiceImpl extends ServiceImpl<FactoryModelMapper, Fac
                 .eq(FactoryModelEntity::getName, factoryModel.getName())
                 .eq(FactoryModelEntity::getDelFlag, "0"));
         if (count > 0) {
-            throw new RuntimeException("工厂名称已存在");
+            throw new RuntimeException("场景名称已存在");
         }
 
-        // 自动生成工厂编号（雪花算法）
-        factoryModel.setFactoryId(String.valueOf(IdUtil.getSnowflakeNextId()));
+        // 自动生成场景编号：C1、C2、C3…
+        factoryModel.setFactoryId(generateNextSceneCode());
         // 设置默认比例尺
         if (factoryModel.getScale() == null) {
             factoryModel.setScale(java.math.BigDecimal.ONE);
         }
 
         return this.save(factoryModel);
+    }
+
+    /**
+     * 生成下一个场景编号（C1、C2…），基于已有 C 前缀编号递增。
+     */
+    private String generateNextSceneCode() {
+        Integer max = this.getBaseMapper().selectMaxSceneCodeNumber();
+        int next = (max == null ? 0 : max) + 1;
+        return "C" + next;
     }
 
     @Override
@@ -129,6 +137,12 @@ public class FactoryModelServiceImpl extends ServiceImpl<FactoryModelMapper, Fac
     @Override
     @CacheEvict(allEntries = true)
     public boolean updateFactoryModel(FactoryModelEntity factoryModel) {
+        if (factoryModel.getId() != null) {
+            FactoryModelEntity existing = this.getById(factoryModel.getId());
+            if (existing != null && factoryModel.getFactoryId() == null) {
+                factoryModel.setFactoryId(existing.getFactoryId());
+            }
+        }
         return this.updateById(factoryModel);
     }
 

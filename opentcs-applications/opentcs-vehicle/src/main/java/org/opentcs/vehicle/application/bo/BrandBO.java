@@ -2,6 +2,8 @@ package org.opentcs.vehicle.application.bo;
 
 import lombok.Data;
 
+import java.util.Date;
+
 /**
  * 品牌业务对象，用于应用层与接口层之间的数据传递。
  * 仅包含业务字段，屏蔽 BrandEntity 的持久化注解和审计字段。
@@ -15,14 +17,14 @@ public class BrandBO {
     /** 品牌名称 */
     private String name;
 
+    /** 英文名称 */
+    private String englishName;
+
     /** 品牌缩写代码 */
     private String code;
 
-    /** Logo URL */
+    /** 品牌缩略图（Base64 Data URL） */
     private String logo;
-
-    /** 官网地址 */
-    private String website;
 
     /** 品牌描述 */
     private String description;
@@ -35,4 +37,13 @@ public class BrandBO {
 
     /** 排序 */
     private Integer sort;
+
+    /** 关键词（品牌编码或名称，仅查询时使用） */
+    private String keyword;
+
+    /** 创建时间 */
+    private Date createTime;
+
+    /** 更新时间 */
+    private Date updateTime;
 }

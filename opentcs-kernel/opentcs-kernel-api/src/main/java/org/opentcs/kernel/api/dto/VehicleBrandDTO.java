@@ -25,9 +25,6 @@ public class VehicleBrandDTO {
     /** Logo URL */
     private String logo;
 
-    /** 官网地址 */
-    private String website;
-
     /** 品牌描述 */
     private String description;
 

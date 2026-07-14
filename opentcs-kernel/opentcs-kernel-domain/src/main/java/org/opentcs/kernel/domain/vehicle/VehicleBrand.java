@@ -15,7 +15,6 @@ public class VehicleBrand {
     private String name;
     private String code;
     private String logo;
-    private String website;
     private String description;
     private String contact;
     private boolean enabled;
@@ -38,12 +37,10 @@ public class VehicleBrand {
         this.enabled = false;
     }
 
-    public void updateInfo(String name, String code, String logo, String website,
-                           String description, String contact) {
+    public void updateInfo(String name, String code, String logo, String description, String contact) {
         this.name = Objects.requireNonNull(name, "品牌名称不能为空");
         this.code = Objects.requireNonNull(code, "品牌缩写不能为空");
         this.logo = logo;
-        this.website = website;
         this.description = description;
         this.contact = contact;
     }
@@ -55,8 +52,6 @@ public class VehicleBrand {
     public String getCode() { return code; }
     public String getLogo() { return logo; }
     public void setLogo(String logo) { this.logo = logo; }
-    public String getWebsite() { return website; }
-    public void setWebsite(String website) { this.website = website; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
     public String getContact() { return contact; }

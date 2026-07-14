@@ -29,19 +29,19 @@ VALUES (2000, '车辆管理', 0, 1, 'vehicle', NULL, '', 1, 0, 'M', '0', '0', ''
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (2011, '品牌管理', 2000, 1, 'brand', 'deploy/device/brand/index', '', 1, 0, 'C', '0', '0', 'vehicle:brand:list', 'pinpai',
+VALUES (2011, '品牌管理', 2000, 1, 'brand', 'vehicle/brand/index', '', 1, 0, 'C', '0', '0', 'vehicle:brand:list', 'pinpai',
   103, 1, NOW(), NULL, NULL, '品牌管理菜单');
 
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (2012, '车辆型号', 2000, 2, 'type', 'deploy/device/type/index', '', 1, 0, 'C', '0', '0', 'vehicle:type:list', 'model',
+VALUES (2012, '车辆型号', 2000, 2, 'type', 'vehicle/type/index', '', 1, 0, 'C', '0', '0', 'vehicle:type:list', 'model',
   103, 1, NOW(), NULL, NULL, '车辆型号菜单');
 
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (2013, '机器人列表', 2000, 3, 'list', 'deploy/device/list/index', '', 1, 0, 'C', '0', '0', 'vehicle:list:list', 'jiqi-ren',
+VALUES (2013, '机器人列表', 2000, 3, 'list', 'vehicle/list/index', '', 1, 0, 'C', '0', '0', 'vehicle:list:list', 'jiqi-ren',
   103, 1, NOW(), NULL, NULL, '机器人列表菜单');
 
 -- ================================================================
@@ -56,13 +56,13 @@ VALUES (3000, '任务管理', 0, 2, 'task', NULL, '', 1, 0, 'M', '0', '0', '', '
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (3011, '任务运维管理', 3000, 1, 'operation', 'ops/order/index', '', 1, 0, 'C', '0', '0', 'ops:order:list', 'my-task',
+VALUES (3011, '任务运维管理', 3000, 1, 'operation', 'task/operation/index', '', 1, 0, 'C', '0', '0', 'ops:order:list', 'my-task',
   103, 1, NOW(), NULL, NULL, '任务运维管理菜单');
 
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (3012, '任务模版管理', 3000, 2, 'template', 'deploy/task-config/template/index', '', 1, 0, 'C', '0', '0', 'task:template:list', 'edit',
+VALUES (3012, '任务模版管理', 3000, 2, 'template', 'task/template/index', '', 1, 0, 'C', '0', '0', 'task:template:list', 'edit',
   103, 1, NOW(), NULL, NULL, '任务模版管理菜单');
 
 -- ================================================================
@@ -104,13 +104,13 @@ VALUES (4500, '监控管理', 0, 4, 'monitoring', NULL, '', 1, 0, 'M', '0', '0',
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (4511, '场景监控', 4500, 1, 'scene', 'ops/monitor/operationsdesk/index', '', 1, 0, 'C', '0', '0', 'ops:monitor:scene', 'monitoring-screen',
+VALUES (4511, '场景监控', 4500, 1, 'scene', 'monitor/operationsdesk/index', '', 1, 0, 'C', '0', '0', 'ops:monitor:scene', 'monitoring-screen',
   103, 1, NOW(), NULL, NULL, '场景监控菜单');
 
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (4512, '锁资源监控', 4500, 2, 'lock', 'ops/monitor/lock/index', '', 1, 0, 'C', '0', '0', 'ops:monitor:lock', 'lock',
+VALUES (4512, '锁资源监控', 4500, 2, 'lock', 'monitor/lock/index', '', 1, 0, 'C', '0', '0', 'ops:monitor:lock', 'lock',
   103, 1, NOW(), NULL, NULL, '锁资源监控菜单');
 
 -- ================================================================

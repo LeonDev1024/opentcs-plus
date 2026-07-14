@@ -2,9 +2,9 @@ package org.opentcs.simulation.map;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.opentcs.kernel.api.dto.LocationDTO;
 import org.opentcs.kernel.api.dto.NavigationMapDTO;
 import org.opentcs.kernel.api.dto.PathDTO;
+import org.opentcs.kernel.api.dto.PointDTO;
 import org.opentcs.map.application.MapFacadeApplicationService;
 import org.springframework.stereotype.Service;
 
@@ -27,18 +27,18 @@ public class SimulationMapService {
      */
     public List<SimMapPoint> loadMapPoints(Long mapId) {
         try {
-            List<LocationDTO> locations = mapFacadeService.listLocationsByMap(mapId);
-            if (locations == null || locations.isEmpty()) {
+            List<PointDTO> points = mapFacadeService.listPointsByMap(mapId);
+            if (points == null || points.isEmpty()) {
                 log.warn("地图 {} 下没有点位数据", mapId);
                 return Collections.emptyList();
             }
-            return locations.stream()
-                    .filter(l -> l.getXPosition() != null && l.getYPosition() != null)
-                    .map(l -> new SimMapPoint(
-                            l.getLocationId(),
-                            l.getName(),
-                            l.getXPosition().doubleValue() / 1000.0,
-                            l.getYPosition().doubleValue() / 1000.0))
+            return points.stream()
+                    .filter(p -> p.getXPosition() != null && p.getYPosition() != null)
+                    .map(p -> new SimMapPoint(
+                            p.getPointId(),
+                            p.getName(),
+                            p.getXPosition().doubleValue() / 1000.0,
+                            p.getYPosition().doubleValue() / 1000.0))
                     .collect(Collectors.toList());
         } catch (Exception e) {
             log.error("加载地图点位失败 mapId={}: {}", mapId, e.getMessage());
@@ -77,15 +77,15 @@ public class SimulationMapService {
         SimMapGraph graph = new SimMapGraph();
         try {
             // 加载点位
-            List<LocationDTO> locations = mapFacadeService.listLocationsByMap(navMapId);
-            for (LocationDTO loc : locations) {
-                if (loc.getXPosition() == null || loc.getYPosition() == null) continue;
-                SimMapPoint point = new SimMapPoint(
-                        loc.getLocationId(),
-                        loc.getName(),
-                        loc.getXPosition().doubleValue() / 1000.0,
-                        loc.getYPosition().doubleValue() / 1000.0);
-                graph.addPoint(point);
+            List<PointDTO> points = mapFacadeService.listPointsByMap(navMapId);
+            for (PointDTO point : points) {
+                if (point.getXPosition() == null || point.getYPosition() == null) continue;
+                SimMapPoint simPoint = new SimMapPoint(
+                        point.getPointId(),
+                        point.getName(),
+                        point.getXPosition().doubleValue() / 1000.0,
+                        point.getYPosition().doubleValue() / 1000.0);
+                graph.addPoint(simPoint);
             }
             // 加载路径（有向边）
             List<PathDTO> paths = mapFacadeService.listPathsByMap(navMapId);

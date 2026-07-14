@@ -5,9 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.opentcs.kernel.api.dto.BlockDTO;
 import org.opentcs.kernel.api.dto.FactoryModelDTO;
-import org.opentcs.kernel.api.dto.LocationDTO;
 import org.opentcs.kernel.api.dto.NavigationMapDTO;
 import org.opentcs.kernel.api.dto.PathDTO;
 import org.opentcs.kernel.api.dto.PointDTO;
@@ -94,7 +92,6 @@ public class MapEditorServiceImpl implements IMapEditorService {
         // 查询地图元素
         var points = mapSceneApi.listPointsByMap(navMapId);
         var paths = mapSceneApi.listPathsByMap(navMapId);
-        var locations = mapSceneApi.listLocationsByMap(navMapId);
         var layerGroups = layerGroupRepository.selectByNavigationMapId(navMapId);
         var layers = layerRepository.selectByNavigationMapId(navMapId);
 
@@ -136,20 +133,16 @@ public class MapEditorServiceImpl implements IMapEditorService {
         mapInfo.setYamlUrl(navMapDTO.getYamlUrl());
         mapInfo.setMapOrigin(navMapDTO.getMapOrigin());
 
-        var blocks = mapSceneApi.listBlocksByMap(navMapId);
-
         MapEditorDTO dto = new MapEditorDTO();
         dto.setMapInfo(mapInfo);
         dto.setPoints(points);
         dto.setPaths(paths);
-        dto.setLocations(locations);
         dto.setLayerGroups(toLayerGroupDTOs(layerGroups));
         dto.setLayers(toLayerDTOs(layers));
-        dto.setBlocks(blocks);
 
-        log.info("加载导航地图完成: {}, 版本: {}, 状态: {}, 点位: {}, 路径: {}, 位置: {}, Block: {}",
+        log.info("加载导航地图完成: {}, 版本: {}, 状态: {}, 点位: {}, 路径: {}",
                 navMapDTO.getName(), navMapDTO.getMapVersion(), navMapDTO.getStatus(),
-                points.size(), paths.size(), locations.size(), blocks.size());
+                points.size(), paths.size());
 
         return dto;
     }
@@ -186,7 +179,7 @@ public class MapEditorServiceImpl implements IMapEditorService {
         remapElementLayerIds(saveDTO, layerIdMapping);
         validateElementLayouts(saveDTO);
 
-        // 1. 更新语义表（point / path / location）
+        // 1. 更新语义表（point / path）
         // 先删除旧数据，再插入新数据
         if (saveDTO.getPoints() != null) {
             mapSceneApi.replacePointsByMap(navMapId, saveDTO.getPoints());
@@ -196,22 +189,7 @@ public class MapEditorServiceImpl implements IMapEditorService {
             mapSceneApi.replacePathsByMap(navMapId, saveDTO.getPaths());
         }
 
-        if (saveDTO.getLocations() != null) {
-            mapSceneApi.replaceLocationsByMap(navMapId, saveDTO.getLocations());
-        }
-
-        if (saveDTO.getBlocks() != null) {
-            // 补填 navigationMapId 和 factoryModelId
-            for (BlockDTO block : saveDTO.getBlocks()) {
-                block.setNavigationMapId(navMapId);
-                if (block.getFactoryModelId() == null) {
-                    block.setFactoryModelId(navMapDTO.getFactoryModelId());
-                }
-            }
-            mapSceneApi.replaceBlocksByMap(navMapId, saveDTO.getBlocks());
-        }
-
-        // 2. 生成并保存 JSON 快照（只保存 data 字段，不保存点路径位置）
+        // 2. 生成并保存 JSON 快照（只保存 data 字段，不保存点路径）
         String snapshotPayload = buildSnapshotPayload(info.getData(), saveDTO);
         String snapshotUrl = saveJsonSnapshot(snapshotPayload, navMapDTO.getFactoryModelId(), mapId, newVersion);
 
@@ -252,16 +230,12 @@ public class MapEditorServiceImpl implements IMapEditorService {
         Long navMapId = navMap.getId();
         var points = mapSceneApi.listPointsByMap(navMapId);
         var paths = mapSceneApi.listPathsByMap(navMapId);
-        var locations = mapSceneApi.listLocationsByMap(navMapId);
         var layers = layerRepository.selectByNavigationMapId(navMapId);
         if (points.isEmpty()) {
             throw new RuntimeException("发布失败：地图缺少点位数据");
         }
         if (paths.isEmpty()) {
             throw new RuntimeException("发布失败：地图缺少路径数据");
-        }
-        if (locations.isEmpty()) {
-            throw new RuntimeException("发布失败：地图缺少位置数据");
         }
         Set<String> pointIds = new HashSet<>();
         for (var point : points) {
@@ -291,12 +265,6 @@ public class MapEditorServiceImpl implements IMapEditorService {
                 throw new RuntimeException("发布失败：路径存在无效 layerId，pathId=" + path.getPathId());
             }
         }
-        for (var location : locations) {
-            if (location.getLayerId() != null && !layerIds.contains(location.getLayerId())) {
-                throw new RuntimeException("发布失败：位置存在无效 layerId，locationId=" + location.getLocationId());
-            }
-        }
-
         // 更新为发布状态
         navMap.setStatus(STATUS_PUBLISHED);
         mapSceneApi.updateNavigationMap(navMap);
@@ -468,9 +436,6 @@ public class MapEditorServiceImpl implements IMapEditorService {
         if (saveDTO.getPaths() != null) {
             saveDTO.getPaths().forEach(p -> p.setLayerId(remapLayerId(p.getLayerId(), layerIdMapping)));
         }
-        if (saveDTO.getLocations() != null) {
-            saveDTO.getLocations().forEach(l -> l.setLayerId(remapLayerId(l.getLayerId(), layerIdMapping)));
-        }
     }
 
     private Long remapLayerId(Long originalId, Map<String, Long> layerIdMapping) {
@@ -489,11 +454,6 @@ public class MapEditorServiceImpl implements IMapEditorService {
         if (saveDTO.getPaths() != null) {
             for (PathDTO path : saveDTO.getPaths()) {
                 validatePathLayout(path.getLayout(), path.getPathId());
-            }
-        }
-        if (saveDTO.getLocations() != null) {
-            for (LocationDTO location : saveDTO.getLocations()) {
-                validateLayoutJson(location.getLayout(), "location", location.getLocationId());
             }
         }
     }

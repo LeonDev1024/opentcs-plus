@@ -5,9 +5,9 @@
     <resultMap type="org.opentcs.vehicle.persistence.entity.BrandEntity" id="BrandResult">
         <result property="id" column="id"/>
         <result property="name" column="name"/>
+        <result property="englishName" column="english_name"/>
         <result property="code" column="code"/>
         <result property="logo" column="logo"/>
-        <result property="website" column="website"/>
         <result property="description" column="description"/>
         <result property="contact" column="contact"/>
         <result property="enabled" column="enabled"/>
@@ -20,7 +20,7 @@
     </resultMap>
 
     <sql id="selectBrandVo">
-        SELECT id, name, code, logo, website, description, contact, enabled, sort, create_by, update_by, create_time, update_time, del_flag
+        SELECT id, name, english_name, code, logo, description, contact, enabled, sort, create_by, update_by, create_time, update_time, del_flag
         FROM tcs_brand
     </sql>
 

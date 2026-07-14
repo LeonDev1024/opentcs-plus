@@ -82,7 +82,7 @@ VALUES (2003, '任务配置', 2000, 3, 'task-config', NULL, '', 1, 0, 'M', '0', 
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (2031, '任务模板配置', 2003, 1, 'template', 'deploy/task-config/template/index', '', 1, 0, 'C', '0', '0', 'task:template:list', 'edit',
+VALUES (2031, '任务模板配置', 2003, 1, 'template', 'task/template/index', '', 1, 0, 'C', '0', '0', 'task:template:list', 'edit',
   103, 1, NOW(), NULL, NULL, '任务模板配置菜单');
 
 -- ================================================================
@@ -123,13 +123,13 @@ VALUES (3003, '实时监控', 3000, 3, 'monitor', NULL, '', 1, 0, 'M', '0', '0',
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (3031, '监控大屏', 3003, 1, 'live', 'ops/monitor/live/index', '', 1, 0, 'C', '0', '0', 'ops:monitor:live', 'fullscreen',
+VALUES (3031, '监控大屏', 3003, 1, 'live', 'monitor/live/index', '', 1, 0, 'C', '0', '0', 'ops:monitor:live', 'fullscreen',
   103, 1, NOW(), NULL, NULL, '监控大屏菜单');
 
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (3032, '锁资源监控', 3003, 2, 'lock', 'ops/monitor/lock/index', '', 1, 0, 'C', '0', '0', 'ops:monitor:lock', 'lock',
+VALUES (3032, '锁资源监控', 3003, 2, 'lock', 'monitor/lock/index', '', 1, 0, 'C', '0', '0', 'ops:monitor:lock', 'lock',
   103, 1, NOW(), NULL, NULL, '锁资源监控菜单');
 
 -- ================================================================

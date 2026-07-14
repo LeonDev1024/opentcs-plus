@@ -235,7 +235,7 @@ management:
       # 自定义健康分组：dispatch 组聚合 AGV 调度核心健康指标
       group:
         dispatch:
-          include: dispatchKernel, algorithmPlugin, db, redis
+          include: dispatchKernel, db, redis
           show-details: ALWAYS
     logfile:
       external-file: ./logs/sys-console.log

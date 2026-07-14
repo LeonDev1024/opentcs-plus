@@ -3,13 +3,11 @@ package org.opentcs.map.application;
 import lombok.RequiredArgsConstructor;
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
-import org.opentcs.kernel.api.dto.BlockDTO;
 import org.opentcs.kernel.api.dto.CrossLayerConnectionDTO;
 import org.opentcs.kernel.api.dto.FactoryModelDTO;
-import org.opentcs.kernel.api.dto.LocationDTO;
-import org.opentcs.kernel.api.dto.LocationTypeDTO;
 import org.opentcs.kernel.api.dto.NavigationMapDTO;
 import org.opentcs.kernel.api.dto.PathDTO;
+import org.opentcs.kernel.api.dto.PointDTO;
 import org.opentcs.kernel.api.map.MapSceneApi;
 import org.springframework.stereotype.Service;
 
@@ -69,30 +67,6 @@ public class MapFacadeApplicationService {
         return mapSceneApi.deleteFactoryModel(id);
     }
 
-    public TableDataInfo<LocationTypeDTO> listLocationTypes(LocationTypeDTO query, PageQuery pageQuery) {
-        return mapSceneApi.listLocationTypes(query, pageQuery);
-    }
-
-    public LocationTypeDTO getLocationTypeById(Long id) {
-        return mapSceneApi.getLocationTypeById(id);
-    }
-
-    public List<LocationTypeDTO> listAllLocationTypes() {
-        return mapSceneApi.listAllLocationTypes();
-    }
-
-    public boolean createLocationType(LocationTypeDTO dto) {
-        return mapSceneApi.createLocationType(dto);
-    }
-
-    public boolean updateLocationType(LocationTypeDTO dto) {
-        return mapSceneApi.updateLocationType(dto);
-    }
-
-    public boolean deleteLocationType(Long id) {
-        return mapSceneApi.deleteLocationType(id);
-    }
-
     public TableDataInfo<PathDTO> listPaths(PathDTO query, PageQuery pageQuery) {
         return mapSceneApi.listPaths(query, pageQuery);
     }
@@ -105,52 +79,12 @@ public class MapFacadeApplicationService {
         return mapSceneApi.listPathsByMap(mapId);
     }
 
+    public List<PointDTO> listPointsByMap(Long mapId) {
+        return mapSceneApi.listPointsByMap(mapId);
+    }
+
     public PathDTO getPathById(Long id) {
         return mapSceneApi.getPathById(id);
-    }
-
-    public TableDataInfo<LocationDTO> listLocations(LocationDTO query, PageQuery pageQuery) {
-        return mapSceneApi.listLocations(query, pageQuery);
-    }
-
-    public List<LocationDTO> listLocationsByFactory(Long factoryId) {
-        return mapSceneApi.listLocationsByFactory(factoryId);
-    }
-
-    public List<LocationDTO> listLocationsByMap(Long mapId) {
-        return mapSceneApi.listLocationsByMap(mapId);
-    }
-
-    public LocationDTO getLocationById(Long id) {
-        return mapSceneApi.getLocationById(id);
-    }
-
-    public TableDataInfo<BlockDTO> listBlocks(BlockDTO query, PageQuery pageQuery) {
-        return mapSceneApi.listBlocks(query, pageQuery);
-    }
-
-    public List<BlockDTO> listBlocksByFactory(Long factoryId) {
-        return mapSceneApi.listBlocksByFactory(factoryId);
-    }
-
-    public List<BlockDTO> listBlocksByFactoryAndType(Long factoryId, String type) {
-        return mapSceneApi.listBlocksByFactoryAndType(factoryId, type);
-    }
-
-    public BlockDTO getBlockById(Long id) {
-        return mapSceneApi.getBlockById(id);
-    }
-
-    public boolean createBlock(BlockDTO dto) {
-        return mapSceneApi.createBlock(dto);
-    }
-
-    public boolean updateBlock(BlockDTO dto) {
-        return mapSceneApi.updateBlock(dto);
-    }
-
-    public boolean deleteBlock(Long id) {
-        return mapSceneApi.deleteBlock(id);
     }
 
     public TableDataInfo<CrossLayerConnectionDTO> listConnections(CrossLayerConnectionDTO query, PageQuery pageQuery) {

@@ -13,7 +13,6 @@ CREATE TABLE IF NOT EXISTS brand (
     name        VARCHAR(100) NOT NULL COMMENT '品牌名称',
     code        VARCHAR(50)           COMMENT '品牌代码',
     logo        VARCHAR(255)          COMMENT 'Logo URL',
-    website     VARCHAR(255)          COMMENT '官网',
     description VARCHAR(500)          COMMENT '描述',
     contact     VARCHAR(200)          COMMENT '联系方式',
     enabled     TINYINT(1)   NOT NULL DEFAULT 1 COMMENT '是否启用',

@@ -1,7 +1,5 @@
 package org.opentcs.kernel.application;
 
-import org.opentcs.kernel.api.dto.BlockDTO;
-import org.opentcs.kernel.api.dto.LocationDTO;
 import org.opentcs.kernel.api.dto.NavigationMapDTO;
 import org.opentcs.kernel.api.dto.PathDTO;
 import org.opentcs.kernel.api.dto.PointDTO;
@@ -19,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 地图运行时加载服务。
@@ -37,9 +34,6 @@ public class MapRuntimeService {
 
     private final MapSceneApi mapSceneApi;
     private final RoutePlannerImpl routePlanner;
-    private final Map<String, LocationDTO> activeLocations = new ConcurrentHashMap<>();
-    private final Map<String, BlockDTO> activeBlocks = new ConcurrentHashMap<>();
-
     private volatile String activeMapId;
     private volatile String activeMapVersion;
 
@@ -72,32 +66,22 @@ public class MapRuntimeService {
 
         List<PointDTO> points = mapSceneApi.listPointsByMap(map.getId());
         List<PathDTO> paths = mapSceneApi.listPathsByMap(map.getId());
-        List<LocationDTO> locations = mapSceneApi.listLocationsByMap(map.getId());
-        List<BlockDTO> blocks = mapSceneApi.listBlocksByMap(map.getId());
 
-        validateRuntimeGraph(map, points, paths, locations);
+        validateRuntimeGraph(map, points, paths);
 
         routePlanner.clear();
-        activeLocations.clear();
-        activeBlocks.clear();
         for (PointDTO point : points) {
             routePlanner.registerPoint(toDomainPoint(point));
         }
         for (PathDTO path : paths) {
-            routePlanner.registerPath(toDomainPath(path, blocks));
-        }
-        for (LocationDTO location : locations) {
-            activeLocations.put(requireText(location.getLocationId(), "locationId"), location);
-        }
-        for (BlockDTO block : blocks) {
-            activeBlocks.put(requireText(block.getBlockId(), "blockId"), block);
+            routePlanner.registerPath(toDomainPath(path));
         }
 
         activeMapId = map.getMapId();
         activeMapVersion = map.getMapVersion();
 
-        log.info("运行时地图加载完成: mapId={}, version={}, points={}, paths={}, locations={}, blocks={}",
-                activeMapId, activeMapVersion, points.size(), paths.size(), locations.size(), blocks.size());
+        log.info("运行时地图加载完成: mapId={}, version={}, points={}, paths={}",
+                activeMapId, activeMapVersion, points.size(), paths.size());
 
         return new LoadedMap(activeMapId, activeMapVersion, points.size(), paths.size());
     }
@@ -110,28 +94,15 @@ public class MapRuntimeService {
         return activeMapVersion;
     }
 
-    public int getLocationCount() {
-        return activeLocations.size();
-    }
-
-    public int getBlockCount() {
-        return activeBlocks.size();
-    }
-
     private void validateRuntimeGraph(NavigationMapDTO map,
                                       List<PointDTO> points,
-                                      List<PathDTO> paths,
-                                      List<LocationDTO> locations) {
+                                      List<PathDTO> paths) {
         if (points == null || points.isEmpty()) {
             throw new IllegalStateException("发布地图缺少点位数据，不能加载到运行时: " + map.getMapId());
         }
         if (paths == null || paths.isEmpty()) {
             throw new IllegalStateException("发布地图缺少路径数据，不能加载到运行时: " + map.getMapId());
         }
-        if (locations == null || locations.isEmpty()) {
-            throw new IllegalStateException("发布地图缺少位置数据，不能加载到运行时: " + map.getMapId());
-        }
-
         var pointIds = points.stream()
                 .map(PointDTO::getPointId)
                 .filter(Objects::nonNull)
@@ -234,7 +205,7 @@ public class MapRuntimeService {
         return point;
     }
 
-    private Path toDomainPath(PathDTO dto, List<BlockDTO> blocks) {
+    private Path toDomainPath(PathDTO dto) {
         Path path = new Path(
                 requireText(dto.getPathId(), "pathId"),
                 requireText(dto.getSourcePointId(), "sourcePointId"),
@@ -247,10 +218,6 @@ public class MapRuntimeService {
             path.getProperties().put("routingType", dto.getRoutingType());
         }
         path.getProperties().putAll(parseProperties(dto.getProperties()));
-        String blockIds = resolvePathBlockIds(dto, blocks);
-        if (!blockIds.isBlank()) {
-            path.getProperties().put("blockIds", blockIds);
-        }
         if (Boolean.TRUE.equals(dto.getLocked())) {
             path.lock();
         }
@@ -258,40 +225,6 @@ public class MapRuntimeService {
             path.block();
         }
         return path;
-    }
-
-    private String resolvePathBlockIds(PathDTO path, List<BlockDTO> blocks) {
-        if (blocks == null || blocks.isEmpty()) {
-            return "";
-        }
-        List<String> blockIds = new java.util.ArrayList<>();
-        for (BlockDTO block : blocks) {
-            Set<String> members = parseMembers(block.getMembers());
-            if (members.contains(path.getPathId())
-                    || members.contains(path.getSourcePointId())
-                    || members.contains(path.getDestPointId())) {
-                blockIds.add(block.getBlockId());
-            }
-        }
-        return String.join(",", blockIds);
-    }
-
-    private Set<String> parseMembers(String members) {
-        if (members == null || members.isBlank()) {
-            return Set.of();
-        }
-        String content = members.trim();
-        if (content.startsWith("[") && content.endsWith("]")) {
-            content = content.substring(1, content.length() - 1);
-        }
-        Set<String> result = new HashSet<>();
-        for (String token : content.split(",")) {
-            String value = cleanupPropertyToken(token);
-            if (!value.isBlank()) {
-                result.add(value);
-            }
-        }
-        return result;
     }
 
     private String requireText(String value, String fieldName) {

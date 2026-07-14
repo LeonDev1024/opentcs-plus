@@ -490,32 +490,6 @@ CREATE TABLE `sys_user_role` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `tcs_block`
---
-
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `tcs_block` (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-  `factory_model_id` bigint NOT NULL COMMENT '所属工厂ID',
-  `navigation_map_id` bigint DEFAULT NULL COMMENT '所属地图ID',
-  `name` varchar(255) NOT NULL COMMENT '区块名称',
-  `type` varchar(50) NOT NULL DEFAULT 'SINGLE' COMMENT '区块类型',
-  `members` json DEFAULT NULL COMMENT '成员点位的point_id列表',
-  `color` varchar(20) DEFAULT NULL COMMENT '区块显示颜色',
-  `properties` json DEFAULT NULL COMMENT '扩展属性',
-  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
-  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `del_flag` char(1) DEFAULT '0',
-  PRIMARY KEY (`id`),
-  KEY `idx_block_factory` (`factory_model_id`),
-  KEY `idx_block_navigation_map` (`navigation_map_id`),
-  CONSTRAINT `fk_block_factory` FOREIGN KEY (`factory_model_id`) REFERENCES `tcs_factory_model` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_block_navigation_map` FOREIGN KEY (`navigation_map_id`) REFERENCES `tcs_navigation_map` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='区块表';
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `tcs_brand`
 --
 
@@ -526,7 +500,6 @@ CREATE TABLE `tcs_brand` (
   `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '品牌名称',
   `code` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '品牌代码',
   `logo` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Logo URL',
-  `website` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '官网',
   `description` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '描述',
   `contact` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '联系方式',
   `enabled` tinyint(1) NOT NULL DEFAULT '1' COMMENT '是否启用',
@@ -685,58 +658,6 @@ CREATE TABLE `tcs_factory_model` (
   UNIQUE KEY `uk_factory_model_factory_id` (`factory_id`),
   UNIQUE KEY `uk_factory_model_name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='工厂模型表';
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `tcs_location`
---
-
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `tcs_location` (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-  `navigation_map_id` bigint NOT NULL COMMENT '归属导航地图ID',
-  `layer_id` bigint DEFAULT NULL COMMENT '归属图层ID',
-  `location_type_id` bigint NOT NULL COMMENT '位置类型ID',
-  `location_id` varchar(255) NOT NULL COMMENT '位置唯一标识',
-  `name` varchar(255) NOT NULL COMMENT '位置名称',
-  `position_x` decimal(12,4) DEFAULT NULL COMMENT 'X坐标',
-  `position_y` decimal(12,4) DEFAULT NULL COMMENT 'Y坐标',
-  `position_z` decimal(12,4) DEFAULT '0.0000' COMMENT 'Z坐标',
-  `locked` tinyint(1) DEFAULT '0' COMMENT '是否被锁定',
-  `is_occupied` tinyint(1) DEFAULT '0' COMMENT '是否被占用',
-  `layout` json DEFAULT NULL COMMENT '位置布局数据',
-  `properties` json DEFAULT NULL COMMENT '扩展属性',
-  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
-  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `del_flag` char(1) DEFAULT '0',
-  PRIMARY KEY (`id`),
-  KEY `fk_location_type` (`location_type_id`),
-  KEY `idx_location_navigation_map` (`navigation_map_id`),
-  KEY `idx_location_layer` (`layer_id`),
-  CONSTRAINT `fk_location_layer` FOREIGN KEY (`layer_id`) REFERENCES `tcs_factory_layer` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `fk_location_navigation_map` FOREIGN KEY (`navigation_map_id`) REFERENCES `tcs_navigation_map` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_location_type` FOREIGN KEY (`location_type_id`) REFERENCES `tcs_location_type` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='位置表';
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `tcs_location_type`
---
-
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `tcs_location_type` (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-  `name` varchar(255) NOT NULL COMMENT '位置类型名称',
-  `allowed_operations` json DEFAULT NULL COMMENT '允许的操作列表',
-  `allowed_peripheral_operations` json DEFAULT NULL COMMENT '允许的外围设备操作',
-  `properties` json DEFAULT NULL COMMENT '扩展属性',
-  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
-  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `del_flag` char(1) DEFAULT '0',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='位置类型表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

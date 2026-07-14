@@ -4,12 +4,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.opentcs.kernel.api.dto.NavigationMapDTO;
-import org.opentcs.kernel.api.dto.BlockDTO;
-import org.opentcs.kernel.api.dto.LocationDTO;
 import org.opentcs.kernel.api.dto.PathDTO;
 import org.opentcs.kernel.api.dto.PointDTO;
 import org.opentcs.kernel.api.map.MapSceneApi;
-import org.opentcs.kernel.domain.resource.ResourceType;
 import org.opentcs.kernel.domain.routing.Path;
 import org.opentcs.kernel.domain.routing.Point;
 import org.opentcs.kernel.domain.routing.RoutingAlgorithm;
@@ -39,8 +36,6 @@ class MapRuntimeServiceTest {
         mapSceneApi = mock(MapSceneApi.class);
         routePlanner = new RoutePlannerImpl(new PassThroughRoutingAlgorithm());
         mapRuntimeService = new MapRuntimeService(mapSceneApi, routePlanner);
-        when(mapSceneApi.listLocationsByMap(100L)).thenReturn(List.of(location("LOC-1")));
-        when(mapSceneApi.listBlocksByMap(100L)).thenReturn(List.of(block("BLOCK-1")));
     }
 
     @Test
@@ -62,8 +57,6 @@ class MapRuntimeServiceTest {
         assertEquals("v1", mapRuntimeService.getActiveMapVersion());
         assertEquals(2, routePlanner.getPointCount());
         assertEquals(1, routePlanner.getPathCount());
-        assertEquals(1, mapRuntimeService.getLocationCount());
-        assertEquals(1, mapRuntimeService.getBlockCount());
         assertEquals("P1", routePlanner.getPoint("P1").getPointId());
         assertEquals("PATH-1", routePlanner.getPath("PATH-1").getPathId());
     }
@@ -158,25 +151,6 @@ class MapRuntimeServiceTest {
         assertEquals("false", loaded.getProperties().get("bidirectional"));
     }
 
-    @Test
-    void shouldAvoidPathWhenContainingBlockIsLocked() {
-        BlockDTO block = block("BLOCK-1");
-        block.setMembers("[\"P1\",\"P2\"]");
-        when(mapSceneApi.getNavigationMapByMapId("map-1")).thenReturn(publishedMap());
-        when(mapSceneApi.listPointsByMap(100L)).thenReturn(List.of(
-                point("P1", 0, 0),
-                point("P2", 10, 0)
-        ));
-        when(mapSceneApi.listPathsByMap(100L)).thenReturn(List.of(path("PATH-1", "P1", "P2")));
-        when(mapSceneApi.listBlocksByMap(100L)).thenReturn(List.of(block));
-
-        mapRuntimeService.loadPublishedMap("map-1");
-
-        assertEquals(1, routePlanner.findPath("P1", "P2").size());
-        routePlanner.setResourceLocked(ResourceType.BLOCK, "BLOCK-1", true);
-        assertTrue(routePlanner.findPath("P1", "P2").isEmpty());
-    }
-
     private NavigationMapDTO publishedMap() {
         NavigationMapDTO map = new NavigationMapDTO();
         map.setId(100L);
@@ -202,18 +176,6 @@ class MapRuntimeServiceTest {
         path.setDestPointId(destPointId);
         path.setLength(BigDecimal.TEN);
         return path;
-    }
-
-    private LocationDTO location(String locationId) {
-        LocationDTO location = new LocationDTO();
-        location.setLocationId(locationId);
-        return location;
-    }
-
-    private BlockDTO block(String blockId) {
-        BlockDTO block = new BlockDTO();
-        block.setBlockId(blockId);
-        return block;
     }
 
     private static class PassThroughRoutingAlgorithm implements RoutingAlgorithm {

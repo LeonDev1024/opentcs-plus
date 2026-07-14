@@ -39,14 +39,14 @@ WHERE menu_id = @vehicle_root_id;
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-SELECT 2011, '品牌管理', @vehicle_root_id, 1, 'brand', 'deploy/device/brand/index', '',
+SELECT 2011, '品牌管理', @vehicle_root_id, 1, 'brand', 'vehicle/brand/index', '',
   1, 0, 'C', '0', '0', 'vehicle:brand:list', 'pinpai',
   103, 1, NOW(), NULL, NULL, '品牌管理菜单'
 WHERE NOT EXISTS (
   SELECT 1
   FROM sys_menu
   WHERE parent_id = @vehicle_root_id
-    AND (component IN ('deploy/device/brand/index', 'opentcs/vehicle/brand/index')
+    AND (component IN ('vehicle/brand/index', 'opentcs/vehicle/brand/index')
       OR menu_name IN ('AMR品牌', '品牌管理'))
 );
 
@@ -55,7 +55,7 @@ SET parent_id = @vehicle_root_id,
     order_num = 1,
     menu_name = '品牌管理',
     path = 'brand',
-    component = 'deploy/device/brand/index',
+    component = 'vehicle/brand/index',
     menu_type = 'C',
     visible = '0',
     status = '0',
@@ -63,7 +63,7 @@ SET parent_id = @vehicle_root_id,
     icon = 'pinpai',
     remark = '品牌管理菜单'
 WHERE parent_id = @vehicle_root_id
-  AND (component IN ('deploy/device/brand/index', 'opentcs/vehicle/brand/index')
+  AND (component IN ('vehicle/brand/index', 'opentcs/vehicle/brand/index')
     OR menu_name IN ('AMR品牌', '品牌管理'));
 
 UPDATE sys_menu
@@ -71,7 +71,7 @@ SET parent_id = @vehicle_root_id,
     order_num = 2,
     menu_name = '车辆型号',
     path = 'type',
-    component = 'deploy/device/type/index',
+    component = 'vehicle/type/index',
     menu_type = 'C',
     visible = '0',
     status = '0',
@@ -79,7 +79,7 @@ SET parent_id = @vehicle_root_id,
     icon = 'model',
     remark = '车辆型号菜单'
 WHERE parent_id = @vehicle_root_id
-  AND (component IN ('deploy/device/type/index', 'opentcs/vehicle/type/index')
+  AND (component IN ('vehicle/type/index', 'opentcs/vehicle/type/index')
     OR menu_name IN ('AMR型号', 'AMR类型', '车辆类型', '车辆型号'));
 
 UPDATE sys_menu
@@ -87,7 +87,7 @@ SET parent_id = @vehicle_root_id,
     order_num = 3,
     menu_name = '机器人列表',
     path = 'list',
-    component = 'deploy/device/list/index',
+    component = 'vehicle/list/index',
     menu_type = 'C',
     visible = '0',
     status = '0',
@@ -95,5 +95,5 @@ SET parent_id = @vehicle_root_id,
     icon = 'jiqi-ren',
     remark = '机器人列表菜单'
 WHERE parent_id = @vehicle_root_id
-  AND (component IN ('deploy/device/list/index', 'opentcs/vehicle/index')
+  AND (component IN ('vehicle/list/index', 'opentcs/vehicle/index')
     OR menu_name IN ('AMR列表', '机器人管理', '机器人列表'));

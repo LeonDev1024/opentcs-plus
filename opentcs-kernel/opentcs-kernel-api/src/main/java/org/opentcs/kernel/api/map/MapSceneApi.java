@@ -2,11 +2,8 @@ package org.opentcs.kernel.api.map;
 
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
-import org.opentcs.kernel.api.dto.BlockDTO;
 import org.opentcs.kernel.api.dto.CrossLayerConnectionDTO;
 import org.opentcs.kernel.api.dto.FactoryModelDTO;
-import org.opentcs.kernel.api.dto.LocationDTO;
-import org.opentcs.kernel.api.dto.LocationTypeDTO;
 import org.opentcs.kernel.api.dto.NavigationMapDTO;
 import org.opentcs.kernel.api.dto.PathDTO;
 import org.opentcs.kernel.api.dto.PointDTO;
@@ -44,18 +41,6 @@ public interface MapSceneApi {
 
     boolean deleteFactoryModel(Long id);
 
-    TableDataInfo<LocationTypeDTO> listLocationTypes(LocationTypeDTO query, PageQuery pageQuery);
-
-    LocationTypeDTO getLocationTypeById(Long id);
-
-    List<LocationTypeDTO> listAllLocationTypes();
-
-    boolean createLocationType(LocationTypeDTO dto);
-
-    boolean updateLocationType(LocationTypeDTO dto);
-
-    boolean deleteLocationType(Long id);
-
     List<PointDTO> listPointsByMap(Long mapId);
 
     boolean replacePointsByMap(Long mapId, List<PointDTO> points);
@@ -69,34 +54,6 @@ public interface MapSceneApi {
     PathDTO getPathById(Long id);
 
     boolean replacePathsByMap(Long mapId, List<PathDTO> paths);
-
-    TableDataInfo<LocationDTO> listLocations(LocationDTO query, PageQuery pageQuery);
-
-    List<LocationDTO> listLocationsByFactory(Long factoryId);
-
-    List<LocationDTO> listLocationsByMap(Long mapId);
-
-    LocationDTO getLocationById(Long id);
-
-    boolean replaceLocationsByMap(Long mapId, List<LocationDTO> locations);
-
-    TableDataInfo<BlockDTO> listBlocks(BlockDTO query, PageQuery pageQuery);
-
-    List<BlockDTO> listBlocksByFactory(Long factoryId);
-
-    List<BlockDTO> listBlocksByFactoryAndType(Long factoryId, String type);
-
-    List<BlockDTO> listBlocksByMap(Long navigationMapId);
-
-    boolean replaceBlocksByMap(Long navigationMapId, List<BlockDTO> blocks);
-
-    BlockDTO getBlockById(Long id);
-
-    boolean createBlock(BlockDTO dto);
-
-    boolean updateBlock(BlockDTO dto);
-
-    boolean deleteBlock(Long id);
 
     TableDataInfo<CrossLayerConnectionDTO> listConnections(CrossLayerConnectionDTO query, PageQuery pageQuery);
 

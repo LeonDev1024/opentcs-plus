@@ -73,13 +73,15 @@ public class BrandApplicationService {
         BrandBO bo = new BrandBO();
         bo.setId(entity.getId());
         bo.setName(entity.getName());
+        bo.setEnglishName(entity.getEnglishName());
         bo.setCode(entity.getCode());
         bo.setLogo(entity.getLogo());
-        bo.setWebsite(entity.getWebsite());
         bo.setDescription(entity.getDescription());
         bo.setContact(entity.getContact());
         bo.setEnabled(entity.getEnabled());
         bo.setSort(entity.getSort());
+        bo.setCreateTime(entity.getCreateTime());
+        bo.setUpdateTime(entity.getUpdateTime());
         return bo;
     }
 
@@ -90,13 +92,14 @@ public class BrandApplicationService {
         BrandEntity entity = new BrandEntity();
         entity.setId(bo.getId());
         entity.setName(bo.getName());
+        entity.setEnglishName(bo.getEnglishName());
         entity.setCode(bo.getCode());
         entity.setLogo(bo.getLogo());
-        entity.setWebsite(bo.getWebsite());
         entity.setDescription(bo.getDescription());
         entity.setContact(bo.getContact());
         entity.setEnabled(bo.getEnabled());
         entity.setSort(bo.getSort());
+        entity.setKeyword(bo.getKeyword());
         return entity;
     }
 }

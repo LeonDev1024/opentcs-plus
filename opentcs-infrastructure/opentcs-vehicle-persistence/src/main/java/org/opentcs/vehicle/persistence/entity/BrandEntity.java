@@ -34,19 +34,19 @@ public class BrandEntity implements Serializable {
     private String name;
 
     /**
+     * 英文名称
+     */
+    private String englishName;
+
+    /**
      * 品牌缩写代码
      */
     private String code;
 
     /**
-     * Logo URL
+     * 品牌缩略图（Base64 Data URL）
      */
     private String logo;
-
-    /**
-     * 官网地址
-     */
-    private String website;
 
     /**
      * 品牌描述
@@ -97,4 +97,10 @@ public class BrandEntity implements Serializable {
      */
     @TableField(fill = FieldFill.INSERT)
     private String delFlag;
+
+    /**
+     * 关键词（品牌编码或名称，仅查询条件，非表字段）
+     */
+    @TableField(exist = false)
+    private String keyword;
 }
