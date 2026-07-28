@@ -5,6 +5,7 @@ import org.opentcs.kernel.domain.order.OrderState;
 import org.opentcs.kernel.domain.order.TransportOrder;
 import org.opentcs.kernel.domain.event.OrderCreatedEvent;
 import org.opentcs.kernel.domain.event.OrderStateChangedEvent;
+import org.opentcs.kernel.domain.event.OrderAssignedEvent;
 import org.opentcs.kernel.domain.event.OrderWithdrawalRequestedEvent;
 import org.opentcs.kernel.domain.event.VehicleStateChangedEvent;
 import org.opentcs.kernel.application.runtime.RuntimeStateStore;
@@ -280,6 +281,37 @@ public class DispatcherService implements Dispatcher {
         cancelVehicleOrder(vehicleId, "VEHICLE_CANCELLED");
     }
 
+    /**
+     * 车辆执行失败回调（订单记为 FAILED，非 CANCELLED）。
+     */
+    public void vehicleFailedOrder(String vehicleId, String reason) {
+        failVehicleOrder(vehicleId, reason != null ? reason : "ORDER_EXECUTION_FAILED");
+    }
+
+    private void failVehicleOrder(String vehicleId, String reason) {
+        Vehicle vehicle = vehicleRegistry.getVehicleDomain(vehicleId);
+        if (vehicle == null) return;
+
+        String orderId = vehicle.getCurrentOrderId();
+        TransportOrder order = orderId != null ? orderRegistry.getOrder(orderId) : null;
+
+        if (order != null && !order.getState().isFinal()) {
+            OrderState oldState = order.getState();
+            order.fail();
+            if (reason != null) {
+                order.getProperties().put("failureReasonCode", reason);
+            }
+            publishOrderStateChanged(order, oldState, reason);
+        }
+
+        VehicleState old = vehicle.getState();
+        vehicle.cancelOrder();
+        vehicleRegistry.updateVehicleStateDomain(vehicleId, VehicleState.IDLE);
+
+        eventPublisher.publishEvent(
+                new VehicleStateChangedEvent(vehicleId, old, VehicleState.IDLE, null));
+    }
+
     private void cancelVehicleOrder(String vehicleId, String reason) {
         Vehicle vehicle = vehicleRegistry.getVehicleDomain(vehicleId);
         if (vehicle == null) return;
@@ -316,6 +348,7 @@ public class DispatcherService implements Dispatcher {
 
     private void assignOrderToVehicle(TransportOrder order, Vehicle vehicle) {
         order.assignTo(vehicle.getVehicleId());
+        order.getProperties().put("dispatchState", "DISPATCHED");
         publishOrderStateChanged(order, OrderState.ACTIVE, null);
 
         VehicleState old = vehicle.getState();
@@ -323,10 +356,14 @@ public class DispatcherService implements Dispatcher {
         vehicle.updateState(VehicleState.EXECUTING);
         vehicleRegistry.updateVehicleStateDomain(vehicle.getVehicleId(), VehicleState.EXECUTING);
 
-        log.info("订单 {} 已分配给车辆 {}", order.getOrderId(), vehicle.getVehicleId());
+        log.info("订单 {} 已分配给车辆 {} traceId={}",
+                order.getOrderId(), vehicle.getVehicleId(),
+                order.getProperties().get("traceId"));
 
         eventPublisher.publishEvent(new VehicleStateChangedEvent(
                 vehicle.getVehicleId(), old, VehicleState.EXECUTING, order.getOrderId()));
+        eventPublisher.publishEvent(new OrderAssignedEvent(
+                order.getOrderId(), vehicle.getVehicleId()));
     }
 
     private void processWaitingOrders(String vehicleId) {

@@ -6,7 +6,9 @@ import org.opentcs.driver.api.dto.DriverConfig;
 import org.opentcs.driver.api.dto.InstantAction;
 import org.opentcs.driver.api.dto.VehicleStatus;
 import org.opentcs.driver.registry.DriverRegistry;
+import org.opentcs.kernel.api.OrderFailureReasons;
 import org.opentcs.kernel.api.OrderLifecycleApi;
+import org.opentcs.kernel.api.OrderTraceKeys;
 import org.opentcs.kernel.api.TransportOrderApi;
 import org.opentcs.kernel.api.dto.PositionDTO;
 import org.opentcs.kernel.api.dto.TransportOrderDTO;
@@ -78,7 +80,8 @@ public class VehicleApplicationService {
     /**
      * 驱动层推送的状态变更处理：
      * 1. 更新内核运行时状态（位置、电量、AGV 状态）
-     * 2. 检测订单完成：车辆从 EXECUTING/WAITING 转为 IDLE 时，通知 OrderLifecycleApi
+     * 2. 根据 lastNodeId / nodeStates 推进 OrderStep
+     * 3. 检测订单完成或 FAULT 失败
      */
     private void handleDriverStatus(VehicleStatus status) {
         String vehicleId = status.getVehicleId();
@@ -90,22 +93,96 @@ public class VehicleApplicationService {
 
         VehicleState previousState = kernelVehicle.getState();
         String activeOrderId = vehicleRegistry.getVehicleCurrentOrder(vehicleId);
+        String traceId = resolveTraceId(activeOrderId);
 
         // 更新内核状态（位置、电量、AGV 状态）
         onVehicleStatusChanged(status);
 
-        // 检测订单完成：车辆曾处于执行/等待状态，且 AGV 回报 IDLE
+        if (activeOrderId != null) {
+            advanceOrderSteps(activeOrderId, status, traceId);
+        }
+
         boolean wasExecuting = previousState == VehicleState.EXECUTING
                 || previousState == VehicleState.WAITING;
         boolean isNowIdle = "IDLE".equalsIgnoreCase(status.getAgvState());
+        boolean hasFault = hasFault(status);
+        boolean rejected = isOrderRejected(status);
+
+        if (hasFault && activeOrderId != null) {
+            orderLifecycleApi.onOrderExecutionResult(
+                    activeOrderId, vehicleId, false, OrderFailureReasons.AGV_FAULT);
+            log.warn("订单因 AGV FAULT 失败: orderId={}, vehicleId={}, traceId={}",
+                    activeOrderId, vehicleId, traceId);
+            return;
+        }
+
+        if (rejected && activeOrderId != null) {
+            orderLifecycleApi.onOrderExecutionResult(
+                    activeOrderId, vehicleId, false, OrderFailureReasons.ORDER_REJECTED);
+            log.warn("订单被车辆拒绝: orderId={}, vehicleId={}, traceId={}",
+                    activeOrderId, vehicleId, traceId);
+            return;
+        }
 
         if (wasExecuting && isNowIdle && activeOrderId != null) {
-            boolean hasFault = hasFault(status);
-            orderLifecycleApi.onOrderExecutionResult(
-                    activeOrderId, vehicleId, !hasFault,
-                    hasFault ? "AGV 报告 FAULT 错误，订单执行失败" : null);
-            log.info("订单执行结果已上报: orderId={}, vehicleId={}, success={}", activeOrderId, vehicleId, !hasFault);
+            orderLifecycleApi.onOrderExecutionResult(activeOrderId, vehicleId, true, null);
+            log.info("订单执行结果已上报: orderId={}, vehicleId={}, success=true, traceId={}",
+                    activeOrderId, vehicleId, traceId);
         }
+    }
+
+    private void advanceOrderSteps(String orderId, VehicleStatus status, String traceId) {
+        String reachedNode = status.getLastNodeId();
+        if (reachedNode == null || reachedNode.isBlank()) {
+            reachedNode = status.getPositionId();
+        }
+        if ((reachedNode == null || reachedNode.isBlank()) && status.getNodeStates() != null) {
+            for (VehicleStatus.NodeState nodeState : status.getNodeStates()) {
+                if (Boolean.TRUE.equals(nodeState.getReleased()) && nodeState.getNodeId() != null) {
+                    reachedNode = nodeState.getNodeId();
+                }
+            }
+        }
+        if (reachedNode == null || reachedNode.isBlank()) {
+            return;
+        }
+
+        // 连续推进：车辆可能一次上报越过多个节点
+        for (int guard = 0; guard < 64; guard++) {
+            TransportOrder order = orderRegistry.getOrder(orderId);
+            if (order == null || !order.isActive() || order.getCurrentStep() == null) {
+                return;
+            }
+            String dest = order.getCurrentStep().getDestPointId();
+            if (!reachedNode.equals(dest)) {
+                return;
+            }
+            int stepIndex = order.getCurrentStepIndex();
+            transportOrderApi.onStepCompleted(orderId, stepIndex);
+            log.info("订单步骤完成: orderId={}, stepIndex={}, nodeId={}, traceId={}",
+                    orderId, stepIndex, reachedNode, traceId);
+        }
+    }
+
+    private boolean isOrderRejected(VehicleStatus status) {
+        if (status.getActionStates() == null) {
+            return false;
+        }
+        for (VehicleStatus.ActionState actionState : status.getActionStates()) {
+            if ("FAILED".equalsIgnoreCase(actionState.getActionStatus())
+                    || "REJECTED".equalsIgnoreCase(actionState.getActionStatus())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String resolveTraceId(String orderId) {
+        if (orderId == null) {
+            return null;
+        }
+        TransportOrder order = orderRegistry.getOrder(orderId);
+        return order != null ? order.getProperties().get(OrderTraceKeys.TRACE_ID) : null;
     }
 
     /**

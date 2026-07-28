@@ -28,7 +28,7 @@ public class OrderLifecycleService implements OrderLifecycleApi {
             dispatcher.vehicleCompletedOrder(vehicleId);
         } else {
             log.warn("订单 {} 车辆 {} 执行失败，原因: {}", orderId, vehicleId, reason);
-            dispatcher.vehicleCancelledOrder(vehicleId);
+            dispatcher.vehicleFailedOrder(vehicleId, reason);
         }
     }
 }

@@ -218,6 +218,7 @@ public class TransportOrderService implements TransportOrderApi {
         }
         order.getProperties().put("mapId", activeMapId);
         order.getProperties().put("mapVersion", activeMapVersion);
+        order.getProperties().putIfAbsent("traceId", java.util.UUID.randomUUID().toString());
 
         return order;
     }

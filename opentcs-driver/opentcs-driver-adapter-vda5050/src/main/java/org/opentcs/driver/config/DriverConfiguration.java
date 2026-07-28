@@ -4,14 +4,16 @@ import org.opentcs.driver.api.DriverAdapter;
 import org.opentcs.driver.api.VehicleGateway;
 import org.opentcs.driver.gateway.VehicleGatewayImpl;
 import org.opentcs.driver.registry.DriverRegistry;
+import org.opentcs.driver.vda5050.LoopbackVda5050Adapter;
 import org.opentcs.driver.vda5050.VDA5050Adapter;
 import org.opentcs.driver.api.dto.DriverConfig;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * 驱动配置：单一 {@link VehicleGateway}、单一 {@link DriverAdapter} 实例，注入 {@link DriverRegistry}。
+ * 驱动配置：单一 {@link VehicleGateway}、VDA5050 + LOOPBACK 适配器，注入 {@link DriverRegistry}。
  */
 @Configuration
 public class DriverConfiguration {
@@ -20,6 +22,14 @@ public class DriverConfiguration {
     @ConditionalOnMissingBean(name = "vda5050Adapter")
     public DriverAdapter vda5050Adapter() {
         VDA5050Adapter adapter = new VDA5050Adapter();
+        adapter.initialize(new DriverConfig());
+        return adapter;
+    }
+
+    @Bean(name = "loopbackVda5050Adapter")
+    @ConditionalOnMissingBean(name = "loopbackVda5050Adapter")
+    public DriverAdapter loopbackVda5050Adapter() {
+        LoopbackVda5050Adapter adapter = new LoopbackVda5050Adapter();
         adapter.initialize(new DriverConfig());
         return adapter;
     }
@@ -34,9 +44,12 @@ public class DriverConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public DriverRegistry driverRegistry(VehicleGateway vehicleGateway, DriverAdapter vda5050Adapter) {
+    public DriverRegistry driverRegistry(VehicleGateway vehicleGateway,
+                                         @Qualifier("vda5050Adapter") DriverAdapter vda5050Adapter,
+                                         @Qualifier("loopbackVda5050Adapter") DriverAdapter loopbackVda5050Adapter) {
         DriverRegistry registry = new DriverRegistry(vehicleGateway);
-        registry.registerAdapter("VDA5050", vda5050Adapter);
+        registry.registerAdapter(VDA5050Adapter.DRIVER_TYPE, vda5050Adapter);
+        registry.registerAdapter(LoopbackVda5050Adapter.DRIVER_TYPE, loopbackVda5050Adapter);
         return registry;
     }
 }

@@ -47,13 +47,34 @@
 - [x] 本基线说明文档落地
 - [x] 后续迭代入口明确：下一迭代为 **I1 单车真实闭环验收**
 
-## 5. 下一迭代入口（I1）
+## 5. I1 落地状态（单车真实闭环）
 
-冻结本基线后，立即开展：
+> 更新日期：2026-07-28
 
-1. 打通 order 下发后的 VDA state 回写  
-2. 订单步骤完成回写与失败原因码  
-3. 单车 A→B 验收（含重启恢复一致性）  
-4. `traceId` 贯穿创建 → 派车 → 下发 → 回传 → 完成  
+### 5.1 已完成
 
-详细任务见产品计划画布与 `AMR调度产品与架构优化实施清单.md` 的 M1 验收项。
+- [x] 派车后发布 `OrderAssignedEvent`，由 `OrderDispatchCommandListener` 调用 `driverRegistry.sendOrder`
+- [x] `DriverOrderFactory` 将路径/步骤转换为 VDA nodes/edges，并携带 `traceId`
+- [x] 订单创建自动写入 `properties.traceId`
+- [x] VDA State 解析兼容嵌套与扁平格式，读取 `lastNodeId` / `nodeStates` / `actionStates`
+- [x] 状态回写推进 `OrderStep`；FAULT / REJECTED → `FAILED`（不再误记为 `CANCELLED`）
+- [x] 失败原因码：`OrderFailureReasons` + `properties.failureReasonCode`
+- [x] `LOOPBACK` 驱动：无真实车时可回放节点到达与 IDLE，用于 A→B 联调
+
+### 5.2 验收用法（Loopback）
+
+1. 发布地图并加载运行时  
+2. 注册车辆，`driverType=LOOPBACK`，连接后激活  
+3. 创建 A→B 运输订单并提交  
+4. 观察日志：`订单已下发` → `订单步骤完成` → `订单执行结果已上报`，DB 状态为 `FINISHED`  
+5. 用同一 `traceId` 串起创建/下发/回传日志
+
+### 5.3 仍开放（后续）
+
+- [ ] 真实 VDA5050 车现场 A→B 验收  
+- [ ] 重启恢复后的 node/action 细粒度对账  
+- [ ] 订单状态枚举扩展 `DISPATCHED/EXECUTING`（当前用 `dispatchState` 属性）
+
+## 6. 下一迭代入口（I2）
+
+地图可投产：路径限速 / 停靠朝向可编辑、Block 完整建模。
