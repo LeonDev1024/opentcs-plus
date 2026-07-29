@@ -63,4 +63,24 @@ class TopologyConflictDetectorTest {
 
         assertTrue(detector.findAssignConflict(vehicle, order).isPresent());
     }
+
+    @Test
+    void shouldIgnoreSameDirectionOnlyBlockLock() {
+        BlockRegistry registry = new BlockRegistry();
+        BlockDTO block = new BlockDTO();
+        block.setBlockId("B-SAME");
+        block.setType("SAME_DIRECTION_ONLY");
+        block.setMembers(List.of("DEST"));
+        registry.replaceAll(List.of(block));
+        detector = new TopologyConflictDetector(lockService, registry, mock(RoutePlannerImpl.class));
+        lockService.tryAcquire(ResourceType.BLOCK, "B-SAME", "v-other", "o1", Duration.ofMinutes(1));
+
+        Vehicle vehicle = new Vehicle("v1");
+        vehicle.setName("v1");
+        vehicle.updatePosition(new VehiclePosition("A", null, 0, 0, 0, 0));
+        TransportOrder order = new TransportOrder("ord-1", "ord-1", "A", "DEST",
+                List.of(new org.opentcs.kernel.domain.routing.Path("p", "A", "DEST", 10)));
+
+        assertTrue(detector.findAssignConflict(vehicle, order).isEmpty());
+    }
 }

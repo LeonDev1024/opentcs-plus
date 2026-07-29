@@ -51,6 +51,9 @@ public class TopologyConflictDetector {
         }
 
         for (RuntimeBlock block : blockRegistry.findByMember(dest)) {
+            if (!block.isSingleVehicleOnly()) {
+                continue;
+            }
             Optional<String> holder = conflictOnResource(locks, ResourceType.BLOCK, block.getBlockId(),
                     vehicle.getVehicleId());
             if (holder.isPresent()) {

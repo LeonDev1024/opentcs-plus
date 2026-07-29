@@ -79,6 +79,10 @@ public class BlockOccupancyService {
         }
 
         for (RuntimeBlock block : blockRegistry.findByMember(resourceName)) {
+            // SAME_DIRECTION_ONLY：同 Block 内允许多车共处（点位仍互斥）；完整方向语义后续迭代
+            if (!block.isSingleVehicleOnly()) {
+                continue;
+            }
             Optional<ResourceLock> blockLock = resourceLockService.tryAcquire(
                     ResourceType.BLOCK, block.getBlockId(), vehicleId, orderId, DEFAULT_TTL);
             if (blockLock.isEmpty()) {

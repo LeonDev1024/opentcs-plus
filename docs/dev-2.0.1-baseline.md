@@ -95,13 +95,15 @@
 
 ### 6.3 仍开放
 
-- [ ] 地图热加载（冻结接单 → 切版本 → 恢复）  
+- [x] 地图热加载（冻结接单 → 切版本 → 恢复）  
 - [x] 调度运行态真正消费 Block 互斥策略  
 
 ### 6.4 本迭代已附带打磨
 
 - [x] Block 成员按颜色在画布描边/点位着色  
 - [x] 点位右键「加入 Block」  
+- [x] `MapHotReloadService`：发布地图时冻结接单 → `loadPublishedMap` → 恢复并 `dispatch()`  
+- [x] 热加载期间 `createOrder` 拒绝接单
 
 ## 7. I3 落地状态（运维可运营 + 监控可用）
 
@@ -142,8 +144,14 @@
 - [x] 车辆分配锁，修复并发重复分配；3×20 压测用例
 - [x] 锁监控页审计流水 Tab
 
-### 8.2 仍开放
+### 8.2 仍开放 / 已收口
 
-- [ ] SAME_DIRECTION_ONLY 方向语义完整落地  
-- [ ] 完整交叉口/死锁检测与消解  
-- [ ] 仿真回归场景矩阵默认进 CI  
+- [x] SAME_DIRECTION_ONLY 最小语义（同 Block 允许多车，点位仍互斥；完整方向后续）  
+- [ ] 完整交叉口/死锁检测与消解（下一版本）  
+- [x] 仿真回归场景矩阵默认进 CI（`RegressionScenarioMatrixTest` + `.github/workflows/test.yml` 覆盖 `dev-2.0.1`）  
+
+### 8.3 明确延期到下一版本
+
+- WebSocket 实时推送（当前轮询 MVP）  
+- 完整方向/死锁消解  
+- 重启后 node/action 细粒度对账（I1-4）

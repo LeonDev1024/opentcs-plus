@@ -125,13 +125,20 @@ public class KernelCoreConfiguration {
     }
 
     @Bean
+    public MapHotReloadService mapHotReloadService(MapRuntimeService mapRuntimeService,
+                                                   Dispatcher dispatcher) {
+        return new MapHotReloadService(mapRuntimeService, dispatcher);
+    }
+
+    @Bean
     public TransportOrderService transportOrderService(TransportOrderRegistry registry,
                                                        DispatcherService dispatcher,
                                                        RoutePlannerImpl routePlanner,
                                                        MapRuntimeService mapRuntimeService,
+                                                       MapHotReloadService mapHotReloadService,
                                                        ApplicationEventPublisher eventPublisher) {
         return new TransportOrderService(registry, dispatcher, routePlanner, mapRuntimeService,
-                eventPublisher);
+                mapHotReloadService, eventPublisher);
     }
 
     @Bean

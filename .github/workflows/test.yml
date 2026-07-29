@@ -1,0 +1,26 @@
+name: Dev Tests
+
+on:
+  push:
+    branches: [main, master, 'dev-2.0.1', 'dev-*']
+  pull_request:
+    branches: [main, master, 'dev-2.0.1', 'dev-*']
+
+env:
+  JAVA_VERSION: '21'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: temurin
+          cache: maven
+
+      - name: Run -Pdev tests
+        run: mvn test -Pdev -B -Drevision=2.0.1-SNAPSHOT

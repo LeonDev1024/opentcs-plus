@@ -54,4 +54,18 @@ class BlockOccupancyServiceTest {
         assertTrue(lockService.listHeldLocks().stream()
                 .anyMatch(l -> l.getResourceType() == ResourceType.POINT && "PX".equals(l.getResourceId())));
     }
+
+    @Test
+    void shouldAllowCohabitationOnSameDirectionOnlyBlock() {
+        BlockDTO sameDir = new BlockDTO();
+        sameDir.setBlockId("B-SAME");
+        sameDir.setName("Corridor");
+        sameDir.setType("SAME_DIRECTION_ONLY");
+        sameDir.setMembers(List.of("S1", "S2"));
+        blockRegistry.replaceAll(List.of(sameDir));
+
+        assertTrue(occupancyService.onVehicleMoved("v1", "o1", "S1"));
+        assertTrue(occupancyService.onVehicleMoved("v2", "o2", "S2"));
+        assertFalse(occupancyService.onVehicleMoved("v3", "o3", "S1"));
+    }
 }
