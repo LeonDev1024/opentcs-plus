@@ -29,7 +29,9 @@ import org.opentcs.vehicle.controller.req.GoChargeRequest;
 import org.opentcs.vehicle.controller.req.MapSwitchRequest;
 import org.opentcs.vehicle.controller.req.ModeSwitchRequest;
 import org.opentcs.vehicle.controller.req.MoveRequest;
+import org.opentcs.vehicle.persistence.entity.OpsActionEntity;
 import org.opentcs.vehicle.persistence.entity.VehicleEntity;
+import org.opentcs.vehicle.persistence.service.OpsActionRepository;
 import org.opentcs.vehicle.persistence.service.VehicleRepository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -45,8 +47,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 /**
@@ -66,7 +68,11 @@ public class VehicleApplicationService {
     private final TransportOrderApi transportOrderApi;
     private final RuntimeStateStore runtimeStateStore;
     private final DriverRegistry driverRegistry;
-    private final List<Map<String, Object>> opsActionRecords = new CopyOnWriteArrayList<>();
+    private final OpsActionRepository opsActionRepository;
+
+    private static final Set<String> TERMINAL_OPS_STATUSES = Set.of(
+            "SUCCEEDED", "FAILED", "TIMEOUT", "REJECTED");
+    private static final long OPS_ACTION_TIMEOUT_SECONDS = 90L;
 
     /**
      * 启动时向驱动层注册状态监听器，自动检测订单完成事件。
@@ -97,6 +103,7 @@ public class VehicleApplicationService {
 
         // 更新内核状态（位置、电量、AGV 状态）
         onVehicleStatusChanged(status);
+        reconcileOpsActions(status);
 
         if (activeOrderId != null) {
             advanceOrderSteps(activeOrderId, status, traceId);
@@ -351,7 +358,7 @@ public class VehicleApplicationService {
         params.put("targetMode", targetMode);
         params.put("executePolicy", nvl(request.getExecutePolicy(), "REJECT_IF_BUSY"));
         params.put("reason", nvl(request.getReason(), ""));
-        return executeOpsAction(vehicleName, "MODE_SWITCH", actionType, params);
+        return executeOpsAction(vehicleName, "MODE_SWITCH", actionType, params, request.getRequestId());
     }
 
     public OpsActionResultBO switchMap(String vehicleName, MapSwitchRequest request) {
@@ -360,7 +367,7 @@ public class VehicleApplicationService {
         params.put("targetMapVersion", nvl(request.getTargetMapVersion(), ""));
         params.put("initPosition", nvl(request.getInitPosition(), ""));
         params.put("fallbackMapId", nvl(request.getFallbackMapId(), ""));
-        return executeOpsAction(vehicleName, "MAP_SWITCH", "enableMap", params);
+        return executeOpsAction(vehicleName, "MAP_SWITCH", "enableMap", params, request.getRequestId());
     }
 
     public OpsActionResultBO goCharge(String vehicleName, GoChargeRequest request) {
@@ -371,7 +378,7 @@ public class VehicleApplicationService {
         if (request.getMinSocThreshold() != null) {
             params.put("minSocThreshold", String.valueOf(request.getMinSocThreshold()));
         }
-        return executeOpsAction(vehicleName, "GO_CHARGE", "CHARGE", params);
+        return executeOpsAction(vehicleName, "GO_CHARGE", "CHARGE", params, request.getRequestId());
     }
 
     public OpsActionResultBO moveVehicle(String vehicleName, MoveRequest request) {
@@ -392,58 +399,111 @@ public class VehicleApplicationService {
         }
 
         String actionType = "INIT_POSITION".equalsIgnoreCase(moveType) ? "initPosition" : "MOVE";
-        return executeOpsAction(vehicleName, "MOVE", actionType, params);
+        return executeOpsAction(vehicleName, "MOVE", actionType, params, request.getRequestId());
     }
 
     public Map<String, Object> precheck(String vehicleName, String actionType) {
         Map<String, Object> result = new HashMap<>();
         boolean online = vehicleRegistry.isOnline(vehicleName);
         Vehicle vehicle = vehicleRegistry.getVehicleDomain(vehicleName);
+        String state = vehicle == null ? "UNKNOWN" : vehicle.getState().name();
+        boolean busy = vehicle != null && (vehicle.getState() == VehicleState.EXECUTING
+                || vehicle.getState() == VehicleState.WAITING
+                || vehicle.getCurrentOrderId() != null);
+        boolean error = vehicle != null && vehicle.getState() == VehicleState.ERROR;
+
+        boolean allow = online && !error;
+        String reasonCode = null;
+        String reasonMessage = null;
+        if (!online) {
+            reasonCode = "OPS_AMR_001";
+            reasonMessage = "车辆离线，禁止执行运维动作";
+            allow = false;
+        } else if (error) {
+            reasonCode = "OPS_AMR_002";
+            reasonMessage = "车辆处于 ERROR，需先恢复";
+            allow = false;
+        } else if (busy && ("MODE_SWITCH".equalsIgnoreCase(actionType)
+                || "MAP_SWITCH".equalsIgnoreCase(actionType)
+                || "MOVE".equalsIgnoreCase(actionType))) {
+            reasonCode = "OPS_AMR_003";
+            reasonMessage = "车辆忙碌，建议暂停任务或选择 PAUSE_THEN_SWITCH / 确认风险后继续";
+            // 忙碌不硬拦，前端据此弹二次确认
+            allow = true;
+            result.put("riskConfirmRequired", true);
+        }
 
         result.put("vehicleName", vehicleName);
         result.put("actionType", actionType);
         result.put("online", online);
-        result.put("state", vehicle == null ? "UNKNOWN" : vehicle.getState().name());
-        result.put("allow", online);
-        result.put("reasonCode", online ? null : "OPS_AMR_001");
-        result.put("reasonMessage", online ? null : "车辆离线，禁止执行运维动作");
+        result.put("busy", busy);
+        result.put("state", state);
+        result.put("allow", allow);
+        result.put("reasonCode", reasonCode);
+        result.put("reasonMessage", reasonMessage);
         return result;
     }
 
     public List<Map<String, Object>> listOpsActionRecords(String vehicleName) {
-        if (vehicleName == null || vehicleName.isBlank()) {
-            return new ArrayList<>(opsActionRecords);
-        }
-        return opsActionRecords.stream()
-                .filter(record -> vehicleName.equals(record.get("vehicleName")))
+        return opsActionRepository.listRecent(vehicleName, 100).stream()
+                .map(this::toOpsRecordMap)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 将超时未回写的运维动作标记为 TIMEOUT。
+     */
+    public int markTimedOutOpsActions() {
+        LocalDateTime deadline = LocalDateTime.now().minusSeconds(OPS_ACTION_TIMEOUT_SECONDS);
+        List<OpsActionEntity> pending = opsActionRepository.listPendingBefore(deadline);
+        int count = 0;
+        for (OpsActionEntity entity : pending) {
+            entity.setExecuteStatus("TIMEOUT");
+            entity.setReasonCode("OPS_TIMEOUT");
+            entity.setReasonMessage("运维动作超时未收到车辆 actionStates 回写");
+            entity.setFinishedAt(LocalDateTime.now());
+            opsActionRepository.updateById(entity);
+            count++;
+        }
+        return count;
     }
 
     private OpsActionResultBO executeOpsAction(String vehicleName,
                                                String actionCategory,
                                                String actionType,
-                                               Map<String, String> parameters) {
-        if (!vehicleRegistry.isOnline(vehicleName)) {
-            throw new RuntimeException("车辆离线: " + vehicleName);
+                                               Map<String, String> parameters,
+                                               String requestId) {
+        Map<String, Object> check = precheck(vehicleName, actionCategory);
+        if (!Boolean.TRUE.equals(check.get("allow"))) {
+            throw new RuntimeException(String.valueOf(check.get("reasonMessage")));
         }
 
-        String actionId = "OPS-" + System.currentTimeMillis();
+        if (requestId != null && !requestId.isBlank()) {
+            var existing = opsActionRepository.findByVehicleAndRequestId(vehicleName, requestId);
+            if (existing.isPresent()) {
+                return toOpsResult(existing.get());
+            }
+        }
+
+        String actionId = "OPS-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 8);
         String traceId = UUID.randomUUID().toString().replace("-", "");
 
         InstantAction action = new InstantAction(actionId, actionType);
         action.setParameters(parameters);
         driverRegistry.sendInstantAction(vehicleName, action);
 
-        Map<String, Object> record = new HashMap<>();
-        record.put("actionId", actionId);
-        record.put("traceId", traceId);
-        record.put("vehicleName", vehicleName);
-        record.put("actionCategory", actionCategory);
-        record.put("actionType", actionType);
-        record.put("requestPayload", parameters);
-        record.put("executeStatus", "ACCEPTED");
-        record.put("operatedAt", LocalDateTime.now().toString());
-        opsActionRecords.add(0, record);
+        OpsActionEntity entity = new OpsActionEntity();
+        entity.setActionId(actionId);
+        entity.setRequestId(blankToNull(requestId));
+        entity.setTraceId(traceId);
+        entity.setVehicleName(vehicleName);
+        entity.setActionCategory(actionCategory);
+        entity.setActionType(actionType);
+        entity.setRequestPayload(toJson(parameters));
+        entity.setExecuteStatus("ACCEPTED");
+        entity.setOperatorName("ops");
+        entity.setOperatedAt(LocalDateTime.now());
+        opsActionRepository.save(entity);
 
         OpsActionResultBO result = new OpsActionResultBO();
         result.setActionId(actionId);
@@ -452,6 +512,85 @@ public class VehicleApplicationService {
         result.setTraceId(traceId);
         result.setEstimatedFinishTime(LocalDateTime.now().plusMinutes(1).toString());
         return result;
+    }
+
+    private void reconcileOpsActions(VehicleStatus status) {
+        if (status.getActionStates() == null || status.getActionStates().isEmpty()) {
+            return;
+        }
+        for (VehicleStatus.ActionState actionState : status.getActionStates()) {
+            if (actionState.getActionId() == null || !actionState.getActionId().startsWith("OPS-")) {
+                continue;
+            }
+            opsActionRepository.findByActionId(actionState.getActionId()).ifPresent(entity -> {
+                if (TERMINAL_OPS_STATUSES.contains(entity.getExecuteStatus())) {
+                    return;
+                }
+                String mapped = mapActionStatus(actionState.getActionStatus());
+                entity.setExecuteStatus(mapped);
+                if (TERMINAL_OPS_STATUSES.contains(mapped)) {
+                    entity.setFinishedAt(LocalDateTime.now());
+                    if ("FAILED".equals(mapped) || "REJECTED".equals(mapped)) {
+                        entity.setReasonCode("OPS_ACTION_" + mapped);
+                        entity.setReasonMessage("车辆回报 actionStatus=" + actionState.getActionStatus());
+                    }
+                }
+                opsActionRepository.updateById(entity);
+            });
+        }
+    }
+
+    private String mapActionStatus(String raw) {
+        if (raw == null) {
+            return "RUNNING";
+        }
+        return switch (raw.toUpperCase()) {
+            case "FINISHED", "SUCCEEDED", "COMPLETED" -> "SUCCEEDED";
+            case "FAILED" -> "FAILED";
+            case "REJECTED" -> "REJECTED";
+            case "RUNNING", "INITIALIZING", "WAITING" -> "RUNNING";
+            default -> "RUNNING";
+        };
+    }
+
+    private OpsActionResultBO toOpsResult(OpsActionEntity entity) {
+        OpsActionResultBO result = new OpsActionResultBO();
+        result.setActionId(entity.getActionId());
+        result.setAccepted(!"REJECTED".equals(entity.getExecuteStatus()));
+        result.setStatus(entity.getExecuteStatus());
+        result.setTraceId(entity.getTraceId());
+        result.setReasonCode(entity.getReasonCode());
+        result.setReasonMessage(entity.getReasonMessage());
+        return result;
+    }
+
+    private Map<String, Object> toOpsRecordMap(OpsActionEntity entity) {
+        Map<String, Object> record = new HashMap<>();
+        record.put("actionId", entity.getActionId());
+        record.put("requestId", entity.getRequestId());
+        record.put("traceId", entity.getTraceId());
+        record.put("vehicleName", entity.getVehicleName());
+        record.put("actionCategory", entity.getActionCategory());
+        record.put("actionType", entity.getActionType());
+        record.put("executeStatus", entity.getExecuteStatus());
+        record.put("reasonCode", entity.getReasonCode());
+        record.put("reasonMessage", entity.getReasonMessage());
+        record.put("operatorName", entity.getOperatorName());
+        record.put("operatedAt", entity.getOperatedAt() == null ? null : entity.getOperatedAt().toString());
+        record.put("finishedAt", entity.getFinishedAt() == null ? null : entity.getFinishedAt().toString());
+        return record;
+    }
+
+    private String toJson(Map<String, String> parameters) {
+        try {
+            return objectMapper.writeValueAsString(parameters);
+        } catch (Exception e) {
+            return "{}";
+        }
+    }
+
+    private String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value;
     }
 
     private String nvl(String value, String defaultValue) {

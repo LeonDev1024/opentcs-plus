@@ -103,6 +103,32 @@
 - [x] Block 成员按颜色在画布描边/点位着色  
 - [x] 点位右键「加入 Block」  
 
-## 7. 下一迭代入口（I3）
+## 7. I3 落地状态（运维可运营 + 监控可用）
 
-运维可运营 + 监控可用：OpsAction、动作台、监控 KPI/资源锁告警。
+> 更新日期：2026-07-29
+
+### 7.1 已完成
+
+- [x] OpsAction 落库（`tcs_ops_action`）+ requestId 幂等
+- [x] actionStates 回写 SUCCEEDED/FAILED/REJECTED + 超时 TIMEOUT
+- [x] 预校验（在线/ERROR/忙碌风险确认）
+- [x] AMR 运维动作台页面（模式/充电/切地图/移动）+ 执行时间线
+- [x] 资源锁监控列表 + 强制释放
+- [x] 告警中心 MVP（车辆 ERROR/OFFLINE + 锁 EXPIRED）
+- [x] 场景监控 4s 轮询 + EXECUTING/WORKING 筛选对齐
+
+### 7.2 验收要点
+
+1. 动作台对在线车执行暂停/恢复，记录可查且可幂等重放  
+2. 锁监控页能看到持有锁并可强制释放  
+3. 场景监控顶栏告警可跳转告警中心；KPI「任务中」可筛出 EXECUTING 车辆  
+
+### 7.3 仍开放
+
+- [ ] WebSocket 实时推送（当前轮询）  
+- [ ] 工厂维度过滤 statistics  
+- [ ] 调度运行态消费 Block / 冲突检测（I4）  
+
+## 8. 下一迭代入口（I4）
+
+交通冲突与资源锁审计：Block 占用、对向窄道/交叉口冲突、锁 DB 审计、并发压测。

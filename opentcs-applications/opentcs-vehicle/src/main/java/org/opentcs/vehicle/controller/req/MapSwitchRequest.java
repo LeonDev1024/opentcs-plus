@@ -9,4 +9,5 @@ public class MapSwitchRequest {
     private String targetMapVersion;
     private String initPosition;
     private String fallbackMapId;
+    private String requestId;
 }

@@ -491,6 +491,21 @@ INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component,
 VALUES (2013, '机器人列表', 2000, 3, 'list', 'vehicle/list/index', '', 1, 0, 'C', '0', '0', 'vehicle:list:list', 'jiqi-ren',
   103, 1, NOW(), NULL, NULL, '机器人列表菜单');
 
+INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
+  is_frame, is_cache, menu_type, visible, status, perms, icon,
+  create_dept, create_by, create_time, update_by, update_time, remark)
+VALUES (2014, 'AMR运维管理', 2000, 4, 'amr', 'vehicle/amr/index', '', 1, 0, 'C', '0', '0', 'ops:amr:list', 'robot',
+  103, 1, NOW(), NULL, NULL, 'AMR运维动作台');
+
+INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
+  is_frame, is_cache, menu_type, visible, status, perms, icon,
+  create_dept, create_by, create_time, update_by, update_time, remark)
+VALUES
+(20141, '模式切换', 2014, 1, '', '', '', 1, 0, 'F', '0', '0', 'ops:amr:mode', '#', 103, 1, NOW(), NULL, NULL, ''),
+(20142, '地图切换', 2014, 2, '', '', '', 1, 0, 'F', '0', '0', 'ops:amr:map', '#', 103, 1, NOW(), NULL, NULL, ''),
+(20143, '去充电', 2014, 3, '', '', '', 1, 0, 'F', '0', '0', 'ops:amr:charge', '#', 103, 1, NOW(), NULL, NULL, ''),
+(20144, '移动/重定位', 2014, 4, '', '', '', 1, 0, 'F', '0', '0', 'ops:amr:move', '#', 103, 1, NOW(), NULL, NULL, '');
+
 -- 2. 任务管理
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
@@ -559,6 +574,12 @@ INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component,
   create_dept, create_by, create_time, update_by, update_time, remark)
 VALUES (4512, '锁资源监控', 4500, 2, 'lock', 'monitor/lock/index', '', 1, 0, 'C', '0', '0', 'ops:monitor:lock', 'lock',
   103, 1, NOW(), NULL, NULL, '锁资源监控菜单');
+
+INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
+  is_frame, is_cache, menu_type, visible, status, perms, icon,
+  create_dept, create_by, create_time, update_by, update_time, remark)
+VALUES (4513, '告警中心', 4500, 3, 'alarm', 'monitor/alarm/index', '', 1, 0, 'C', '0', '0', 'ops:monitor:alarm', 'message',
+  103, 1, NOW(), NULL, NULL, '运维告警中心');
 
 -- 5. 若依框架菜单放到业务菜单之后
 UPDATE sys_menu
@@ -836,3 +857,7 @@ WHERE menu_id IN (2022, 4015)
         'map/scene/location-type/index',
         'deploy/factory/location-type/index'
    );
+
+-- I3: 超管授权 AMR 运维 / 告警中心
+INSERT IGNORE INTO sys_role_menu (role_id, menu_id) VALUES
+(1, 2014), (1, 20141), (1, 20142), (1, 20143), (1, 20144), (1, 4512), (1, 4513);

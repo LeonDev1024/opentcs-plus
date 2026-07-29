@@ -12,4 +12,5 @@ public class MoveRequest {
     private Double y;
     private Double theta;
     private Boolean confirmRisk;
+    private String requestId;
 }

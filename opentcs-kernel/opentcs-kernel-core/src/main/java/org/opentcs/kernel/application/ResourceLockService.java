@@ -112,6 +112,21 @@ public class ResourceLockService {
         return runtimeStateStore.getResourceLocks();
     }
 
+    /**
+     * 运维强制释放资源锁（忽略持有者校验）。
+     */
+    public boolean forceRelease(ResourceType resourceType, String resourceId) {
+        Optional<ResourceLock> existing = runtimeStateStore.getResourceLock(resourceType, resourceId);
+        if (existing.isEmpty()) {
+            return false;
+        }
+        ResourceLock lock = existing.get();
+        lock.release();
+        runtimeStateStore.removeResourceLock(resourceType, resourceId, lock.getLockId());
+        publish(lock, "FORCE_RELEASED");
+        return true;
+    }
+
     private void expire(ResourceLock lock) {
         lock.expire();
         runtimeStateStore.removeResourceLock(lock.getResourceType(), lock.getResourceId(), lock.getLockId());

@@ -44,6 +44,11 @@
 
         <dependency>
             <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-common-satoken</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opentcs</groupId>
             <artifactId>opentcs-common-mqtt</artifactId>
         </dependency>
 
