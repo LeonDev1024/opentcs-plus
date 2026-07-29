@@ -65,10 +65,16 @@ public class TransportOrderApplicationService {
         // 后续 ACTIVE/分配/完成等状态由领域事件监听器回写，逐步避免应用层双写状态。
         TransportOrderEntity entity = new TransportOrderEntity();
         entity.setOrderNo(createdOrderId);
-        entity.setName(command.getName());
+        entity.setName(resolveOrderName(command));
         entity.setIntendedVehicle(command.getIntendedVehicle());
         entity.setDestinations(command.getSourcePoint() + "," + command.getDestPoint());
         entity.setState("RAW");
+        if (command.getDeadline() != null) {
+            entity.setDeadline(java.time.Instant.ofEpochMilli(command.getDeadline())
+                    .atZone(java.time.ZoneId.systemDefault())
+                    .toLocalDateTime());
+        }
+        entity.setProperties(JsonUtils.toJsonString(buildCreateProperties(command)));
         copyRuntimeProperties(createdOrderId, entity);
         orderService.createTransportOrder(entity);
 
@@ -441,11 +447,44 @@ public class TransportOrderApplicationService {
         validatePoint(command.getDestPoint(), "目标点");
 
         OrderSpecDTO orderSpec = new OrderSpecDTO();
-        orderSpec.setName(command.getName());
+        orderSpec.setName(resolveOrderName(command));
         orderSpec.setSourcePointId(command.getSourcePoint());
         orderSpec.setDestPointId(command.getDestPoint());
         orderSpec.setIntendedVehicle(command.getIntendedVehicle());
+        orderSpec.setDeadline(command.getDeadline());
+        orderSpec.setProperties(buildCreateProperties(command));
         return orderSpec;
+    }
+
+    private String resolveOrderName(CreateOrderCommand command) {
+        if (command.getName() != null && !command.getName().isBlank()) {
+            return command.getName().trim();
+        }
+        if (command.getExternalOrderNo() != null && !command.getExternalOrderNo().isBlank()) {
+            return command.getExternalOrderNo().trim();
+        }
+        return null;
+    }
+
+    private Map<String, String> buildCreateProperties(CreateOrderCommand command) {
+        Map<String, String> properties = new LinkedHashMap<>();
+        if (command.getExternalOrderNo() != null && !command.getExternalOrderNo().isBlank()) {
+            properties.put("externalOrderNo", command.getExternalOrderNo().trim());
+        }
+        if (command.getPriority() != null) {
+            properties.put("priority", String.valueOf(command.getPriority()));
+        }
+        if (command.getRemark() != null && !command.getRemark().isBlank()) {
+            String remark = command.getRemark().trim();
+            if (remark.length() > 200) {
+                remark = remark.substring(0, 200);
+            }
+            properties.put("remark", remark);
+        }
+        if (command.getTemplateCode() != null && !command.getTemplateCode().isBlank()) {
+            properties.put("templateCode", command.getTemplateCode().trim());
+        }
+        return properties;
     }
 
     private OrderSpecDTO toOrderSpec(TransportOrderEntity entity) {

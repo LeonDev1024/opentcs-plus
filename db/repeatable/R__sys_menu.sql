@@ -528,6 +528,15 @@ INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, com
 VALUES (3012, '任务模版管理', 3000, 2, 'template', 'task/template/index', '', 1, 0, 'C', '0', '0', 'task:template:list', 'edit',
   103, 1, NOW(), NULL, NULL, '任务模版管理菜单');
 
+INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
+  is_frame, is_cache, menu_type, visible, status, perms, icon,
+  create_dept, create_by, create_time, update_by, update_time, remark)
+VALUES
+(30121, '任务模板查询', 3012, 1, '', '', '', 1, 0, 'F', '0', '0', 'task:template:query', '#', 103, 1, NOW(), NULL, NULL, ''),
+(30122, '任务模板新增', 3012, 2, '', '', '', 1, 0, 'F', '0', '0', 'task:template:add', '#', 103, 1, NOW(), NULL, NULL, ''),
+(30123, '任务模板修改', 3012, 3, '', '', '', 1, 0, 'F', '0', '0', 'task:template:edit', '#', 103, 1, NOW(), NULL, NULL, ''),
+(30124, '任务模板删除', 3012, 4, '', '', '', 1, 0, 'F', '0', '0', 'task:template:remove', '#', 103, 1, NOW(), NULL, NULL, '');
+
 -- 3. 地图管理
 INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
@@ -855,6 +864,7 @@ WHERE menu_id IN (2022, 4015)
         'deploy/factory/location-type/index'
    );
 
--- I3: 超管授权 AMR 运维 / 告警中心
+-- I3: 超管授权 AMR 运维 / 告警中心 / 任务模板按钮
 INSERT IGNORE INTO sys_role_menu (role_id, menu_id) VALUES
-(1, 2014), (1, 20141), (1, 20142), (1, 20143), (1, 20144), (1, 4512), (1, 4513);
+(1, 2014), (1, 20141), (1, 20142), (1, 20143), (1, 20144), (1, 4512), (1, 4513),
+(1, 30121), (1, 30122), (1, 30123), (1, 30124);
