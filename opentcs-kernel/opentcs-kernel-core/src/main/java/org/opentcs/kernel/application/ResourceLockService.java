@@ -127,6 +127,20 @@ public class ResourceLockService {
         return true;
     }
 
+    /**
+     * 启动恢复：将持久化的 HELD 锁写回运行态（不改变过期时间）。
+     */
+    public boolean restoreHeldLock(ResourceLock lock) {
+        if (lock == null || !lock.isHeld()) {
+            return false;
+        }
+        if (!runtimeStateStore.saveResourceLockIfAbsent(lock)) {
+            return false;
+        }
+        publish(lock, "RESTORED");
+        return true;
+    }
+
     private void expire(ResourceLock lock) {
         lock.expire();
         runtimeStateStore.removeResourceLock(lock.getResourceType(), lock.getResourceId(), lock.getLockId());

@@ -36,6 +36,13 @@ public class OpsMonitorController {
         return R.ok(opsMonitorApplicationService.forceReleaseLock(resourceType, resourceId));
     }
 
+    @SaCheckPermission("ops:monitor:lock")
+    @GetMapping("/locks/audit")
+    public R<List<Map<String, Object>>> listLockAudits(
+            @RequestParam(required = false, defaultValue = "100") int limit) {
+        return R.ok(opsMonitorApplicationService.listLockAudits(limit));
+    }
+
     @SaCheckPermission("ops:monitor:alarm")
     @GetMapping("/alarms")
     public R<List<Map<String, Object>>> listAlarms() {

@@ -10,6 +10,7 @@ import org.opentcs.kernel.domain.event.OrderWithdrawalRequestedEvent;
 import org.opentcs.kernel.domain.event.VehicleStateChangedEvent;
 import org.opentcs.kernel.application.runtime.RuntimeStateStore;
 import org.opentcs.kernel.application.dispatch.DispatchStrategy;
+import org.opentcs.kernel.application.traffic.TopologyConflictDetector;
 import org.opentcs.kernel.domain.vehicle.Vehicle;
 import org.opentcs.kernel.domain.vehicle.VehicleState;
 import org.slf4j.Logger;
@@ -44,6 +45,7 @@ public class DispatcherService implements Dispatcher {
     private final ApplicationEventPublisher eventPublisher;
     private final RuntimeStateStore runtimeStateStore;
     private final DispatchStrategy dispatchStrategy;
+    private final TopologyConflictDetector conflictDetector;
 
     private volatile boolean initialized = false;
 
@@ -53,12 +55,24 @@ public class DispatcherService implements Dispatcher {
                              ApplicationEventPublisher eventPublisher,
                              RuntimeStateStore runtimeStateStore,
                              DispatchStrategy dispatchStrategy) {
+        this(vehicleRegistry, orderRegistry, routePlanner, eventPublisher, runtimeStateStore,
+                dispatchStrategy, null);
+    }
+
+    public DispatcherService(VehicleRegistry vehicleRegistry,
+                             TransportOrderRegistry orderRegistry,
+                             RoutePlannerImpl routePlanner,
+                             ApplicationEventPublisher eventPublisher,
+                             RuntimeStateStore runtimeStateStore,
+                             DispatchStrategy dispatchStrategy,
+                             TopologyConflictDetector conflictDetector) {
         this.vehicleRegistry = vehicleRegistry;
         this.orderRegistry = orderRegistry;
         this.routePlanner = routePlanner;
         this.eventPublisher = eventPublisher;
         this.runtimeStateStore = runtimeStateStore;
         this.dispatchStrategy = dispatchStrategy;
+        this.conflictDetector = conflictDetector;
     }
 
     // ===== Lifecycle =====
@@ -232,6 +246,7 @@ public class DispatcherService implements Dispatcher {
 
         List<Vehicle> candidates = vehicleRegistry.getAvailableVehicleDomains().stream()
                 .filter(v -> canReach(v, order.getSourcePointId()))
+                .filter(v -> !hasTopologyConflict(v, order))
                 .collect(Collectors.toList());
 
         if (candidates.isEmpty()) {
@@ -239,12 +254,37 @@ public class DispatcherService implements Dispatcher {
             return false;
         }
 
-        Vehicle selected = dispatchStrategy.selectVehicle(order, candidates, routePlanner)
-                .orElse(null);
-        if (selected == null) return false;
-
-        assignOrderToVehicle(order, selected);
-        return true;
+        // 按策略排序后，带车辆分配锁逐一尝试，避免并发重复分配同一车
+        while (!candidates.isEmpty()) {
+            Vehicle selected = dispatchStrategy.selectVehicle(order, candidates, routePlanner)
+                    .orElse(null);
+            if (selected == null) {
+                return false;
+            }
+            if (!runtimeStateStore.tryAcquireVehicleAssignLock(selected.getVehicleId())) {
+                candidates = candidates.stream()
+                        .filter(v -> !v.getVehicleId().equals(selected.getVehicleId()))
+                        .collect(Collectors.toList());
+                continue;
+            }
+            try {
+                if (!selected.canAcceptOrder()) {
+                    candidates = candidates.stream()
+                            .filter(v -> !v.getVehicleId().equals(selected.getVehicleId()))
+                            .collect(Collectors.toList());
+                    continue;
+                }
+                assignOrderToVehicle(order, selected);
+                return true;
+            } finally {
+                // 车辆持有订单期间保持锁；完成/取消时再释放
+                if (selected.getCurrentOrderId() == null
+                        || !order.getOrderId().equals(selected.getCurrentOrderId())) {
+                    runtimeStateStore.releaseVehicleAssignLock(selected.getVehicleId());
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -267,6 +307,7 @@ public class DispatcherService implements Dispatcher {
         VehicleState old = vehicle.getState();
         vehicle.completeOrder();
         vehicleRegistry.updateVehicleStateDomain(vehicleId, VehicleState.IDLE);
+        runtimeStateStore.releaseVehicleAssignLock(vehicleId);
 
         eventPublisher.publishEvent(
                 new VehicleStateChangedEvent(vehicleId, old, VehicleState.IDLE, null));
@@ -307,6 +348,7 @@ public class DispatcherService implements Dispatcher {
         VehicleState old = vehicle.getState();
         vehicle.cancelOrder();
         vehicleRegistry.updateVehicleStateDomain(vehicleId, VehicleState.IDLE);
+        runtimeStateStore.releaseVehicleAssignLock(vehicleId);
 
         eventPublisher.publishEvent(
                 new VehicleStateChangedEvent(vehicleId, old, VehicleState.IDLE, null));
@@ -328,6 +370,7 @@ public class DispatcherService implements Dispatcher {
         VehicleState old = vehicle.getState();
         vehicle.cancelOrder();
         vehicleRegistry.updateVehicleStateDomain(vehicleId, VehicleState.IDLE);
+        runtimeStateStore.releaseVehicleAssignLock(vehicleId);
 
         eventPublisher.publishEvent(
                 new VehicleStateChangedEvent(vehicleId, old, VehicleState.IDLE, null));
@@ -338,6 +381,19 @@ public class DispatcherService implements Dispatcher {
     }
 
     // ===== 内部方法 =====
+
+    private boolean hasTopologyConflict(Vehicle vehicle, TransportOrder order) {
+        if (conflictDetector == null) {
+            return false;
+        }
+        return conflictDetector.findAssignConflict(vehicle, order)
+                .map(reason -> {
+                    log.debug("车辆 {} 与订单 {} 存在拓扑冲突: {}",
+                            vehicle.getVehicleId(), order.getOrderId(), reason);
+                    return true;
+                })
+                .orElse(false);
+    }
 
     private boolean canReach(Vehicle vehicle, String targetPointId) {
         String current = vehicle.getPosition().getPointId();

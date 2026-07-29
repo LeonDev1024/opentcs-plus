@@ -1,14 +1,16 @@
 package org.opentcs.vehicle.application;
 
 import lombok.RequiredArgsConstructor;
-import org.opentcs.kernel.domain.event.ResourceLockChangedEvent;
-import org.opentcs.kernel.domain.resource.ResourceLockStatus;
-import org.opentcs.kernel.domain.vehicle.Vehicle;
-import org.opentcs.kernel.domain.vehicle.VehicleState;
 import org.opentcs.kernel.application.ResourceLockService;
 import org.opentcs.kernel.application.VehicleRegistry;
+import org.opentcs.kernel.domain.event.ResourceLockChangedEvent;
 import org.opentcs.kernel.domain.resource.ResourceLock;
+import org.opentcs.kernel.domain.resource.ResourceLockStatus;
 import org.opentcs.kernel.domain.resource.ResourceType;
+import org.opentcs.kernel.domain.vehicle.Vehicle;
+import org.opentcs.kernel.domain.vehicle.VehicleState;
+import org.opentcs.vehicle.persistence.entity.ResourceLockAuditEntity;
+import org.opentcs.vehicle.persistence.service.ResourceLockAuditRepository;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +24,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 /**
- * 监控侧：资源锁列表 + 最小告警聚合。
+ * 监控侧：资源锁列表 + 最小告警聚合 + 锁审计查询。
  */
 @Service
 @RequiredArgsConstructor
@@ -30,6 +32,7 @@ public class OpsMonitorApplicationService {
 
     private final ResourceLockService resourceLockService;
     private final VehicleRegistry vehicleRegistry;
+    private final ResourceLockAuditRepository resourceLockAuditRepository;
     private final List<Map<String, Object>> recentAlarms = new CopyOnWriteArrayList<>();
 
     public List<Map<String, Object>> listLocks() {
@@ -66,6 +69,12 @@ public class OpsMonitorApplicationService {
         return alarms.stream().limit(200).collect(Collectors.toList());
     }
 
+    public List<Map<String, Object>> listLockAudits(int limit) {
+        return resourceLockAuditRepository.listRecent(limit).stream()
+                .map(this::toAuditMap)
+                .collect(Collectors.toList());
+    }
+
     public boolean ackAlarm(String alarmId) {
         for (Map<String, Object> alarm : recentAlarms) {
             if (alarmId.equals(alarm.get("alarmId"))) {
@@ -78,16 +87,18 @@ public class OpsMonitorApplicationService {
 
     @EventListener
     public void onResourceLockChanged(ResourceLockChangedEvent event) {
-        if (event.getStatus() != ResourceLockStatus.EXPIRED && !"EXPIRED".equals(event.getReason())) {
+        boolean expired = event.getStatus() == ResourceLockStatus.EXPIRED || "EXPIRED".equals(event.getReason());
+        boolean force = "FORCE_RELEASED".equals(event.getReason());
+        if (!expired && !force) {
             return;
         }
         Map<String, Object> alarm = new HashMap<>();
-        alarm.put("alarmId", "LOCK-" + event.getLockId());
-        alarm.put("severity", "WARNING");
+        alarm.put("alarmId", "LOCK-" + event.getLockId() + "-" + event.getReason());
+        alarm.put("severity", force ? "ERROR" : "WARNING");
         alarm.put("category", "RESOURCE_LOCK");
-        alarm.put("title", "资源锁超时释放");
+        alarm.put("title", force ? "资源锁紧急解锁" : "资源锁超时释放");
         alarm.put("message", event.getResourceType() + ":" + event.getResourceId()
-                + " 被车辆 " + event.getVehicleId() + " 持有超时");
+                + " 车辆=" + event.getVehicleId() + " reason=" + event.getReason());
         alarm.put("vehicleName", event.getVehicleId());
         alarm.put("resourceId", event.getResourceId());
         alarm.put("resourceType", event.getResourceType() == null ? null : event.getResourceType().name());
@@ -109,6 +120,21 @@ public class OpsMonitorApplicationService {
         map.put("status", lock.getStatus() == null ? null : lock.getStatus().name());
         map.put("createdAt", lock.getCreatedAt() == null ? null : lock.getCreatedAt().toString());
         map.put("expiresAt", lock.getExpiresAt() == null ? null : lock.getExpiresAt().toString());
+        return map;
+    }
+
+    private Map<String, Object> toAuditMap(ResourceLockAuditEntity entity) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("lockId", entity.getLockId());
+        map.put("resourceType", entity.getResourceType());
+        map.put("resourceId", entity.getResourceId());
+        map.put("vehicleId", entity.getVehicleId());
+        map.put("orderId", entity.getOrderId());
+        map.put("eventReason", entity.getEventReason());
+        map.put("status", entity.getStatus());
+        map.put("operatorName", entity.getOperatorName());
+        map.put("detail", entity.getDetail());
+        map.put("eventTime", entity.getEventTime() == null ? null : entity.getEventTime().toString());
         return map;
     }
 }

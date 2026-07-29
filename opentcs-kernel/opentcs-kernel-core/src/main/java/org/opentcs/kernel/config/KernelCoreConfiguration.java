@@ -49,15 +49,27 @@ public class KernelCoreConfiguration {
     }
 
     @Bean
+    public BlockRegistry blockRegistry() {
+        return new BlockRegistry();
+    }
+
+    @Bean
     public ResourceLockService resourceLockService(RuntimeStateStore runtimeStateStore,
                                                    ApplicationEventPublisher eventPublisher) {
         return new ResourceLockService(runtimeStateStore, eventPublisher);
     }
 
     @Bean
+    public BlockOccupancyService blockOccupancyService(ResourceLockService resourceLockService,
+                                                       BlockRegistry blockRegistry) {
+        return new BlockOccupancyService(resourceLockService, blockRegistry);
+    }
+
+    @Bean
     public ResourceLockRouteConstraintListener resourceLockRouteConstraintListener(
-            RoutePlannerImpl routePlanner) {
-        return new ResourceLockRouteConstraintListener(routePlanner);
+            RoutePlannerImpl routePlanner,
+            BlockRegistry blockRegistry) {
+        return new ResourceLockRouteConstraintListener(routePlanner, blockRegistry);
     }
 
     @Bean
@@ -72,8 +84,18 @@ public class KernelCoreConfiguration {
 
     @Bean
     public MapRuntimeService mapRuntimeService(MapSceneApi mapSceneApi,
-                                               RoutePlannerImpl routePlanner) {
-        return new MapRuntimeService(mapSceneApi, routePlanner);
+                                               RoutePlannerImpl routePlanner,
+                                               BlockRegistry blockRegistry) {
+        return new MapRuntimeService(mapSceneApi, routePlanner, blockRegistry);
+    }
+
+    @Bean
+    public org.opentcs.kernel.application.traffic.TopologyConflictDetector topologyConflictDetector(
+            ResourceLockService resourceLockService,
+            BlockRegistry blockRegistry,
+            RoutePlannerImpl routePlanner) {
+        return new org.opentcs.kernel.application.traffic.TopologyConflictDetector(
+                resourceLockService, blockRegistry, routePlanner);
     }
 
     @Bean
@@ -91,9 +113,10 @@ public class KernelCoreConfiguration {
                                                RoutePlannerImpl routePlanner,
                                                ApplicationEventPublisher eventPublisher,
                                                RuntimeStateStore runtimeStateStore,
-                                               DispatchStrategy dispatchStrategy) {
+                                               DispatchStrategy dispatchStrategy,
+                                               org.opentcs.kernel.application.traffic.TopologyConflictDetector topologyConflictDetector) {
         return new DispatcherService(vehicleRegistry, transportOrderRegistry,
-                routePlanner, eventPublisher, runtimeStateStore, dispatchStrategy);
+                routePlanner, eventPublisher, runtimeStateStore, dispatchStrategy, topologyConflictDetector);
     }
 
     @Bean

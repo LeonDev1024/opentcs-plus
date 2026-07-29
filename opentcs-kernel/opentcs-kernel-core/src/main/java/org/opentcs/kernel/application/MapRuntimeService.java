@@ -1,5 +1,6 @@
 package org.opentcs.kernel.application;
 
+import org.opentcs.kernel.api.dto.BlockDTO;
 import org.opentcs.kernel.api.dto.NavigationMapDTO;
 import org.opentcs.kernel.api.dto.PathDTO;
 import org.opentcs.kernel.api.dto.PointDTO;
@@ -34,12 +35,20 @@ public class MapRuntimeService {
 
     private final MapSceneApi mapSceneApi;
     private final RoutePlannerImpl routePlanner;
+    private final BlockRegistry blockRegistry;
     private volatile String activeMapId;
     private volatile String activeMapVersion;
 
     public MapRuntimeService(MapSceneApi mapSceneApi, RoutePlannerImpl routePlanner) {
+        this(mapSceneApi, routePlanner, new BlockRegistry());
+    }
+
+    public MapRuntimeService(MapSceneApi mapSceneApi,
+                             RoutePlannerImpl routePlanner,
+                             BlockRegistry blockRegistry) {
         this.mapSceneApi = mapSceneApi;
         this.routePlanner = routePlanner;
+        this.blockRegistry = blockRegistry;
     }
 
     /**
@@ -66,6 +75,7 @@ public class MapRuntimeService {
 
         List<PointDTO> points = mapSceneApi.listPointsByMap(map.getId());
         List<PathDTO> paths = mapSceneApi.listPathsByMap(map.getId());
+        List<BlockDTO> blocks = mapSceneApi.listBlocksByMap(map.getId());
 
         validateRuntimeGraph(map, points, paths);
 
@@ -76,14 +86,20 @@ public class MapRuntimeService {
         for (PathDTO path : paths) {
             routePlanner.registerPath(toDomainPath(path));
         }
+        blockRegistry.replaceAll(blocks);
 
         activeMapId = map.getMapId();
         activeMapVersion = map.getMapVersion();
 
-        log.info("运行时地图加载完成: mapId={}, version={}, points={}, paths={}",
-                activeMapId, activeMapVersion, points.size(), paths.size());
+        log.info("运行时地图加载完成: mapId={}, version={}, points={}, paths={}, blocks={}",
+                activeMapId, activeMapVersion, points.size(), paths.size(),
+                blocks == null ? 0 : blocks.size());
 
         return new LoadedMap(activeMapId, activeMapVersion, points.size(), paths.size());
+    }
+
+    public BlockRegistry getBlockRegistry() {
+        return blockRegistry;
     }
 
     public String getActiveMapId() {

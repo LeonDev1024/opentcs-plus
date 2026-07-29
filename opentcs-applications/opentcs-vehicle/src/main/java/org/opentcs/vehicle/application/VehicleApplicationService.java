@@ -14,17 +14,18 @@ import org.opentcs.kernel.api.dto.PositionDTO;
 import org.opentcs.kernel.api.dto.TransportOrderDTO;
 import org.opentcs.kernel.api.dto.VehicleDTO;
 import org.opentcs.kernel.api.dto.VehicleStateDTO;
-import org.opentcs.kernel.application.runtime.RuntimeStateStore;
-import org.opentcs.kernel.application.runtime.VehicleRuntimeSnapshot;
-import org.opentcs.vehicle.application.bo.VehicleBO;
-import org.opentcs.vehicle.application.bo.VehicleCrudBO;
-import org.opentcs.vehicle.application.bo.OpsActionResultBO;
+import org.opentcs.kernel.application.BlockOccupancyService;
 import org.opentcs.kernel.application.TransportOrderRegistry;
 import org.opentcs.kernel.application.VehicleRegistry;
+import org.opentcs.kernel.application.runtime.RuntimeStateStore;
+import org.opentcs.kernel.application.runtime.VehicleRuntimeSnapshot;
 import org.opentcs.kernel.domain.order.TransportOrder;
 import org.opentcs.kernel.domain.vehicle.Vehicle;
 import org.opentcs.kernel.domain.vehicle.VehiclePosition;
 import org.opentcs.kernel.domain.vehicle.VehicleState;
+import org.opentcs.vehicle.application.bo.OpsActionResultBO;
+import org.opentcs.vehicle.application.bo.VehicleBO;
+import org.opentcs.vehicle.application.bo.VehicleCrudBO;
 import org.opentcs.vehicle.controller.req.GoChargeRequest;
 import org.opentcs.vehicle.controller.req.MapSwitchRequest;
 import org.opentcs.vehicle.controller.req.ModeSwitchRequest;
@@ -69,6 +70,7 @@ public class VehicleApplicationService {
     private final RuntimeStateStore runtimeStateStore;
     private final DriverRegistry driverRegistry;
     private final OpsActionRepository opsActionRepository;
+    private final BlockOccupancyService blockOccupancyService;
 
     private static final Set<String> TERMINAL_OPS_STATUSES = Set.of(
             "SUCCEEDED", "FAILED", "TIMEOUT", "REJECTED");
@@ -647,6 +649,12 @@ public class VehicleApplicationService {
                 status.getTheta() != null ? status.getTheta() : 0
         );
         vehicleRegistry.updateVehiclePositionDomain(vehicleId, position);
+
+        // I4: Block/站点占用随位置进入/离开
+        String orderId = status.getOrderId() != null
+                ? status.getOrderId()
+                : vehicleRegistry.getVehicleCurrentOrder(vehicleId);
+        blockOccupancyService.onVehicleMoved(vehicleId, orderId, status.getPositionId());
 
         // 更新能量
         if (status.getBatteryState() != null) {
