@@ -94,7 +94,6 @@ public class MapEditorServiceImpl implements IMapEditorService {
         // 查询地图元素
         var points = mapSceneApi.listPointsByMap(navMapId);
         var paths = mapSceneApi.listPathsByMap(navMapId);
-        var blocks = mapSceneApi.listBlocksByMap(navMapId);
         var layerGroups = layerGroupRepository.selectByNavigationMapId(navMapId);
         var layers = layerRepository.selectByNavigationMapId(navMapId);
 
@@ -140,13 +139,12 @@ public class MapEditorServiceImpl implements IMapEditorService {
         dto.setMapInfo(mapInfo);
         dto.setPoints(points);
         dto.setPaths(paths);
-        dto.setBlocks(blocks);
         dto.setLayerGroups(toLayerGroupDTOs(layerGroups));
         dto.setLayers(toLayerDTOs(layers));
 
-        log.info("加载导航地图完成: {}, 版本: {}, 状态: {}, 点位: {}, 路径: {}, Block: {}",
+        log.info("加载导航地图完成: {}, 版本: {}, 状态: {}, 点位: {}, 路径: {}",
                 navMapDTO.getName(), navMapDTO.getMapVersion(), navMapDTO.getStatus(),
-                points.size(), paths.size(), blocks.size());
+                points.size(), paths.size());
 
         return dto;
     }
@@ -191,10 +189,6 @@ public class MapEditorServiceImpl implements IMapEditorService {
 
         if (saveDTO.getPaths() != null) {
             mapSceneApi.replacePathsByMap(navMapId, saveDTO.getPaths());
-        }
-
-        if (saveDTO.getBlocks() != null) {
-            mapSceneApi.replaceBlocksByMap(navMapId, saveDTO.getBlocks());
         }
 
         // 2. 生成并保存 JSON 快照（只保存 data 字段，不保存点路径）

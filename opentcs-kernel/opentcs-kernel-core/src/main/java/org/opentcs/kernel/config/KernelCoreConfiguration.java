@@ -49,27 +49,20 @@ public class KernelCoreConfiguration {
     }
 
     @Bean
-    public BlockRegistry blockRegistry() {
-        return new BlockRegistry();
-    }
-
-    @Bean
     public ResourceLockService resourceLockService(RuntimeStateStore runtimeStateStore,
                                                    ApplicationEventPublisher eventPublisher) {
         return new ResourceLockService(runtimeStateStore, eventPublisher);
     }
 
     @Bean
-    public BlockOccupancyService blockOccupancyService(ResourceLockService resourceLockService,
-                                                       BlockRegistry blockRegistry) {
-        return new BlockOccupancyService(resourceLockService, blockRegistry);
+    public PointOccupancyService pointOccupancyService(ResourceLockService resourceLockService) {
+        return new PointOccupancyService(resourceLockService);
     }
 
     @Bean
     public ResourceLockRouteConstraintListener resourceLockRouteConstraintListener(
-            RoutePlannerImpl routePlanner,
-            BlockRegistry blockRegistry) {
-        return new ResourceLockRouteConstraintListener(routePlanner, blockRegistry);
+            RoutePlannerImpl routePlanner) {
+        return new ResourceLockRouteConstraintListener(routePlanner);
     }
 
     @Bean
@@ -84,18 +77,16 @@ public class KernelCoreConfiguration {
 
     @Bean
     public MapRuntimeService mapRuntimeService(MapSceneApi mapSceneApi,
-                                               RoutePlannerImpl routePlanner,
-                                               BlockRegistry blockRegistry) {
-        return new MapRuntimeService(mapSceneApi, routePlanner, blockRegistry);
+                                               RoutePlannerImpl routePlanner) {
+        return new MapRuntimeService(mapSceneApi, routePlanner);
     }
 
     @Bean
     public org.opentcs.kernel.application.traffic.TopologyConflictDetector topologyConflictDetector(
             ResourceLockService resourceLockService,
-            BlockRegistry blockRegistry,
             RoutePlannerImpl routePlanner) {
         return new org.opentcs.kernel.application.traffic.TopologyConflictDetector(
-                resourceLockService, blockRegistry, routePlanner);
+                resourceLockService, routePlanner);
     }
 
     @Bean

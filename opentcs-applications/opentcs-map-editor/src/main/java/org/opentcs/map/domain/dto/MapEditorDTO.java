@@ -1,7 +1,6 @@
 package org.opentcs.map.domain.dto;
 
 import lombok.Data;
-import org.opentcs.kernel.api.dto.BlockDTO;
 import org.opentcs.kernel.api.dto.PointDTO;
 
 import java.io.Serial;
@@ -22,8 +21,6 @@ public class MapEditorDTO implements Serializable {
     private List<PointDTO> points;
 
     private List<org.opentcs.kernel.api.dto.PathDTO> paths;
-
-    private List<BlockDTO> blocks;
 
     private List<MapEditorLayerGroupDTO> layerGroups;
 

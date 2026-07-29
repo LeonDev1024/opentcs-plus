@@ -14,7 +14,7 @@ import org.opentcs.kernel.api.dto.PositionDTO;
 import org.opentcs.kernel.api.dto.TransportOrderDTO;
 import org.opentcs.kernel.api.dto.VehicleDTO;
 import org.opentcs.kernel.api.dto.VehicleStateDTO;
-import org.opentcs.kernel.application.BlockOccupancyService;
+import org.opentcs.kernel.application.PointOccupancyService;
 import org.opentcs.kernel.application.TransportOrderRegistry;
 import org.opentcs.kernel.application.VehicleRegistry;
 import org.opentcs.kernel.application.runtime.RuntimeStateStore;
@@ -70,7 +70,7 @@ public class VehicleApplicationService {
     private final RuntimeStateStore runtimeStateStore;
     private final DriverRegistry driverRegistry;
     private final OpsActionRepository opsActionRepository;
-    private final BlockOccupancyService blockOccupancyService;
+    private final PointOccupancyService pointOccupancyService;
 
     private static final Set<String> TERMINAL_OPS_STATUSES = Set.of(
             "SUCCEEDED", "FAILED", "TIMEOUT", "REJECTED");
@@ -654,7 +654,7 @@ public class VehicleApplicationService {
         String orderId = status.getOrderId() != null
                 ? status.getOrderId()
                 : vehicleRegistry.getVehicleCurrentOrder(vehicleId);
-        blockOccupancyService.onVehicleMoved(vehicleId, orderId, status.getPositionId());
+        pointOccupancyService.onVehicleMoved(vehicleId, orderId, status.getPositionId());
 
         // 更新能量
         if (status.getBatteryState() != null) {

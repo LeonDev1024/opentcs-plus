@@ -2,7 +2,6 @@ package org.opentcs.kernel.api.map;
 
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
-import org.opentcs.kernel.api.dto.BlockDTO;
 import org.opentcs.kernel.api.dto.CrossLayerConnectionDTO;
 import org.opentcs.kernel.api.dto.FactoryModelDTO;
 import org.opentcs.kernel.api.dto.NavigationMapDTO;
@@ -12,7 +11,7 @@ import org.opentcs.kernel.api.dto.PointDTO;
 import java.util.List;
 
 /**
- * 地图场景读写端口（导航图/区域/跨层连接）。
+ * 地图场景读写端口（导航图/跨层连接）。
  */
 public interface MapSceneApi {
 
@@ -55,10 +54,6 @@ public interface MapSceneApi {
     PathDTO getPathById(Long id);
 
     boolean replacePathsByMap(Long mapId, List<PathDTO> paths);
-
-    List<BlockDTO> listBlocksByMap(Long mapId);
-
-    boolean replaceBlocksByMap(Long mapId, List<BlockDTO> blocks);
 
     TableDataInfo<CrossLayerConnectionDTO> listConnections(CrossLayerConnectionDTO query, PageQuery pageQuery);
 

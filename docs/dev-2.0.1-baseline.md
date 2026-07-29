@@ -31,7 +31,7 @@
 |--------|------|----------|
 | P0 | VDA 订单 state 回写未闭环（接收/执行/完成/拒绝） | I1 |
 | P0 | 单车 A→B 现场/仿真验收未过 | I1 |
-| P0 | 地图 Block / 路径限速 / 停靠朝向不可投产 | I2 |
+| P0 | 地图路径限速 / 停靠朝向不可投产（Block 已从地图模型移除，管控区另议） | I2 |
 | P1 | OpsAction 运维动作产品化与动作台 | I3 |
 | P1 | 监控大屏 KPI / 告警中心最小可用 | I3 |
 | P1 | 交通冲突检测与资源锁审计持久化 | I4 |
@@ -83,25 +83,25 @@
 
 - [x] 路径 `maxVelocity` / `maxReverseVelocity` 保存/加载往返
 - [x] 点位 `vehicleOrientationAngle`（度）与后端 `vehicleOrientation` 映射并落入运行时 Point
-- [x] Flyway `V1.0.26` 重建 `tcs_block`
-- [x] 地图编辑器 load/save 携带 Block；右侧「Block」面板支持新建/成员/类型/颜色
-- [x] 路径右键「加入 Block」
+- [~~x~~] ~~Flyway `V1.0.26` 重建 `tcs_block`~~ → **已取消**：`V1.0.29` 删除 `tcs_block`，Block 从地图模型移除（管控区能力后续另议）
+- [~~x~~] ~~地图编辑器 load/save 携带 Block；右侧「Block」面板支持新建/成员/类型/颜色~~ → **已取消**
+- [~~x~~] ~~路径右键「加入 Block」~~ → **已取消**
 
 ### 6.2 验收要点
 
 1. 编辑路径限速 → 保存 → 重新加载 → 值保持  
 2. 编辑点位朝向角度 → 保存 → 重新加载 → 值保持；发布后运行时 Point.orientation 非 0  
-3. 新建 Block，选中点/路径后「加入选中」→ 保存 → 重新加载成员仍在  
+3. ~~新建 Block，选中点/路径后「加入选中」→ 保存 → 重新加载成员仍在~~ → **已取消**（Block 已从地图模型移除）  
 
 ### 6.3 仍开放
 
 - [x] 地图热加载（冻结接单 → 切版本 → 恢复）  
-- [x] 调度运行态真正消费 Block 互斥策略  
+- [~~x~~] ~~调度运行态真正消费 Block 互斥策略~~ → **已取消**；保留 POINT 点位占用  
 
 ### 6.4 本迭代已附带打磨
 
-- [x] Block 成员按颜色在画布描边/点位着色  
-- [x] 点位右键「加入 Block」  
+- [~~x~~] ~~Block 成员按颜色在画布描边/点位着色~~ → **已取消**  
+- [~~x~~] ~~点位右键「加入 Block」~~ → **已取消**  
 - [x] `MapHotReloadService`：发布地图时冻结接单 → `loadPublishedMap` → 恢复并 `dispatch()`  
 - [x] 热加载期间 `createOrder` 拒绝接单
 
@@ -129,7 +129,7 @@
 
 - [ ] WebSocket 实时推送（当前轮询）  
 - [ ] 工厂维度过滤 statistics  
-- [x] 调度运行态消费 Block / 冲突检测（I4）  
+- [~~x~~] ~~调度运行态消费 Block / 冲突检测（I4）~~ → Block 已移除；保留站点/路径冲突检测  
 
 ## 8. I4 落地状态（交通冲突 + 资源锁审计）
 
@@ -137,8 +137,8 @@
 
 ### 8.1 已完成
 
-- [x] Block 运行态加载 + 进入/离开占用（POINT/BLOCK 锁）
-- [x] TopologyConflictDetector：站点/Block/路径占用冲突，接入派车过滤
+- [~~x~~] ~~Block 运行态加载 + 进入/离开占用（POINT/BLOCK 锁）~~ → **已取消** Block；保留 `PointOccupancyService`（仅 POINT 锁）
+- [x] TopologyConflictDetector：站点/路径占用冲突，接入派车过滤（Block 冲突已移除）
 - [x] 资源锁当前态 + 审计表（`tcs_resource_lock` / `tcs_resource_lock_audit`）
 - [x] FORCE_RELEASED / EXPIRED 审计与告警；启动恢复 HELD 锁
 - [x] 车辆分配锁，修复并发重复分配；3×20 压测用例
@@ -146,7 +146,7 @@
 
 ### 8.2 仍开放 / 已收口
 
-- [x] SAME_DIRECTION_ONLY 最小语义（同 Block 允许多车，点位仍互斥；完整方向后续）  
+- [~~x~~] ~~SAME_DIRECTION_ONLY 最小语义（同 Block 允许多车，点位仍互斥；完整方向后续）~~ → **已取消**（随 Block 移除）  
 - [ ] 完整交叉口/死锁检测与消解（下一版本）  
 - [x] 仿真回归场景矩阵默认进 CI（`RegressionScenarioMatrixTest` + `.github/workflows/test.yml` 覆盖 `dev-2.0.1`）  
 

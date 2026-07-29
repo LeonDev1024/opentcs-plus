@@ -1,12 +1,10 @@
 package org.opentcs.kernel.application.traffic;
 
-import org.opentcs.kernel.application.BlockRegistry;
 import org.opentcs.kernel.application.ResourceLockService;
 import org.opentcs.kernel.application.RoutePlannerImpl;
 import org.opentcs.kernel.domain.order.TransportOrder;
 import org.opentcs.kernel.domain.resource.ResourceLock;
 import org.opentcs.kernel.domain.resource.ResourceType;
-import org.opentcs.kernel.domain.resource.RuntimeBlock;
 import org.opentcs.kernel.domain.routing.Path;
 import org.opentcs.kernel.domain.vehicle.Vehicle;
 
@@ -15,19 +13,16 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * 最小拓扑冲突检测：站点占用 / Block 互斥 / 路径段占用。
+ * 最小拓扑冲突检测：站点占用 / 路径段占用。
  */
 public class TopologyConflictDetector {
 
     private final ResourceLockService resourceLockService;
-    private final BlockRegistry blockRegistry;
     private final RoutePlannerImpl routePlanner;
 
     public TopologyConflictDetector(ResourceLockService resourceLockService,
-                                    BlockRegistry blockRegistry,
                                     RoutePlannerImpl routePlanner) {
         this.resourceLockService = resourceLockService;
-        this.blockRegistry = blockRegistry;
         this.routePlanner = routePlanner;
     }
 
@@ -48,17 +43,6 @@ public class TopologyConflictDetector {
         Optional<String> pointConflict = conflictOnResource(locks, ResourceType.POINT, dest, vehicle.getVehicleId());
         if (pointConflict.isPresent()) {
             return Optional.of("STATION_OCCUPIED:" + dest + " by " + pointConflict.get());
-        }
-
-        for (RuntimeBlock block : blockRegistry.findByMember(dest)) {
-            if (!block.isSingleVehicleOnly()) {
-                continue;
-            }
-            Optional<String> holder = conflictOnResource(locks, ResourceType.BLOCK, block.getBlockId(),
-                    vehicle.getVehicleId());
-            if (holder.isPresent()) {
-                return Optional.of("BLOCK_OCCUPIED:" + block.getBlockId() + " by " + holder.get());
-            }
         }
 
         String source = vehicle.getPosition() != null ? vehicle.getPosition().getPointId() : order.getSourcePointId();

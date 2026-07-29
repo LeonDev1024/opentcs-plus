@@ -59,7 +59,6 @@ class MapHotReloadServiceTest {
                 point("P2", 10, 0)
         ));
         when(mapSceneApi.listPathsByMap(100L)).thenReturn(List.of(path("PATH-1", "P1", "P2")));
-        when(mapSceneApi.listBlocksByMap(100L)).thenReturn(List.of());
     }
 
     @Test

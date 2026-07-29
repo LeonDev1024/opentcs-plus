@@ -6,7 +6,6 @@ package org.opentcs.kernel.domain.resource;
 public enum ResourceType {
     POINT,
     PATH,
-    BLOCK,
     LOCATION,
     CHARGER,
     ELEVATOR

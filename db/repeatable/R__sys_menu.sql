@@ -550,12 +550,6 @@ VALUES (4012, '地图控制台', 4000, 2, 'console', 'map/scene/console/index', 
 INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
   is_frame, is_cache, menu_type, visible, status, perms, icon,
   create_dept, create_by, create_time, update_by, update_time, remark)
-VALUES (4015, '区域管理', 4000, 3, 'areas', 'map/scene/areas/index', '', 1, 0, 'C', '0', '0', 'factory:block:list', 'area',
-  103, 1, NOW(), NULL, NULL, '区域管理菜单');
-
-INSERT IGNORE INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param,
-  is_frame, is_cache, menu_type, visible, status, perms, icon,
-  create_dept, create_by, create_time, update_by, update_time, remark)
 VALUES (4013, '地图数据', 4000, 4, 'data', 'map/scene/data/index', '', 1, 0, 'C', '0', '0', 'factory:map:list', 'map',
   103, 1, NOW(), NULL, NULL, '地图数据菜单');
 

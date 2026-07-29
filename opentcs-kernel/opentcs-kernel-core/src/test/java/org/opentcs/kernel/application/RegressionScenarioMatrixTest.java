@@ -3,7 +3,6 @@ package org.opentcs.kernel.application;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.opentcs.kernel.api.dto.BlockDTO;
 import org.opentcs.kernel.application.dispatch.RouteCostDispatchStrategy;
 import org.opentcs.kernel.application.runtime.InMemoryRuntimeStateStore;
 import org.opentcs.kernel.application.traffic.TopologyConflictDetector;
@@ -41,7 +40,6 @@ class RegressionScenarioMatrixTest {
     private TransportOrderRegistry orderRegistry;
     private RoutePlannerImpl routePlanner;
     private ResourceLockService lockService;
-    private BlockRegistry blockRegistry;
     private ApplicationEventPublisher eventPublisher;
     private DispatcherService dispatcherService;
     private TopologyConflictDetector conflictDetector;
@@ -52,9 +50,8 @@ class RegressionScenarioMatrixTest {
         orderRegistry = new TransportOrderRegistry();
         routePlanner = new RoutePlannerImpl(new SimpleRoutingAlgorithm());
         lockService = new ResourceLockService(new InMemoryRuntimeStateStore(), mock(ApplicationEventPublisher.class));
-        blockRegistry = new BlockRegistry();
         eventPublisher = mock(ApplicationEventPublisher.class);
-        conflictDetector = new TopologyConflictDetector(lockService, blockRegistry, routePlanner);
+        conflictDetector = new TopologyConflictDetector(lockService, routePlanner);
         dispatcherService = new DispatcherService(
                 vehicleRegistry,
                 orderRegistry,
@@ -138,25 +135,6 @@ class RegressionScenarioMatrixTest {
         Vehicle idle = vehicle("v1", "A", VehicleState.IDLE);
         vehicleRegistry.registerVehicleDomain(idle);
         TransportOrder order = new TransportOrder("ord-conflict", "ord-conflict", "A", "B",
-                List.of(routePlanner.getPath("PATH-AB")));
-        orderRegistry.createOrder(order);
-
-        assertTrue(conflictDetector.findAssignConflict(idle, order).isPresent());
-        assertFalse(dispatcherService.dispatchOrder(order));
-    }
-
-    @Test
-    void blockConflictBlocksSecondVehicleAssignment() {
-        BlockDTO block = new BlockDTO();
-        block.setBlockId("ZONE-B");
-        block.setType("SINGLE_VEHICLE_ONLY");
-        block.setMembers(List.of("B", "C"));
-        blockRegistry.replaceAll(List.of(block));
-        lockService.tryAcquire(ResourceType.BLOCK, "ZONE-B", "v-other", "o-other", Duration.ofMinutes(1));
-
-        Vehicle idle = vehicle("v1", "A", VehicleState.IDLE);
-        vehicleRegistry.registerVehicleDomain(idle);
-        TransportOrder order = new TransportOrder("ord-block", "ord-block", "A", "B",
                 List.of(routePlanner.getPath("PATH-AB")));
         orderRegistry.createOrder(order);
 
