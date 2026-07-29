@@ -3,6 +3,7 @@ package org.opentcs.kernel.persistence.api;
 import lombok.RequiredArgsConstructor;
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
+import org.opentcs.kernel.api.dto.BlockDTO;
 import org.opentcs.kernel.api.dto.CrossLayerConnectionDTO;
 import org.opentcs.kernel.api.dto.FactoryModelDTO;
 import org.opentcs.kernel.api.dto.NavigationMapDTO;
@@ -11,6 +12,7 @@ import org.opentcs.kernel.api.dto.PointDTO;
 import org.opentcs.kernel.api.map.MapSceneApi;
 import org.opentcs.kernel.persistence.entity.CrossLayerConnectionEntity;
 import org.opentcs.kernel.persistence.entity.NavigationMapEntity;
+import org.opentcs.kernel.persistence.service.BlockRepository;
 import org.opentcs.kernel.persistence.service.CrossLayerConnectionRepository;
 import org.opentcs.kernel.persistence.service.DTOConverter;
 import org.opentcs.kernel.persistence.service.FactoryModelRepository;
@@ -29,6 +31,7 @@ public class MapSceneApiImpl implements MapSceneApi {
     private final FactoryModelRepository factoryModelRepository;
     private final PointRepository pointRepository;
     private final PathRepository pathRepository;
+    private final BlockRepository blockRepository;
     private final CrossLayerConnectionRepository crossLayerConnectionRepository;
 
     @Override
@@ -159,6 +162,33 @@ public class MapSceneApiImpl implements MapSceneApi {
             path.setId(null);
             path.setNavigationMapId(mapId);
             pathRepository.saveDTO(path);
+        }
+        return true;
+    }
+
+    @Override
+    public List<BlockDTO> listBlocksByMap(Long mapId) {
+        return blockRepository.listByMapDTO(mapId);
+    }
+
+    @Override
+    public boolean replaceBlocksByMap(Long mapId, List<BlockDTO> blocks) {
+        blockRepository.removeByMap(mapId);
+        if (blocks == null || blocks.isEmpty()) {
+            return true;
+        }
+        NavigationMapEntity map = navigationMapRepository.getById(mapId);
+        Long factoryId = map != null ? map.getFactoryModelId() : null;
+        for (BlockDTO block : blocks) {
+            block.setId(null);
+            block.setNavigationMapId(mapId);
+            if (block.getFactoryModelId() == null) {
+                block.setFactoryModelId(factoryId);
+            }
+            if (block.getBlockId() == null || block.getBlockId().isBlank()) {
+                block.setBlockId("block_" + System.currentTimeMillis() + "_" + Math.abs(block.hashCode()));
+            }
+            blockRepository.saveDTO(block);
         }
         return true;
     }

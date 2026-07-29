@@ -47,12 +47,16 @@ public class Point {
     }
 
     public Point(String pointId, String name, double x, double y, double z) {
+        this(pointId, name, x, y, z, 0);
+    }
+
+    public Point(String pointId, String name, double x, double y, double z, double orientation) {
         this.pointId = Objects.requireNonNull(pointId, "pointId不能为空");
         this.name = name != null ? name : pointId;
         this.x = x;
         this.y = y;
         this.z = z;
-        this.orientation = 0;
+        this.orientation = orientation;
         this.type = PointType.HALT_POSITION;
         this.radius = 0;
     }

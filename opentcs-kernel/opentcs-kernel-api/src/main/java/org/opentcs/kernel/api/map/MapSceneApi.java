@@ -2,6 +2,7 @@ package org.opentcs.kernel.api.map;
 
 import org.opentcs.common.mybatis.core.page.PageQuery;
 import org.opentcs.common.mybatis.core.page.TableDataInfo;
+import org.opentcs.kernel.api.dto.BlockDTO;
 import org.opentcs.kernel.api.dto.CrossLayerConnectionDTO;
 import org.opentcs.kernel.api.dto.FactoryModelDTO;
 import org.opentcs.kernel.api.dto.NavigationMapDTO;
@@ -54,6 +55,10 @@ public interface MapSceneApi {
     PathDTO getPathById(Long id);
 
     boolean replacePathsByMap(Long mapId, List<PathDTO> paths);
+
+    List<BlockDTO> listBlocksByMap(Long mapId);
+
+    boolean replaceBlocksByMap(Long mapId, List<BlockDTO> blocks);
 
     TableDataInfo<CrossLayerConnectionDTO> listConnections(CrossLayerConnectionDTO query, PageQuery pageQuery);
 

@@ -75,6 +75,31 @@
 - [ ] 重启恢复后的 node/action 细粒度对账  
 - [ ] 订单状态枚举扩展 `DISPATCHED/EXECUTING`（当前用 `dispatchState` 属性）
 
-## 6. 下一迭代入口（I2）
+## 6. I2 落地状态（地图可投产）
 
-地图可投产：路径限速 / 停靠朝向可编辑、Block 完整建模。
+> 更新日期：2026-07-29
+
+### 6.1 已完成
+
+- [x] 路径 `maxVelocity` / `maxReverseVelocity` 保存/加载往返
+- [x] 点位 `vehicleOrientationAngle`（度）与后端 `vehicleOrientation` 映射并落入运行时 Point
+- [x] Flyway `V1.0.26` 重建 `tcs_block`
+- [x] 地图编辑器 load/save 携带 Block；右侧「Block」面板支持新建/成员/类型/颜色
+- [x] 路径右键「加入 Block」
+
+### 6.2 验收要点
+
+1. 编辑路径限速 → 保存 → 重新加载 → 值保持  
+2. 编辑点位朝向角度 → 保存 → 重新加载 → 值保持；发布后运行时 Point.orientation 非 0  
+3. 新建 Block，选中点/路径后「加入选中」→ 保存 → 重新加载成员仍在  
+
+### 6.3 仍开放
+
+- [ ] Block 画布成员彩色描边/悬停高亮完整可视化  
+- [ ] 点位右键菜单加入 Block  
+- [ ] 地图热加载（冻结接单 → 切版本 → 恢复）  
+- [ ] 调度运行态真正消费 Block 互斥策略  
+
+## 7. 下一迭代入口（I3）
+
+运维可运营 + 监控可用：OpsAction、动作台、监控 KPI/资源锁告警。
