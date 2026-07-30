@@ -194,7 +194,8 @@ public class MapRuntimeService {
                 dto.getName(),
                 toDouble(dto.getXPosition()),
                 toDouble(dto.getYPosition()),
-                toDouble(dto.getZPosition())
+                toDouble(dto.getZPosition()),
+                toDouble(dto.getVehicleOrientation())
         );
         if (Boolean.TRUE.equals(dto.getLocked())) {
             point.lock();

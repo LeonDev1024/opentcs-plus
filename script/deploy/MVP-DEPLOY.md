@@ -73,9 +73,11 @@ cd opentcs-plus/script/deploy
 - 车型：标准仿真车型
 - 车辆：AGV-SIM-001、AGV-SIM-002（状态：IDLE）
 
-### 4. 仿真执行验证
+### 4. Loopback 单车 A→B 验证
 
 导航至：**运营管理 → 订单管理 → 创建订单**
+
+前置：车辆 `driverType=LOOPBACK`，已连接并激活；地图已发布加载。
 
 - 起点：P001（入库点-1）
 - 终点：P005（出库点-5）
@@ -84,8 +86,8 @@ cd opentcs-plus/script/deploy
 
 导航至：**运营管理 → 监控大屏**
 
-- 应看到 AGV-SIM-001 开始移动
-- 订单状态从 ACTIVE → ASSIGNED → FINISHED
+- 应看到 AGV-SIM-001 位置随 Loopback 回放更新
+- 订单状态推进至 FINISHED
 
 ### 5. 验收标准
 
@@ -93,7 +95,7 @@ cd opentcs-plus/script/deploy
 |--------|---------|
 | 系统启动 | `docker compose ps` 所有服务 healthy |
 | 地图保存 | 编辑器修改 → 保存 → 刷新后数据持久化 |
-| 仿真执行 | 订单最终状态 FINISHED（不超时、不崩溃） |
+| Loopback 执行 | 订单最终状态 FINISHED（不超时、不崩溃） |
 | 监控大屏 | 车辆实时位置更新可见 |
 | 重复10次 | 以上流程无崩溃 |
 

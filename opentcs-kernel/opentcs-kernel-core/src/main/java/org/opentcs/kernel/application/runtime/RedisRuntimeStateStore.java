@@ -50,6 +50,21 @@ public class RedisRuntimeStateStore implements RuntimeStateStore {
     }
 
     @Override
+    public boolean tryAcquireVehicleAssignLock(String vehicleId) {
+        if (vehicleId == null || vehicleId.isBlank()) {
+            return false;
+        }
+        return RedisUtils.setObjectIfAbsent(vehicleAssignLockKey(vehicleId), Boolean.TRUE, DISPATCH_LOCK_TTL);
+    }
+
+    @Override
+    public void releaseVehicleAssignLock(String vehicleId) {
+        if (vehicleId != null && !vehicleId.isBlank()) {
+            RedisUtils.deleteObject(vehicleAssignLockKey(vehicleId));
+        }
+    }
+
+    @Override
     public boolean saveResourceLockIfAbsent(ResourceLock lock) {
         if (lock == null) {
             return false;
@@ -92,6 +107,10 @@ public class RedisRuntimeStateStore implements RuntimeStateStore {
 
     private String orderDispatchLockKey(String orderId) {
         return PREFIX + "dispatch-lock:" + orderId;
+    }
+
+    private String vehicleAssignLockKey(String vehicleId) {
+        return PREFIX + "vehicle-assign-lock:" + vehicleId;
     }
 
     private String resourceLockKey(ResourceType resourceType, String resourceId) {

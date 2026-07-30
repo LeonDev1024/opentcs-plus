@@ -40,7 +40,7 @@ opentcs-plus/
 │   ├── opentcs-order/                      # 订单任务
 │   ├── opentcs-vehicle/                    # 车辆管理
 │   ├── opentcs-system/                     # 系统管理
-│   └── opentcs-simulation/                 # 仿真模拟
+│   └── opentcs-job/                        # 定时任务
 ├── opentcs-kernel/                         # 领域层 - Kernel 契约与领域模型
 │   ├── opentcs-kernel-api/                 # 端口与 DTO、算法接口
 │   ├── opentcs-kernel-domain/              # 纯领域模型

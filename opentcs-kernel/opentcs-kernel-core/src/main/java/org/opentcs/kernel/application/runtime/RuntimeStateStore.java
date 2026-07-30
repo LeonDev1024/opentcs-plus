@@ -21,6 +21,10 @@ public interface RuntimeStateStore {
 
     void releaseOrderDispatchLock(String orderId);
 
+    boolean tryAcquireVehicleAssignLock(String vehicleId);
+
+    void releaseVehicleAssignLock(String vehicleId);
+
     boolean saveResourceLockIfAbsent(ResourceLock lock);
 
     Optional<ResourceLock> getResourceLock(ResourceType resourceType, String resourceId);

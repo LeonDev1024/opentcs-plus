@@ -16,6 +16,7 @@ public class InMemoryRuntimeStateStore implements RuntimeStateStore {
 
     private final Map<String, VehicleRuntimeSnapshot> vehicleSnapshots = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, Boolean> orderDispatchLocks = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Boolean> vehicleAssignLocks = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, ResourceLock> resourceLocks = new ConcurrentHashMap<>();
 
     @Override
@@ -43,6 +44,21 @@ public class InMemoryRuntimeStateStore implements RuntimeStateStore {
     public void releaseOrderDispatchLock(String orderId) {
         if (orderId != null) {
             orderDispatchLocks.remove(orderId);
+        }
+    }
+
+    @Override
+    public boolean tryAcquireVehicleAssignLock(String vehicleId) {
+        if (vehicleId == null || vehicleId.isBlank()) {
+            return false;
+        }
+        return vehicleAssignLocks.putIfAbsent(vehicleId, Boolean.TRUE) == null;
+    }
+
+    @Override
+    public void releaseVehicleAssignLock(String vehicleId) {
+        if (vehicleId != null) {
+            vehicleAssignLocks.remove(vehicleId);
         }
     }
 

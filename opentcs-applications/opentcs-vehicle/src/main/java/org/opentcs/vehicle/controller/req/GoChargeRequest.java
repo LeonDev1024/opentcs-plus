@@ -9,4 +9,5 @@ public class GoChargeRequest {
     private String stationId;
     private String interruptPolicy;
     private Integer minSocThreshold;
+    private String requestId;
 }

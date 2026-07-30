@@ -2,9 +2,9 @@ name: Build and Deploy
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, 'dev-2.0.1']
   pull_request:
-    branches: [main, master]
+    branches: [main, master, 'dev-2.0.1']
 
 env:
   JAVA_VERSION: '21'

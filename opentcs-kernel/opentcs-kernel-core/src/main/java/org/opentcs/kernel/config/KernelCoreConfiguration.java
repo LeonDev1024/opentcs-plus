@@ -55,6 +55,11 @@ public class KernelCoreConfiguration {
     }
 
     @Bean
+    public PointOccupancyService pointOccupancyService(ResourceLockService resourceLockService) {
+        return new PointOccupancyService(resourceLockService);
+    }
+
+    @Bean
     public ResourceLockRouteConstraintListener resourceLockRouteConstraintListener(
             RoutePlannerImpl routePlanner) {
         return new ResourceLockRouteConstraintListener(routePlanner);
@@ -77,6 +82,14 @@ public class KernelCoreConfiguration {
     }
 
     @Bean
+    public org.opentcs.kernel.application.traffic.TopologyConflictDetector topologyConflictDetector(
+            ResourceLockService resourceLockService,
+            RoutePlannerImpl routePlanner) {
+        return new org.opentcs.kernel.application.traffic.TopologyConflictDetector(
+                resourceLockService, routePlanner);
+    }
+
+    @Bean
     public DispatchStrategy dispatchStrategy(
             @Value("${opentcs.dispatch.strategy:route-cost}") String strategyName) {
         if ("route-cost".equals(strategyName)) {
@@ -91,9 +104,10 @@ public class KernelCoreConfiguration {
                                                RoutePlannerImpl routePlanner,
                                                ApplicationEventPublisher eventPublisher,
                                                RuntimeStateStore runtimeStateStore,
-                                               DispatchStrategy dispatchStrategy) {
+                                               DispatchStrategy dispatchStrategy,
+                                               org.opentcs.kernel.application.traffic.TopologyConflictDetector topologyConflictDetector) {
         return new DispatcherService(vehicleRegistry, transportOrderRegistry,
-                routePlanner, eventPublisher, runtimeStateStore, dispatchStrategy);
+                routePlanner, eventPublisher, runtimeStateStore, dispatchStrategy, topologyConflictDetector);
     }
 
     @Bean
@@ -102,13 +116,20 @@ public class KernelCoreConfiguration {
     }
 
     @Bean
+    public MapHotReloadService mapHotReloadService(MapRuntimeService mapRuntimeService,
+                                                   Dispatcher dispatcher) {
+        return new MapHotReloadService(mapRuntimeService, dispatcher);
+    }
+
+    @Bean
     public TransportOrderService transportOrderService(TransportOrderRegistry registry,
                                                        DispatcherService dispatcher,
                                                        RoutePlannerImpl routePlanner,
                                                        MapRuntimeService mapRuntimeService,
+                                                       MapHotReloadService mapHotReloadService,
                                                        ApplicationEventPublisher eventPublisher) {
         return new TransportOrderService(registry, dispatcher, routePlanner, mapRuntimeService,
-                eventPublisher);
+                mapHotReloadService, eventPublisher);
     }
 
     @Bean

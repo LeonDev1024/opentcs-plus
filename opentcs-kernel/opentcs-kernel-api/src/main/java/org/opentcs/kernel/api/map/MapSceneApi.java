@@ -11,7 +11,7 @@ import org.opentcs.kernel.api.dto.PointDTO;
 import java.util.List;
 
 /**
- * 地图场景读写端口（导航图/区域/跨层连接）。
+ * 地图场景读写端口（导航图/跨层连接）。
  */
 public interface MapSceneApi {
 

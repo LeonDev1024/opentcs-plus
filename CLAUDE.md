@@ -72,7 +72,7 @@ opentcs-plus/
 │   │   └── controller/                     # Controller 只调用应用服务，不直接访问 persistence
 │   ├── opentcs-system/                     # 系统管理 + 认证策略
 │   │   └── auth/                           # SysLoginService / SysRegisterService / IAuthStrategy 及实现
-│   └── opentcs-simulation/                 # 仿真模拟
+│   └── opentcs-job/                        # 定时任务
 ├── opentcs-kernel/                         # 领域层 - Kernel 契约与领域模型
 │   ├── opentcs-kernel-api/                 # 端口接口、算法契约、DTO（Router/Scheduler）
 │   ├── opentcs-kernel-domain/              # 纯领域模型（Point/Path/Vehicle/TransportOrder/Domain Event）

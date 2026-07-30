@@ -81,28 +81,46 @@ public class VDA5050MessageConverter {
     }
 
     /**
-     * 将VDA5050 State JSON转换为VehicleStatus
+     * 将VDA5050 State JSON转换为VehicleStatus。
+     * 同时兼容嵌套 {header, state} 与标准扁平 VDA5050 State。
      */
     public VehicleStatus fromVDA5050Status(String json) {
         try {
             JsonNode root = objectMapper.readTree(json);
+            JsonNode state = root.has("state") && root.get("state").isObject()
+                    ? root.get("state")
+                    : root;
             JsonNode header = root.get("header");
-            JsonNode state = root.get("state");
 
             VehicleStatus status = new VehicleStatus();
-            status.setVehicleId(getTextValue(header, "vehicleId"));
+            status.setVehicleId(firstText(header, "vehicleId", root, "serialNumber"));
+            if (status.getVehicleId() == null) {
+                status.setVehicleId(getTextValue(root, "vehicleId"));
+            }
             status.setOrderId(getTextValue(state, "orderId"));
-            status.setOrderUpdateId(getIntValue(state, "orderUpdateId"));
-            status.setAgvState(getTextValue(state, "agvState"));
-            status.setOperationMode(getTextValue(state, "operationMode"));
+            status.setOrderUpdateId(firstInt(state, "orderUpdateId", "orderVersion"));
+            status.setAgvState(resolveAgvState(state));
+            status.setOperationMode(getTextValue(state, "operatingMode"));
+            if (status.getOperationMode() == null) {
+                status.setOperationMode(getTextValue(state, "operationMode"));
+            }
+            status.setLastNodeId(getTextValue(state, "lastNodeId"));
+            status.setDriving(getBooleanValue(state, "driving"));
+            status.setDistanceSinceLastNode(getDoubleValue(state, "distanceSinceLastNode"));
 
-            // 位置信息
+            // 位置信息：嵌套 position 或扁平 lastNode*
             JsonNode position = state.get("position");
+            if (position == null) {
+                position = state.get("agvPosition");
+            }
             if (position != null) {
                 status.setxPosition(getDoubleValue(position, "x"));
                 status.setyPosition(getDoubleValue(position, "y"));
                 status.setTheta(getDoubleValue(position, "theta"));
-                status.setPositionId(getTextValue(position, "positionId"));
+                status.setPositionId(firstText(position, "positionId", position, "mapId"));
+            }
+            if (status.getPositionId() == null) {
+                status.setPositionId(status.getLastNodeId());
             }
 
             // 电池状态
@@ -119,7 +137,10 @@ public class VDA5050MessageConverter {
                 for (JsonNode errorNode : errorsNode) {
                     VehicleStatus.Error error = new VehicleStatus.Error();
                     error.setErrorType(getTextValue(errorNode, "errorType"));
-                    error.setDescription(getTextValue(errorNode, "description"));
+                    error.setDescription(getTextValue(errorNode, "errorDescription"));
+                    if (error.getDescription() == null) {
+                        error.setDescription(getTextValue(errorNode, "description"));
+                    }
                     error.setErrorLevel(getTextValue(errorNode, "errorLevel"));
                     error.setErrorCode(getIntValue(errorNode, "errorCode"));
                     errors.add(error);
@@ -127,11 +148,82 @@ public class VDA5050MessageConverter {
                 status.setErrors(errors);
             }
 
+            // nodeStates
+            JsonNode nodeStatesNode = state.get("nodeStates");
+            if (nodeStatesNode != null && nodeStatesNode.isArray()) {
+                List<VehicleStatus.NodeState> nodeStates = new ArrayList<>();
+                for (JsonNode node : nodeStatesNode) {
+                    VehicleStatus.NodeState ns = new VehicleStatus.NodeState();
+                    ns.setNodeId(getTextValue(node, "nodeId"));
+                    ns.setSequenceId(getIntValue(node, "sequenceId"));
+                    ns.setReleased(getBooleanValue(node, "released"));
+                    nodeStates.add(ns);
+                }
+                status.setNodeStates(nodeStates);
+            }
+
+            // actionStates
+            JsonNode actionStatesNode = state.get("actionStates");
+            if (actionStatesNode != null && actionStatesNode.isArray()) {
+                List<VehicleStatus.ActionState> actionStates = new ArrayList<>();
+                for (JsonNode node : actionStatesNode) {
+                    VehicleStatus.ActionState as = new VehicleStatus.ActionState();
+                    as.setActionId(getTextValue(node, "actionId"));
+                    as.setActionType(getTextValue(node, "actionType"));
+                    as.setActionStatus(getTextValue(node, "actionStatus"));
+                    as.setResultDescription(getTextValue(node, "resultDescription"));
+                    actionStates.add(as);
+                }
+                status.setActionStates(actionStates);
+            }
+
             return status;
         } catch (JsonProcessingException e) {
             LOG.error("解析状态失败: {}", e.getMessage());
             throw new RuntimeException("消息解析失败", e);
         }
+    }
+
+    private String resolveAgvState(JsonNode state) {
+        String waiting = getTextValue(state, "waitingForAcknowledgement");
+        if ("true".equalsIgnoreCase(waiting)) {
+            return "WAITING";
+        }
+        JsonNode errors = state.get("errors");
+        if (errors != null && errors.isArray()) {
+            for (JsonNode error : errors) {
+                if ("FATAL".equalsIgnoreCase(getTextValue(error, "errorLevel"))
+                        || "FAULT".equalsIgnoreCase(getTextValue(error, "errorLevel"))) {
+                    return "ERROR";
+                }
+            }
+        }
+        Boolean driving = getBooleanValue(state, "driving");
+        if (Boolean.TRUE.equals(driving)) {
+            String paused = getTextValue(state, "paused");
+            if ("true".equalsIgnoreCase(paused)) {
+                return "PAUSED";
+            }
+            return "EXECUTING";
+        }
+        String explicit = getTextValue(state, "agvState");
+        return explicit != null ? explicit : "IDLE";
+    }
+
+    private String firstText(JsonNode primary, String primaryField, JsonNode fallback, String fallbackField) {
+        String value = getTextValue(primary, primaryField);
+        if (value != null) {
+            return value;
+        }
+        return getTextValue(fallback, fallbackField);
+    }
+
+    private Integer firstInt(JsonNode node, String primaryField, String fallbackField) {
+        Integer value = getIntValue(node, primaryField);
+        if (value != null) {
+            return value;
+        }
+        return getIntValue(node, fallbackField);
     }
 
     // ==================== 内部辅助方法 ====================
@@ -243,23 +335,35 @@ public class VDA5050MessageConverter {
     }
 
     private String getTextValue(JsonNode node, String field) {
+        if (node == null || field == null) {
+            return null;
+        }
         JsonNode fieldNode = node.get(field);
-        return fieldNode != null ? fieldNode.asText() : null;
+        return fieldNode != null && !fieldNode.isNull() ? fieldNode.asText() : null;
     }
 
     private Integer getIntValue(JsonNode node, String field) {
+        if (node == null || field == null) {
+            return null;
+        }
         JsonNode fieldNode = node.get(field);
-        return fieldNode != null ? fieldNode.asInt() : null;
+        return fieldNode != null && !fieldNode.isNull() ? fieldNode.asInt() : null;
     }
 
     private Double getDoubleValue(JsonNode node, String field) {
+        if (node == null || field == null) {
+            return null;
+        }
         JsonNode fieldNode = node.get(field);
-        return fieldNode != null ? fieldNode.asDouble() : null;
+        return fieldNode != null && !fieldNode.isNull() ? fieldNode.asDouble() : null;
     }
 
     private Boolean getBooleanValue(JsonNode node, String field) {
+        if (node == null || field == null) {
+            return null;
+        }
         JsonNode fieldNode = node.get(field);
-        return fieldNode != null ? fieldNode.asBoolean() : null;
+        return fieldNode != null && !fieldNode.isNull() ? fieldNode.asBoolean() : null;
     }
 
     // ==================== VDA5050 消息内部类 ====================

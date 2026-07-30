@@ -26,6 +26,7 @@ public class TransportOrderService implements TransportOrderApi {
     private final DispatcherService dispatcher;
     private final RoutePlannerImpl routePlanner;
     private final MapRuntimeService mapRuntimeService;
+    private final MapHotReloadService mapHotReloadService;
     private final ApplicationEventPublisher eventPublisher;
 
     public TransportOrderService(TransportOrderRegistry registry,
@@ -33,15 +34,28 @@ public class TransportOrderService implements TransportOrderApi {
                                  RoutePlannerImpl routePlanner,
                                  MapRuntimeService mapRuntimeService,
                                  ApplicationEventPublisher eventPublisher) {
+        this(registry, dispatcher, routePlanner, mapRuntimeService, null, eventPublisher);
+    }
+
+    public TransportOrderService(TransportOrderRegistry registry,
+                                 DispatcherService dispatcher,
+                                 RoutePlannerImpl routePlanner,
+                                 MapRuntimeService mapRuntimeService,
+                                 MapHotReloadService mapHotReloadService,
+                                 ApplicationEventPublisher eventPublisher) {
         this.registry = registry;
         this.dispatcher = dispatcher;
         this.routePlanner = routePlanner;
         this.mapRuntimeService = mapRuntimeService;
+        this.mapHotReloadService = mapHotReloadService;
         this.eventPublisher = eventPublisher;
     }
 
     @Override
     public String createOrder(OrderSpecDTO spec) {
+        if (mapHotReloadService != null && !mapHotReloadService.isAcceptingOrders()) {
+            throw new IllegalStateException("地图热加载中，暂时冻结接单，请稍后重试");
+        }
         TransportOrder order = buildOrder(spec, null);
 
         registry.createOrder(order);
@@ -218,6 +232,7 @@ public class TransportOrderService implements TransportOrderApi {
         }
         order.getProperties().put("mapId", activeMapId);
         order.getProperties().put("mapVersion", activeMapVersion);
+        order.getProperties().putIfAbsent("traceId", java.util.UUID.randomUUID().toString());
 
         return order;
     }

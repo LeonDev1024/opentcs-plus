@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.opentcs.common.json.utils.JsonUtils;
+import org.opentcs.kernel.api.OrderTraceKeys;
 import org.opentcs.kernel.domain.event.OrderStateChangedEvent;
 import org.opentcs.order.persistence.entity.TransportOrderEntity;
 import org.opentcs.order.persistence.service.TransportOrderRepository;
@@ -44,17 +45,17 @@ public class TransportOrderEventListener {
         if (event.getReason() != null && !event.getReason().isBlank()) {
             Map<String, String> properties = parseProperties(entity.getProperties());
             properties.put("remark", event.getReason());
+            properties.put(OrderTraceKeys.FAILURE_REASON_CODE, event.getReason());
             entity.setProperties(JsonUtils.toJsonString(properties));
         }
+        log.info("订单状态已由领域事件回写: orderId={}, {} -> {}, vehicle={}, reason={}",
+                event.getAggregateId(), event.getOldState(), event.getNewState(),
+                event.getProcessingVehicle(), event.getReason());
         if (event.getNewState().isFinal()) {
             entity.setFinishedTime(LocalDateTime.ofInstant(
                     event.getTimestamp(), ZoneId.systemDefault()));
         }
-        orderRepository.updateById(entity);
-
-        log.debug("订单状态已由领域事件回写: orderId={}, {} -> {}",
-                event.getAggregateId(), event.getOldState(), event.getNewState());
-    }
+        orderRepository.updateById(entity);    }
 
     private Map<String, String> parseProperties(String properties) {
         if (properties == null || properties.isBlank()) {

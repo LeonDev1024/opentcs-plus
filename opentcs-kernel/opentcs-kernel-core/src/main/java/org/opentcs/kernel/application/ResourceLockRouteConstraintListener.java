@@ -17,7 +17,7 @@ public class ResourceLockRouteConstraintListener {
 
     @EventListener
     public void onResourceLockChanged(ResourceLockChangedEvent event) {
-        routePlanner.setResourceLocked(event.getResourceType(), event.getResourceId(),
-                event.getStatus() == ResourceLockStatus.HELD);
+        boolean locked = event.getStatus() == ResourceLockStatus.HELD;
+        routePlanner.setResourceLocked(event.getResourceType(), event.getResourceId(), locked);
     }
 }

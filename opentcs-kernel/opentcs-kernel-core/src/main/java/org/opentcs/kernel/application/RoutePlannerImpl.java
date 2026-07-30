@@ -183,7 +183,8 @@ public class RoutePlannerImpl implements RoutePlannerApi {
     }
 
     private boolean isRoutePathAvailable(Path path) {
-        return !lockedResources.contains(resourceKey(ResourceType.PATH, path.getPathId()))
+        return path.isTraversable()
+                && !lockedResources.contains(resourceKey(ResourceType.PATH, path.getPathId()))
                 && !isPointResourceLocked(path.getSourcePointId())
                 && !isPointResourceLocked(path.getDestPointId());
     }
