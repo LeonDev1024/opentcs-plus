@@ -30,8 +30,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         "org.opentcs.common",
         "org.opentcs.security",
         "org.opentcs.algorithm",     // 算法插件 + AutoConfiguration
-        "org.opentcs.strategies",   // 内置策略
-        "org.opentcs.simulation"    // 仿真引擎
+        "org.opentcs.strategies"    // 内置策略
     },
     excludeFilters = {
         @ComponentScan.Filter(type = FilterType.REGEX, pattern = "org\\.opentcs\\.common\\.tenant\\..*")
