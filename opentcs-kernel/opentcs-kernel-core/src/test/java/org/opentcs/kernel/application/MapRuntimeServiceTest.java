@@ -82,7 +82,7 @@ class MapRuntimeServiceTest {
     }
 
     @Test
-    void shouldRejectDisconnectedMap() {
+    void shouldAllowDisconnectedMap() {
         when(mapSceneApi.getNavigationMapByMapId("map-1")).thenReturn(publishedMap());
         when(mapSceneApi.listPointsByMap(100L)).thenReturn(List.of(
                 point("P1", 0, 0),
@@ -91,8 +91,29 @@ class MapRuntimeServiceTest {
         ));
         when(mapSceneApi.listPathsByMap(100L)).thenReturn(List.of(path("PATH-1", "P1", "P2")));
 
-        assertThrows(IllegalStateException.class,
-                () -> mapRuntimeService.loadPublishedMap("map-1"));
+        MapRuntimeService.LoadedMap loaded = mapRuntimeService.loadPublishedMap("map-1");
+
+        assertEquals(3, loaded.pointCount());
+        assertEquals(1, loaded.pathCount());
+        assertEquals("P3", routePlanner.getPoint("P3").getPointId());
+    }
+
+    @Test
+    void shouldAllowOneWayNetworkThatIsWeaklyConnected() {
+        PathDTO path = path("PATH-1", "P1", "P2");
+        path.setRoutingType("ONE_WAY");
+        path.setProperties("{\"bidirectional\":\"false\"}");
+        when(mapSceneApi.getNavigationMapByMapId("map-1")).thenReturn(publishedMap());
+        when(mapSceneApi.listPointsByMap(100L)).thenReturn(List.of(
+                point("P1", 0, 0),
+                point("P2", 10, 0)
+        ));
+        when(mapSceneApi.listPathsByMap(100L)).thenReturn(List.of(path));
+
+        MapRuntimeService.LoadedMap loaded = mapRuntimeService.loadPublishedMap("map-1");
+
+        assertEquals(2, loaded.pointCount());
+        assertEquals(1, loaded.pathCount());
     }
 
     @Test

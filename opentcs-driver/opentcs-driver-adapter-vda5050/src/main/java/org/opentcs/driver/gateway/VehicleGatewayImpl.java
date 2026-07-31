@@ -78,16 +78,24 @@ public class VehicleGatewayImpl implements VehicleGateway {
         }
 
         try {
-            // 连接车辆
-            if (config.getConnectionType().equals("MQTT")) {
+            String connectionType = config.getConnectionType();
+            if ("LOOPBACK".equalsIgnoreCase(driverType)
+                    || connectionType == null
+                    || connectionType.isBlank()
+                    || "NONE".equalsIgnoreCase(connectionType)) {
+                adapter.connect(vehicleId, null);
+            } else if ("MQTT".equalsIgnoreCase(connectionType)) {
                 adapter.connect(vehicleId, config.getMqttConfig());
-            } else if (config.getConnectionType().equals("TCP")) {
+            } else if ("TCP".equalsIgnoreCase(connectionType)) {
                 adapter.connect(vehicleId, config.getTcpConfig());
+            } else {
+                throw new IllegalArgumentException("不支持的连接类型: " + connectionType);
             }
 
             LOG.info("车辆 {} 注册成功，驱动类型: {}", vehicleId, driverType);
         } catch (Exception e) {
             LOG.error("车辆 {} 注册失败: {}", vehicleId, e.getMessage());
+            throw e instanceof RuntimeException re ? re : new RuntimeException(e);
         }
     }
 

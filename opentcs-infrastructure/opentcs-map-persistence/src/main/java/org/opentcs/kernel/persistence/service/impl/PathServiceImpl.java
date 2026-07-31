@@ -163,17 +163,14 @@ public class PathServiceImpl extends ServiceImpl<PathMapper, PathEntity> impleme
         entity.setMaxReverseVelocity(dto.getMaxReverseVelocity());
         entity.setLocked(dto.getLocked());
         entity.setIsBlocked(dto.getIsBlocked());
-        entity.setProperties(dto.getProperties());
+        // 保留前端 properties（含 editorProps 样式），并合并 routingType
+        entity.setProperties(mergePathProperties(dto.getProperties(), dto.getRoutingType()));
         entity.setLayout(dto.getLayout());
-        // 从 layout 回填关键派生字段（兼容仅传 layout 的场景）
+        // layout 仅规范化几何字段
         PathLayoutPersist parsed = parseLayout(dto.getLayout());
-        if (entity.getLayerId() == null && parsed.layerId != null) {
-            entity.setLayerId(parsed.layerId);
-        }
-        if ((entity.getLayout() == null || entity.getLayout().isBlank()) && parsed.controlPoints != null) {
+        if (parsed.controlPoints != null) {
             try {
                 PathLayoutPersist persist = new PathLayoutPersist();
-                persist.layerId = entity.getLayerId();
                 persist.connectionType = parsed.connectionType != null ? parsed.connectionType : "DIRECT";
                 persist.controlPoints = parsed.controlPoints;
                 entity.setLayout(objectMapper.writeValueAsString(persist));
@@ -184,6 +181,34 @@ public class PathServiceImpl extends ServiceImpl<PathMapper, PathEntity> impleme
         entity.setCreateTime(dto.getCreateTime());
         entity.setUpdateTime(dto.getUpdateTime());
         return entity;
+    }
+
+
+    private String mergePathProperties(String propertiesJson, String routingType) {
+        java.util.Map<String, Object> props = new java.util.LinkedHashMap<>();
+        if (propertiesJson != null && !propertiesJson.isBlank()) {
+            try {
+                java.util.Map<String, Object> parsed = objectMapper.readValue(
+                        propertiesJson, new TypeReference<java.util.Map<String, Object>>() {
+                        });
+                if (parsed != null) {
+                    props.putAll(parsed);
+                }
+            } catch (Exception ignored) {
+                // keep empty and still write routingType below
+            }
+        }
+        if (routingType != null && !routingType.isBlank()) {
+            props.put("routingType", routingType.trim());
+        }
+        if (props.isEmpty()) {
+            return null;
+        }
+        try {
+            return objectMapper.writeValueAsString(props);
+        } catch (Exception e) {
+            return propertiesJson;
+        }
     }
 
     private static class PathLayoutPersist {

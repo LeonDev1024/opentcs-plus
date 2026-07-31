@@ -10,6 +10,7 @@ import org.opentcs.order.persistence.entity.TransportOrderEntity;
 import org.opentcs.order.persistence.mapper.TransportOrderMapper;
 import org.opentcs.order.persistence.service.TransportOrderRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -25,9 +26,55 @@ public class TransportOrderRepositoryImpl extends ServiceImpl<TransportOrderMapp
 
     @Override
     public TableDataInfo<TransportOrderEntity> selectPageTransportOrder(TransportOrderEntity transportOrder, PageQuery pageQuery) {
+        LambdaQueryWrapper<TransportOrderEntity> wrapper = new LambdaQueryWrapper<>();
+        if (transportOrder != null) {
+            if (StringUtils.hasText(transportOrder.getOrderNo())) {
+                String orderKeyword = transportOrder.getOrderNo().trim();
+                wrapper.and(w -> w.like(TransportOrderEntity::getOrderNo, orderKeyword)
+                        .or()
+                        .like(TransportOrderEntity::getProperties, orderKeyword));
+            }
+            if (StringUtils.hasText(transportOrder.getName())) {
+                wrapper.like(TransportOrderEntity::getName, transportOrder.getName().trim());
+            }
+            if (StringUtils.hasText(transportOrder.getVehicleVin())) {
+                String vehicleKeyword = transportOrder.getVehicleVin().trim();
+                wrapper.and(w -> w.like(TransportOrderEntity::getProcessingVehicle, vehicleKeyword)
+                        .or()
+                        .like(TransportOrderEntity::getIntendedVehicle, vehicleKeyword));
+            }
+            if (StringUtils.hasText(transportOrder.getState())) {
+                wrapper.eq(TransportOrderEntity::getState, transportOrder.getState().trim());
+            }
+            applyDisplayStateFilter(wrapper, transportOrder.getDisplayState());
+        }
+        wrapper.orderByDesc(TransportOrderEntity::getId);
+
         Page<TransportOrderEntity> page = new Page<>(pageQuery.getPageNum(), pageQuery.getPageSize());
-        IPage<TransportOrderEntity> result = this.getBaseMapper().selectPageTransportOrder(page, transportOrder);
+        IPage<TransportOrderEntity> result = this.page(page, wrapper);
         return TableDataInfo.build(result);
+    }
+
+    private void applyDisplayStateFilter(LambdaQueryWrapper<TransportOrderEntity> wrapper, String displayState) {
+        if (!StringUtils.hasText(displayState)) {
+            return;
+        }
+        switch (displayState.trim()) {
+            case "PENDING" -> wrapper.eq(TransportOrderEntity::getState, "RAW");
+            case "DISPATCHING" -> wrapper.eq(TransportOrderEntity::getState, "ACTIVE")
+                    .and(w -> w.isNull(TransportOrderEntity::getProcessingVehicle)
+                            .or()
+                            .eq(TransportOrderEntity::getProcessingVehicle, ""));
+            case "EXECUTING" -> wrapper.eq(TransportOrderEntity::getState, "ACTIVE")
+                    .isNotNull(TransportOrderEntity::getProcessingVehicle)
+                    .ne(TransportOrderEntity::getProcessingVehicle, "");
+            case "PAUSED" -> wrapper.eq(TransportOrderEntity::getState, "RECOVERING");
+            case "FINISHED" -> wrapper.eq(TransportOrderEntity::getState, "FINISHED");
+            case "CANCELLED" -> wrapper.eq(TransportOrderEntity::getState, "CANCELLED");
+            case "FAILED" -> wrapper.eq(TransportOrderEntity::getState, "FAILED");
+            default -> {
+            }
+        }
     }
 
     @Override

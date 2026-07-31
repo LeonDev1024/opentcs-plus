@@ -35,7 +35,21 @@
         LEFT JOIN tcs_vehicle_type vt ON v.vehicle_type_id = vt.id
         <where>
             <if test="param2.name != null and param2.name != ''">AND v.name LIKE CONCAT('%', #{param2.name}, '%')</if>
-            <if test="param2.state != null and param2.state != ''">AND v.state = #{param2.state}</if>
+            <if test="param2.state != null and param2.state != ''">
+                <choose>
+                    <!-- 忙碌：执行/等待等运行中状态 -->
+                    <when test="param2.state == 'BUSY' or param2.state == 'WORKING'">
+                        AND v.state IN ('WORKING', 'EXECUTING', 'MOVING', 'WAITING', 'PAUSED')
+                    </when>
+                    <!-- 离线：未启用、未知、离线 -->
+                    <when test="param2.state == 'OFFLINE'">
+                        AND v.state IN ('OFFLINE', 'UNAVAILABLE', 'UNKNOWN')
+                    </when>
+                    <otherwise>
+                        AND v.state = #{param2.state}
+                    </otherwise>
+                </choose>
+            </if>
             <if test="param2.vinCode != null and param2.vinCode != ''">AND v.vin_code LIKE CONCAT('%', #{param2.vinCode}, '%')</if>
             <if test="param2.vehicleTypeId != null">AND v.vehicle_type_id = #{param2.vehicleTypeId}</if>
             AND v.del_flag = '0'

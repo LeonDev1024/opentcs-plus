@@ -27,4 +27,9 @@ public class VehicleBO {
     private String properties;
     private Date createTime;
     private Date updateTime;
+
+    /**
+     * 驱动类型：LOOPBACK / VDA5050（落库到 properties.DriverConfig）
+     */
+    private String driverType;
 }

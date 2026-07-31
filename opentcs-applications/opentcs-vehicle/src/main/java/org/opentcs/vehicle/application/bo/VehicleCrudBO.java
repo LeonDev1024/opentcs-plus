@@ -28,4 +28,14 @@ public class VehicleCrudBO {
     private String properties;
     private Date createTime;
     private Date updateTime;
+
+    /**
+     * 驱动类型（写入 properties 的 DriverConfig，非独立列）
+     */
+    private String driverType;
+
+    /**
+     * 驱动是否已连接（运行时，非持久化）
+     */
+    private Boolean driverConnected;
 }

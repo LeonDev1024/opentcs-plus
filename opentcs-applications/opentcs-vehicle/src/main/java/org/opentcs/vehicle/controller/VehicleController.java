@@ -11,6 +11,7 @@ import org.opentcs.vehicle.application.VehicleApplicationService;
 import org.opentcs.vehicle.application.bo.VehicleBO;
 import org.opentcs.vehicle.application.bo.VehicleCrudBO;
 import org.opentcs.vehicle.controller.req.RegisterVehicleWithDriverRequest;
+import org.opentcs.vehicle.controller.req.SetVehiclePositionRequest;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -111,6 +112,21 @@ public class VehicleController extends BaseController {
     @PostMapping("/registerWithDriver")
     public R<Boolean> registerVehicleWithDriver(@RequestBody RegisterVehicleWithDriverRequest request) {
         return R.ok(vehicleApplicationService.registerVehicle(request.getVehicle(), request.getDriverConfig()));
+    }
+
+    @PostMapping("/connect/{id}")
+    public R<Boolean> connectVehicle(@PathVariable Long id) {
+        return R.ok(vehicleApplicationService.connectVehicle(id));
+    }
+
+    @PostMapping("/disconnect/{id}")
+    public R<Boolean> disconnectVehicle(@PathVariable Long id) {
+        return R.ok(vehicleApplicationService.disconnectVehicle(id));
+    }
+
+    @PutMapping("/{id}/position")
+    public R<Boolean> setVehiclePosition(@PathVariable Long id, @RequestBody SetVehiclePositionRequest request) {
+        return R.ok(vehicleApplicationService.setInitialPosition(id, request.getPointId()));
     }
 
     @PostMapping("/activate/{id}")

@@ -83,8 +83,8 @@ public class PointServiceImpl extends ServiceImpl<PointMapper, PointEntity> impl
         entity.setName(dto.getName());
         entity.setXPosition(dto.getXPosition());
         entity.setYPosition(dto.getYPosition());
-        entity.setZPosition(dto.getZPosition());
-        entity.setVehicleOrientation(dto.getVehicleOrientation());
+        entity.setZPosition(dto.getZPosition() != null ? dto.getZPosition() : BigDecimal.ZERO);
+        entity.setVehicleOrientation(dto.getVehicleOrientation() != null ? dto.getVehicleOrientation() : BigDecimal.ZERO);
         entity.setType(dto.getType());
         entity.setRadius(dto.getRadius());
         entity.setLocked(dto.getLocked());
@@ -93,6 +93,12 @@ public class PointServiceImpl extends ServiceImpl<PointMapper, PointEntity> impl
         entity.setLabel(dto.getLabel());
         entity.setProperties(dto.getProperties());
         normalizePointLayout(dto, entity);
+        if (entity.getXPosition() == null || entity.getYPosition() == null) {
+            throw new IllegalArgumentException(
+                    "点位坐标不能为空: pointId=" + dto.getPointId()
+                            + ", x=" + entity.getXPosition()
+                            + ", y=" + entity.getYPosition());
+        }
         entity.setCreateTime(dto.getCreateTime());
         entity.setUpdateTime(dto.getUpdateTime());
         return entity;
@@ -113,34 +119,15 @@ public class PointServiceImpl extends ServiceImpl<PointMapper, PointEntity> impl
             entity.setZPosition(toDecimal(layout.get("z")));
         }
 
-        Object editorProps = layout.get("editorProps");
-        if (entity.getRadius() == null) {
-            entity.setRadius(toDecimal(layout.get("radius")));
-            if (entity.getRadius() == null && editorProps instanceof Map<?, ?> editor) {
-                entity.setRadius(toDecimal(editor.get("radius")));
-            }
-        }
-        if (entity.getLabel() == null && editorProps instanceof Map<?, ?> editor) {
-            Object label = editor.get("label");
-            if (label != null) {
-                entity.setLabel(String.valueOf(label));
-            }
-        }
-
-        if (dto.getLayout() != null && !dto.getLayout().isBlank()) {
-            entity.setLayout(dto.getLayout());
-            return;
-        }
-
+        // layout 保留坐标 + 前端样式（editorProps），供控制台/监控渲染
         Map<String, Object> canonical = new LinkedHashMap<>();
-        canonical.put("layerId", entity.getLayerId());
         canonical.put("x", entity.getXPosition());
         canonical.put("y", entity.getYPosition());
-        canonical.put("z", entity.getZPosition());
-        Map<String, Object> canonicalEditor = new LinkedHashMap<>();
-        canonicalEditor.put("radius", entity.getRadius());
-        canonicalEditor.put("label", entity.getLabel());
-        canonical.put("editorProps", canonicalEditor);
+        canonical.put("z", entity.getZPosition() != null ? entity.getZPosition() : BigDecimal.ZERO);
+        Object editorProps = layout.get("editorProps");
+        if (editorProps != null) {
+            canonical.put("editorProps", editorProps);
+        }
         entity.setLayout(writeLayout(canonical));
     }
 

@@ -74,12 +74,18 @@ public class TaskTemplateApplicationService {
     }
 
     public boolean delete(Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("模板 ID 不能为空");
+        }
         TaskTemplateEntity entity = taskTemplateRepository.getById(id);
         if (entity == null) {
-            return false;
+            throw new IllegalArgumentException("任务模板不存在");
         }
-        entity.setDelFlag("2");
-        return taskTemplateRepository.updateById(entity);
+        // 全局 logic-delete-field=delFlag，必须用 removeById；updateById 不会更新逻辑删除字段
+        if (!taskTemplateRepository.removeById(id)) {
+            throw new IllegalStateException("删除任务模板失败: " + id);
+        }
+        return true;
     }
 
     public boolean changeStatus(Long id, Boolean enabled) {

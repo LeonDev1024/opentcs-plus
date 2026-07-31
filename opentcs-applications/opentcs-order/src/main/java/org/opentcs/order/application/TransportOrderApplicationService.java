@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.HashMap;
@@ -396,15 +397,102 @@ public class TransportOrderApplicationService {
         bo.setName(entity.getName());
         bo.setOrderNo(entity.getOrderNo());
         bo.setState(entity.getState());
-        bo.setIntendedVehicle(entity.getIntendedVehicle());
-        bo.setProcessingVehicle(entity.getProcessingVehicle());
         bo.setVehicleVin(entity.getVehicleVin());
         bo.setDestinations(entity.getDestinations());
         bo.setCreationTime(entity.getCreationTime());
+        bo.setCreateTime(entity.getCreateTime() != null ? toLocalDateTime(entity.getCreateTime()) : entity.getCreationTime());
         bo.setFinishedTime(entity.getFinishedTime());
         bo.setDeadline(entity.getDeadline());
         bo.setProperties(entity.getProperties());
+
+        String vehicle = entity.getProcessingVehicle();
+        if (vehicle == null || vehicle.isBlank()) {
+            vehicle = entity.getIntendedVehicle();
+        }
+        if (vehicle != null) {
+            vehicle = vehicle.trim();
+            if (vehicle.isEmpty()) {
+                vehicle = null;
+            }
+        }
+        bo.setVehicleName(vehicle);
+
+        String intended = entity.getIntendedVehicle();
+        if (intended != null) {
+            intended = intended.trim();
+            bo.setIntendedVehicle(intended.isEmpty() ? null : intended);
+        }
+        String processing = entity.getProcessingVehicle();
+        if (processing != null) {
+            processing = processing.trim();
+            bo.setProcessingVehicle(processing.isEmpty() ? null : processing);
+        }
+
+        String[] points = splitDestinations(entity.getDestinations());
+        if (points != null) {
+            bo.setSourcePoint(points[0]);
+            bo.setDestPoint(points[1]);
+        }
+        bo.setPriority(parsePriority(entity.getProperties()));
+        Map<String, String> props = parseProperties(entity.getProperties());
+        bo.setExternalOrderNo(props.get("externalOrderNo"));
+        bo.setTemplateCode(props.get("templateCode"));
+        bo.setRemark(props.get("remark"));
+        bo.setDisplayState(resolveDisplayState(entity.getState(), bo.getProcessingVehicle()));
         return bo;
+    }
+
+    /**
+     * 内核 state → 业务展示状态
+     * RAW→待执行；ACTIVE 无车→寻车中；ACTIVE 有车→执行中；
+     * RECOVERING→暂停中；FINISHED/CANCELLED/FAILED 原样映射。
+     */
+    private String resolveDisplayState(String state, String processingVehicle) {
+        if (state == null || state.isBlank()) {
+            return null;
+        }
+        return switch (state) {
+            case "RAW" -> "PENDING";
+            case "ACTIVE" -> (processingVehicle == null || processingVehicle.isBlank())
+                    ? "DISPATCHING"
+                    : "EXECUTING";
+            case "RECOVERING" -> "PAUSED";
+            case "FINISHED" -> "FINISHED";
+            case "CANCELLED" -> "CANCELLED";
+            case "FAILED" -> "FAILED";
+            default -> state;
+        };
+    }
+
+    private LocalDateTime toLocalDateTime(java.util.Date date) {
+        return date.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
+    }
+
+    private String[] splitDestinations(String destinations) {
+        if (destinations == null || destinations.isBlank()) {
+            return null;
+        }
+        String[] parts = destinations.split(",");
+        if (parts.length < 2) {
+            return null;
+        }
+        return new String[] {parts[0].trim(), parts[1].trim()};
+    }
+
+    private Integer parsePriority(String propertiesJson) {
+        if (propertiesJson == null || propertiesJson.isBlank()) {
+            return null;
+        }
+        try {
+            Map<String, String> props = JsonUtils.parseObject(propertiesJson, new TypeReference<Map<String, String>>() {
+            });
+            if (props == null || props.get("priority") == null || props.get("priority").isBlank()) {
+                return null;
+            }
+            return Integer.valueOf(props.get("priority").trim());
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private TransportOrderEntity toEntity(TransportOrderQueryBO bo) {
@@ -418,6 +506,8 @@ public class TransportOrderApplicationService {
         entity.setState(bo.getState());
         entity.setIntendedVehicle(bo.getIntendedVehicle());
         entity.setProcessingVehicle(bo.getProcessingVehicle());
+        entity.setVehicleVin(bo.getVehicleVin());
+        entity.setDisplayState(bo.getDisplayState());
         entity.setDestinations(bo.getDestinations());
         entity.setCreationTime(bo.getCreationTime());
         entity.setFinishedTime(bo.getFinishedTime());

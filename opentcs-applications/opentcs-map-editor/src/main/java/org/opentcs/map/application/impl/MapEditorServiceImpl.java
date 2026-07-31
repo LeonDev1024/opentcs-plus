@@ -12,7 +12,8 @@ import org.opentcs.kernel.api.dto.PointDTO;
 import org.opentcs.kernel.api.map.MapSceneApi;
 import org.opentcs.kernel.api.map.MapSnapshotHistoryPort;
 import org.opentcs.kernel.application.MapHotReloadService;
-import org.opentcs.kernel.application.MapRuntimeService;
+import org.opentcs.kernel.application.VehicleRegistry;
+import org.opentcs.kernel.domain.vehicle.Vehicle;
 import org.opentcs.kernel.persistence.entity.LayerEntity;
 import org.opentcs.kernel.persistence.entity.LayerGroupEntity;
 import org.opentcs.kernel.persistence.service.LayerRepository;
@@ -40,6 +41,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 地图编辑器应用服务实现
@@ -57,18 +59,14 @@ public class MapEditorServiceImpl implements IMapEditorService {
 
     private final MapSceneApi mapSceneApi;
     private final MapSnapshotHistoryPort mapSnapshotHistoryPort;
-    private final MapRuntimeService mapRuntimeService;
     private final MapHotReloadService mapHotReloadService;
+    private final VehicleRegistry vehicleRegistry;
     private final LayerGroupRepository layerGroupRepository;
     private final LayerRepository layerRepository;
     private final ObjectMapper objectMapper;
 
     /**
-     * 地图状态：草稿
-     */
-    private static final String STATUS_DRAFT = "0";
-    /**
-     * 地图状态：已发布
+     * 地图状态：已生效（保存后即加载到运行时内存）
      */
     private static final String STATUS_PUBLISHED = "1";
     private static final String MAP_ID_PATTERN = "^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$";
@@ -158,6 +156,7 @@ public class MapEditorServiceImpl implements IMapEditorService {
         }
         String mapId = info.getMapId();
         validateMapId(mapId);
+        ensureNoBusyVehicles();
         log.info("保存地图模型: {}, 版本: {}", mapId, info.getMapVersion());
 
         // 获取导航地图
@@ -176,9 +175,18 @@ public class MapEditorServiceImpl implements IMapEditorService {
         String newVersion = MapVersionUtil.getNextVersion(currentVersion);
         log.info("版本升级: {} -> {}", currentVersion, newVersion);
 
-        // 0. 保存图层组/图层，并回填元素 layerId
-        Map<String, Long> layerIdMapping = persistLayers(navMapId, saveDTO.getLayerGroups(), saveDTO.getLayers());
-        remapElementLayerIds(saveDTO, layerIdMapping);
+        // 极简：图层组/图层由前端固定渲染，保存不再要求提交；仅在传入时兼容旧客户端
+        if (saveDTO.getLayerGroups() != null || saveDTO.getLayers() != null) {
+            Map<String, Long> layerIdMapping = persistLayers(navMapId, saveDTO.getLayerGroups(), saveDTO.getLayers());
+            remapElementLayerIds(saveDTO, layerIdMapping);
+        }
+        // 点/路径不再依赖图层；清空残留 layerId，避免脏引用
+        if (saveDTO.getPoints() != null) {
+            saveDTO.getPoints().forEach(p -> p.setLayerId(null));
+        }
+        if (saveDTO.getPaths() != null) {
+            saveDTO.getPaths().forEach(p -> p.setLayerId(null));
+        }
         validateElementLayouts(saveDTO);
 
         // 1. 更新语义表（point / path）
@@ -198,46 +206,79 @@ public class MapEditorServiceImpl implements IMapEditorService {
         // 3. 记录历史版本
         mapSnapshotHistoryPort.recordSnapshot(navMapId, newVersion, snapshotUrl, info.getName());
 
-        // 4. 更新 navigation_map 的版本号和状态
+        // 4. 更新版本号，并标记为已生效
         NavigationMapDTO navMapUpdate = new NavigationMapDTO();
         navMapUpdate.setId(navMapId);
         navMapUpdate.setMapVersion(newVersion);
-        navMapUpdate.setStatus(STATUS_DRAFT); // 保存后仍为草稿状态
+        navMapUpdate.setStatus(STATUS_PUBLISHED);
         mapSceneApi.updateNavigationMap(navMapUpdate);
 
-        log.info("保存地图完成: {} -> v{}", mapId, newVersion);
+        // 5. 极简：保存后默认加载到运行时内存（激活）
+        validateBeforeActivate(navMapId);
+        mapHotReloadService.hotReload(mapId);
+
+        log.info("保存地图完成并已激活: {} -> v{}", mapId, newVersion);
         return true;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean publish(String mapId) {
+        // 兼容旧接口：与保存后激活同一语义
         validateMapId(mapId);
-        log.info("发布地图: {}", mapId);
+        ensureNoBusyVehicles();
+        log.info("激活地图(兼容 publish): {}", mapId);
 
-        // 查询地图
         NavigationMapDTO navMap = mapSceneApi.getNavigationMapByMapId(mapId);
         if (navMap == null) {
             throw new RuntimeException("地图不存在: " + mapId);
         }
 
-        // 已经是发布状态
-        if (STATUS_PUBLISHED.equals(navMap.getStatus())) {
-            log.info("地图已经是发布状态: {}", mapId);
-            mapHotReloadService.hotReload(mapId);
+        validateBeforeActivate(navMap.getId());
+        if (!STATUS_PUBLISHED.equals(navMap.getStatus())) {
+            navMap.setStatus(STATUS_PUBLISHED);
+            mapSceneApi.updateNavigationMap(navMap);
+        }
+        mapHotReloadService.hotReload(mapId);
+
+        log.info("地图激活完成: {} -> v{}", navMap.getMapId(), navMap.getMapVersion());
+        return true;
+    }
+
+    /**
+     * 任务中的机器人存在时禁止改图 / 热加载。
+     */
+    private void ensureNoBusyVehicles() {
+        List<String> busyNames = vehicleRegistry.getAllVehicleDomains().stream()
+                .filter(this::isBusyVehicle)
+                .map(v -> v.getName() != null && !v.getName().isBlank() ? v.getName() : v.getVehicleId())
+                .collect(Collectors.toList());
+        if (!busyNames.isEmpty()) {
+            throw new IllegalStateException("存在任务中的机器人，禁止修改地图: " + String.join(", ", busyNames));
+        }
+    }
+
+    private boolean isBusyVehicle(Vehicle vehicle) {
+        if (vehicle == null) {
+            return false;
+        }
+        if (vehicle.getCurrentOrderId() != null && !vehicle.getCurrentOrderId().isBlank()) {
             return true;
         }
+        return vehicle.getState() != null && vehicle.getState().isActive();
+    }
 
-        // 发布前硬校验（基础 5 条）
-        Long navMapId = navMap.getId();
+    /**
+     * 激活前硬校验：点/路径完整且引用有效。
+     */
+    private void validateBeforeActivate(Long navMapId) {
         var points = mapSceneApi.listPointsByMap(navMapId);
         var paths = mapSceneApi.listPathsByMap(navMapId);
-        var layers = layerRepository.selectByNavigationMapId(navMapId);
         if (points.isEmpty()) {
-            throw new RuntimeException("发布失败：地图缺少点位数据");
+            throw new RuntimeException("保存失败：地图缺少点位数据");
         }
         if (paths.isEmpty()) {
-            throw new RuntimeException("发布失败：地图缺少路径数据");
+            throw new RuntimeException("保存失败：地图缺少路径数据");
         }
         Set<String> pointIds = new HashSet<>();
         for (var point : points) {
@@ -247,33 +288,12 @@ public class MapEditorServiceImpl implements IMapEditorService {
         }
         for (var path : paths) {
             if (path.getSourcePointId() == null || !pointIds.contains(path.getSourcePointId())) {
-                throw new RuntimeException("发布失败：存在路径起点不存在，pathId=" + path.getPathId());
+                throw new RuntimeException("保存失败：存在路径起点不存在，pathId=" + path.getPathId());
             }
             if (path.getDestPointId() == null || !pointIds.contains(path.getDestPointId())) {
-                throw new RuntimeException("发布失败：存在路径终点不存在，pathId=" + path.getPathId());
+                throw new RuntimeException("保存失败：存在路径终点不存在，pathId=" + path.getPathId());
             }
         }
-        Set<Long> layerIds = new HashSet<>();
-        for (var layer : layers) {
-            layerIds.add(layer.getId());
-        }
-        for (var point : points) {
-            if (point.getLayerId() != null && !layerIds.contains(point.getLayerId())) {
-                throw new RuntimeException("发布失败：点位存在无效 layerId，pointId=" + point.getPointId());
-            }
-        }
-        for (var path : paths) {
-            if (path.getLayerId() != null && !layerIds.contains(path.getLayerId())) {
-                throw new RuntimeException("发布失败：路径存在无效 layerId，pathId=" + path.getPathId());
-            }
-        }
-        // 更新为发布状态
-        navMap.setStatus(STATUS_PUBLISHED);
-        mapSceneApi.updateNavigationMap(navMap);
-        mapHotReloadService.hotReload(mapId);
-
-        log.info("发布地图完成: {} -> v{}", navMap.getMapId(), navMap.getMapVersion());
-        return true;
     }
 
     @Override

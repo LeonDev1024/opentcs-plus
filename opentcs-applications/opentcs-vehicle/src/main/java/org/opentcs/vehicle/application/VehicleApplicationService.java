@@ -15,11 +15,13 @@ import org.opentcs.kernel.api.dto.TransportOrderDTO;
 import org.opentcs.kernel.api.dto.VehicleDTO;
 import org.opentcs.kernel.api.dto.VehicleStateDTO;
 import org.opentcs.kernel.application.PointOccupancyService;
+import org.opentcs.kernel.application.RoutePlannerImpl;
 import org.opentcs.kernel.application.TransportOrderRegistry;
 import org.opentcs.kernel.application.VehicleRegistry;
 import org.opentcs.kernel.application.runtime.RuntimeStateStore;
 import org.opentcs.kernel.application.runtime.VehicleRuntimeSnapshot;
 import org.opentcs.kernel.domain.order.TransportOrder;
+import org.opentcs.kernel.domain.routing.Point;
 import org.opentcs.kernel.domain.vehicle.Vehicle;
 import org.opentcs.kernel.domain.vehicle.VehiclePosition;
 import org.opentcs.kernel.domain.vehicle.VehicleState;
@@ -71,6 +73,7 @@ public class VehicleApplicationService {
     private final DriverRegistry driverRegistry;
     private final OpsActionRepository opsActionRepository;
     private final PointOccupancyService pointOccupancyService;
+    private final RoutePlannerImpl routePlanner;
 
     private static final Set<String> TERMINAL_OPS_STATUSES = Set.of(
             "SUCCEEDED", "FAILED", "TIMEOUT", "REJECTED");
@@ -267,16 +270,94 @@ public class VehicleApplicationService {
         if (entity == null) {
             throw new RuntimeException("车辆不存在: " + vehicleId);
         }
+        ensureKernelVehicle(entity.getName());
 
         // 更新数据库状态
         entity.setState("IDLE");
-        entity.setIntegrationLevel("LEVEL_3");
+        entity.setIntegrationLevel("TO_BE_UTILIZED");
         vehicleService.updateById(entity);
 
         // 更新内核状态
         vehicleRegistry.updateVehicleStateDomain(entity.getName(), VehicleState.IDLE);
 
         log.info("车辆激活成功: {}", entity.getName());
+        return true;
+    }
+
+    /**
+     * 连接驱动：按 properties 中的 DriverConfig 注册到 DriverRegistry（LOOPBACK 无需 MQTT）。
+     */
+    @Transactional
+    public boolean connectVehicle(Long vehicleId) {
+        VehicleEntity entity = vehicleService.getById(vehicleId);
+        if (entity == null) {
+            throw new RuntimeException("车辆不存在: " + vehicleId);
+        }
+        DriverConfig config = requireDriverConfig(entity);
+        ensureKernelVehicle(entity.getName());
+        driverRegistry.registerVehicle(entity.getName(), config);
+        log.info("车辆驱动已连接: name={}, driverType={}", entity.getName(), config.getDriverType());
+        return true;
+    }
+
+    /**
+     * 断开驱动连接（保留主数据与内核注册，状态改为 UNAVAILABLE）。
+     */
+    @Transactional
+    public boolean disconnectVehicle(Long vehicleId) {
+        VehicleEntity entity = vehicleService.getById(vehicleId);
+        if (entity == null) {
+            throw new RuntimeException("车辆不存在: " + vehicleId);
+        }
+        Vehicle kernelVehicle = vehicleRegistry.getVehicleDomain(entity.getName());
+        if (kernelVehicle != null && kernelVehicle.getCurrentOrderId() != null) {
+            throw new RuntimeException("车辆有未完成的订单，无法断开驱动");
+        }
+        driverRegistry.unregisterVehicle(entity.getName());
+        entity.setState("UNAVAILABLE");
+        entity.setIntegrationLevel("TO_BE_RESPECTED");
+        vehicleService.updateById(entity);
+        if (kernelVehicle != null) {
+            vehicleRegistry.updateVehicleStateDomain(entity.getName(), VehicleState.UNAVAILABLE);
+        }
+        log.info("车辆驱动已断开: {}", entity.getName());
+        return true;
+    }
+
+    /**
+     * 设置初始点：写入 DB + 内核位置（点位须已在运行时地图中）。
+     */
+    @Transactional
+    public boolean setInitialPosition(Long vehicleId, String pointId) {
+        if (pointId == null || pointId.isBlank()) {
+            throw new IllegalArgumentException("初始点不能为空");
+        }
+        VehicleEntity entity = vehicleService.getById(vehicleId);
+        if (entity == null) {
+            throw new RuntimeException("车辆不存在: " + vehicleId);
+        }
+        String trimmed = pointId.trim();
+        Point point = routePlanner.getPoint(trimmed);
+        if (point == null) {
+            throw new IllegalStateException("点位不在运行时地图中，请先在地图编辑器中保存地图: " + trimmed);
+        }
+        ensureKernelVehicle(entity.getName());
+
+        entity.setCurrentPosition(trimmed);
+        vehicleService.updateById(entity);
+
+        VehiclePosition position = new VehiclePosition(
+                point.getPointId(),
+                null,
+                point.getX(),
+                point.getY(),
+                point.getZ(),
+                point.getOrientation()
+        );
+        vehicleRegistry.updateVehiclePositionDomain(entity.getName(), position);
+        pointOccupancyService.onVehicleMoved(entity.getName(), null, trimmed);
+
+        log.info("车辆初始点已设置: name={}, pointId={}", entity.getName(), trimmed);
         return true;
     }
 
@@ -778,12 +859,30 @@ public class VehicleApplicationService {
 
     @Transactional
     public boolean createVehicle(VehicleBO vehicle) {
-        return vehicleService.save(toEntity(vehicle));
+        VehicleEntity entity = toEntity(vehicle);
+        applyDriverType(entity, vehicle.getDriverType(), vehicle.getProperties());
+        if (entity.getState() == null || entity.getState().isBlank()) {
+            entity.setState("UNAVAILABLE");
+        }
+        if (entity.getIntegrationLevel() == null || entity.getIntegrationLevel().isBlank()) {
+            entity.setIntegrationLevel("TO_BE_RESPECTED");
+        }
+        return vehicleService.save(entity);
     }
 
     @Transactional
     public boolean updateVehicle(VehicleBO vehicle) {
-        return vehicleService.updateById(toEntity(vehicle));
+        VehicleEntity existing = vehicleService.getById(vehicle.getId());
+        if (existing == null) {
+            throw new RuntimeException("车辆不存在: " + vehicle.getId());
+        }
+        VehicleEntity entity = toEntity(vehicle);
+        // 未显式传 properties 时保留原驱动配置，仅用 driverType 覆盖
+        if (vehicle.getProperties() == null || vehicle.getProperties().isBlank()) {
+            entity.setProperties(existing.getProperties());
+        }
+        applyDriverType(entity, vehicle.getDriverType(), entity.getProperties());
+        return vehicleService.updateById(entity);
     }
 
     @Transactional
@@ -820,9 +919,11 @@ public class VehicleApplicationService {
         if (vehicle.getPosition() != null) {
             PositionDTO positionDTO = new PositionDTO();
             positionDTO.setPointId(vehicle.getPosition().getPointId());
+            positionDTO.setMapId(vehicle.getPosition().getMapId());
             positionDTO.setX(vehicle.getPosition().getX());
             positionDTO.setY(vehicle.getPosition().getY());
             positionDTO.setZ(vehicle.getPosition().getZ());
+            positionDTO.setOrientation(vehicle.getPosition().getOrientation());
             dto.setPosition(positionDTO);
         }
 
@@ -901,7 +1002,74 @@ public class VehicleApplicationService {
         bo.setProperties(entity.getProperties());
         bo.setCreateTime(entity.getCreateTime());
         bo.setUpdateTime(entity.getUpdateTime());
+        DriverConfig config = parseDriverConfig(entity.getProperties());
+        if (config != null) {
+            bo.setDriverType(config.getDriverType());
+        }
+        bo.setDriverConnected(entity.getName() != null
+                && driverRegistry.getRegisteredVehicles().contains(entity.getName()));
         return bo;
+    }
+
+    private void ensureKernelVehicle(String name) {
+        if (vehicleRegistry.getVehicleDomain(name) != null) {
+            return;
+        }
+        Vehicle kernelVehicle = new Vehicle(name);
+        kernelVehicle.setName(name);
+        kernelVehicle.updateState(VehicleState.UNAVAILABLE);
+        vehicleRegistry.registerVehicleDomain(kernelVehicle);
+    }
+
+    private DriverConfig requireDriverConfig(VehicleEntity entity) {
+        DriverConfig config = parseDriverConfig(entity.getProperties());
+        if (config == null || config.getDriverType() == null || config.getDriverType().isBlank()) {
+            throw new IllegalStateException("车辆未配置驱动类型，请先在编辑中选择 LOOPBACK 或 VDA5050: " + entity.getName());
+        }
+        if ("LOOPBACK".equalsIgnoreCase(config.getDriverType())) {
+            config.setConnectionType("NONE");
+        }
+        return config;
+    }
+
+    private DriverConfig parseDriverConfig(String properties) {
+        if (properties == null || properties.isBlank()) {
+            return null;
+        }
+        try {
+            return objectMapper.readValue(properties, DriverConfig.class);
+        } catch (Exception e) {
+            log.debug("properties 非 DriverConfig JSON，忽略: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    private void applyDriverType(VehicleEntity entity, String driverType, String existingPropertiesJson) {
+        if (driverType == null || driverType.isBlank()) {
+            return;
+        }
+        String type = driverType.trim().toUpperCase();
+        if (!"LOOPBACK".equals(type) && !"VDA5050".equals(type)) {
+            throw new IllegalArgumentException("不支持的驱动类型: " + driverType);
+        }
+        DriverConfig config = parseDriverConfig(existingPropertiesJson);
+        if (config == null) {
+            config = new DriverConfig();
+        }
+        config.setDriverType(type);
+        if ("LOOPBACK".equals(type)) {
+            config.setConnectionType("NONE");
+            config.setMqttConfig(null);
+            config.setTcpConfig(null);
+        } else if (config.getConnectionType() == null || config.getConnectionType().isBlank()
+                || "NONE".equalsIgnoreCase(config.getConnectionType())) {
+            config.setConnectionType("MQTT");
+        }
+        try {
+            entity.setProperties(objectMapper.writeValueAsString(config));
+        } catch (Exception e) {
+            throw new RuntimeException("驱动配置序列化失败: " + e.getMessage(), e);
+        }
     }
 
     private VehicleEntity toEntity(VehicleBO bo) {

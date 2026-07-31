@@ -55,6 +55,12 @@ public class TransportOrderEntity extends BusinessEntity {
     private String vehicleVin;
 
     /**
+     * 业务展示状态（仅查询过滤用，非持久化字段）
+     */
+    @TableField(exist = false)
+    private String displayState;
+
+    /**
      * 目的地序列
      */
     private String destinations;
