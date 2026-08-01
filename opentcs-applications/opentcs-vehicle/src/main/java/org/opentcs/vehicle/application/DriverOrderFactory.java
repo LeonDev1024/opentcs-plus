@@ -3,10 +3,11 @@ package org.opentcs.vehicle.application;
 import org.opentcs.driver.api.dto.DriverOrder;
 import org.opentcs.kernel.api.OrderTraceKeys;
 import org.opentcs.kernel.application.RoutePlannerImpl;
-import org.opentcs.kernel.domain.order.OrderStep;
+import org.opentcs.kernel.application.VehicleRegistry;
 import org.opentcs.kernel.domain.order.TransportOrder;
 import org.opentcs.kernel.domain.routing.Path;
 import org.opentcs.kernel.domain.routing.Point;
+import org.opentcs.kernel.domain.vehicle.Vehicle;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -23,17 +24,24 @@ import java.util.Set;
 public class DriverOrderFactory {
 
     private final RoutePlannerImpl routePlanner;
+    private final VehicleRegistry vehicleRegistry;
 
-    public DriverOrderFactory(RoutePlannerImpl routePlanner) {
+    public DriverOrderFactory(RoutePlannerImpl routePlanner, VehicleRegistry vehicleRegistry) {
         this.routePlanner = routePlanner;
+        this.vehicleRegistry = vehicleRegistry;
     }
 
     public DriverOrder fromTransportOrder(TransportOrder order) {
+        return fromTransportOrder(order, null);
+    }
+
+    public DriverOrder fromTransportOrder(TransportOrder order, String vehicleId) {
+        List<Path> completeRoute = buildCompleteRoute(order, vehicleId);
         DriverOrder driverOrder = new DriverOrder();
         driverOrder.setOrderId(order.getOrderId());
         driverOrder.setOrderVersion(0);
-        driverOrder.setNodes(buildNodes(order));
-        driverOrder.setEdges(buildEdges(order));
+        driverOrder.setNodes(buildNodes(order, completeRoute));
+        driverOrder.setEdges(buildEdges(completeRoute));
 
         Map<String, String> parameters = new HashMap<>();
         String traceId = order.getProperties().get(OrderTraceKeys.TRACE_ID);
@@ -46,20 +54,39 @@ public class DriverOrderFactory {
         return driverOrder;
     }
 
-    private List<DriverOrder.Node> buildNodes(TransportOrder order) {
+    private List<Path> buildCompleteRoute(TransportOrder order, String vehicleId) {
+        List<Path> route = new ArrayList<>();
+        Vehicle vehicle = vehicleId == null ? null : vehicleRegistry.getVehicleDomain(vehicleId);
+        String currentPointId = vehicle != null && vehicle.getPosition() != null
+                ? vehicle.getPosition().getPointId()
+                : null;
+        if (currentPointId != null
+                && order.getSourcePointId() != null
+                && !currentPointId.equals(order.getSourcePointId())) {
+            route.addAll(routePlanner.findPath(
+                    currentPointId, order.getSourcePointId(), vehicleId));
+        }
+        route.addAll(order.getRoute());
+        return route;
+    }
+
+    private List<DriverOrder.Node> buildNodes(TransportOrder order, List<Path> completeRoute) {
         List<DriverOrder.Node> nodes = new ArrayList<>();
         Set<String> seen = new LinkedHashSet<>();
 
-        if (order.getSourcePointId() != null) {
+        for (Path path : completeRoute) {
+            if (path.getSourcePointId() != null) {
+                seen.add(path.getSourcePointId());
+            }
+            if (path.getDestPointId() != null) {
+                seen.add(path.getDestPointId());
+            }
+        }
+        if (seen.isEmpty() && order.getSourcePointId() != null) {
             seen.add(order.getSourcePointId());
         }
-        for (OrderStep step : order.getSteps()) {
-            if (step.getSourcePointId() != null) {
-                seen.add(step.getSourcePointId());
-            }
-            if (step.getDestinationPointId() != null) {
-                seen.add(step.getDestinationPointId());
-            }
+        if (order.getDestPointId() != null) {
+            seen.add(order.getDestPointId());
         }
 
         int seq = 0;
@@ -78,9 +105,8 @@ public class DriverOrderFactory {
         return nodes;
     }
 
-    private List<DriverOrder.Edge> buildEdges(TransportOrder order) {
+    private List<DriverOrder.Edge> buildEdges(List<Path> route) {
         List<DriverOrder.Edge> edges = new ArrayList<>();
-        List<Path> route = order.getRoute();
         if (route == null || route.isEmpty()) {
             return edges;
         }

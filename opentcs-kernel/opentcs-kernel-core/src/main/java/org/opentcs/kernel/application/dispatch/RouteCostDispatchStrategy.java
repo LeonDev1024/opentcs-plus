@@ -104,7 +104,10 @@ public class RouteCostDispatchStrategy implements DispatchStrategy {
         return matched;
     }
 
-    private double routeCost(String sourcePointId, String targetPointId, RoutePlannerImpl routePlanner) {
+    private double routeCost(String sourcePointId,
+                             String targetPointId,
+                             String vehicleId,
+                             RoutePlannerImpl routePlanner) {
         if (sourcePointId == null || targetPointId == null) {
             return Double.MAX_VALUE;
         }
@@ -112,7 +115,7 @@ public class RouteCostDispatchStrategy implements DispatchStrategy {
             return 0;
         }
 
-        var paths = routePlanner.findPath(sourcePointId, targetPointId);
+        var paths = routePlanner.findPath(sourcePointId, targetPointId, vehicleId);
         if (paths.isEmpty()) {
             return Double.MAX_VALUE;
         }
@@ -122,7 +125,11 @@ public class RouteCostDispatchStrategy implements DispatchStrategy {
     }
 
     private DispatchScore score(Vehicle vehicle, TransportOrder order, RoutePlannerImpl routePlanner) {
-        double routeCost = routeCost(vehicle.getPosition().getPointId(), order.getSourcePointId(), routePlanner);
+        double routeCost = routeCost(
+                vehicle.getPosition().getPointId(),
+                order.getSourcePointId(),
+                vehicle.getVehicleId(),
+                routePlanner);
         double lowEnergyPenalty = Math.max(0, LOW_ENERGY_THRESHOLD - vehicle.getEnergyLevel())
                 * LOW_ENERGY_PENALTY_WEIGHT;
         double chargingPenalty = vehicle.getState() == VehicleState.CHARGING ? CHARGING_PENALTY : 0;

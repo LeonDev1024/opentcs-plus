@@ -12,11 +12,14 @@ import org.opentcs.driver.registry.DriverRegistry;
 import org.opentcs.kernel.api.OrderLifecycleApi;
 import org.opentcs.kernel.application.RoutePlannerImpl;
 import org.opentcs.kernel.application.TransportOrderRegistry;
+import org.opentcs.kernel.application.VehicleRegistry;
 import org.opentcs.kernel.domain.event.OrderAssignedEvent;
 import org.opentcs.kernel.domain.order.TransportOrder;
 import org.opentcs.kernel.domain.routing.Path;
 import org.opentcs.kernel.domain.routing.Point;
 import org.opentcs.kernel.domain.routing.RoutingAlgorithm;
+import org.opentcs.kernel.domain.vehicle.Vehicle;
+import org.opentcs.kernel.domain.vehicle.VehiclePosition;
 
 import java.util.HashSet;
 import java.util.List;
@@ -35,9 +38,13 @@ class OrderDispatchCommandListenerTest {
         CapturingVehicleGateway gateway = new CapturingVehicleGateway();
         DriverRegistry registry = new DriverRegistry(gateway);
         TransportOrderRegistry orderRegistry = new TransportOrderRegistry();
+        VehicleRegistry vehicleRegistry = new VehicleRegistry();
         RoutePlannerImpl routePlanner = new RoutePlannerImpl(unreachableRouter());
         routePlanner.registerPoint(new Point("A", "A", 0, 0));
         routePlanner.registerPoint(new Point("B", "B", 10, 0));
+        Vehicle vehicle = new Vehicle("vehicle-1");
+        vehicle.updatePosition(new VehiclePosition("A", null, 0, 0, 0, 0));
+        vehicleRegistry.registerVehicleDomain(vehicle);
 
         TransportOrder order = new TransportOrder(
                 "order-1", "test", "A", "B",
@@ -57,7 +64,7 @@ class OrderDispatchCommandListenerTest {
         OrderDispatchCommandListener listener = new OrderDispatchCommandListener(
                 registry,
                 orderRegistry,
-                new DriverOrderFactory(routePlanner),
+                new DriverOrderFactory(routePlanner, vehicleRegistry),
                 lifecycleApi);
 
         listener.onOrderAssigned(new OrderAssignedEvent("order-1", "vehicle-1"));

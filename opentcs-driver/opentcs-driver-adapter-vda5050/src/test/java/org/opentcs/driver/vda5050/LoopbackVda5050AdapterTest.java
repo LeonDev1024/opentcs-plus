@@ -7,6 +7,7 @@ import org.opentcs.driver.api.dto.DriverOrder;
 import org.opentcs.driver.api.dto.VehicleStatus;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -15,6 +16,37 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Tag("dev")
 class LoopbackVda5050AdapterTest {
+
+    @Test
+    void shouldInterpolatePositionAtConfiguredSpeedAndReportHeading() throws Exception {
+        LoopbackVda5050Adapter adapter = new LoopbackVda5050Adapter();
+        adapter.initialize(new DriverConfig());
+        DriverConfig vehicleConfig = new DriverConfig();
+        vehicleConfig.setProperties(Map.of(
+                "simulationSpeedMps", "1.0",
+                "mapUnitsPerMeter", "100"));
+        adapter.connect("sim-1", vehicleConfig);
+
+        DriverOrder order = new DriverOrder();
+        order.setOrderId("order-speed");
+        DriverOrder.Node a = node("A", 0.0, 0.0);
+        DriverOrder.Node b = node("B", 100.0, 0.0);
+        order.setNodes(List.of(a, b));
+
+        adapter.sendOrder("sim-1", order);
+        VehicleStatus initial = waitStatus(adapter, "sim-1", 500);
+        VehicleStatus moving = waitStatus(adapter, "sim-1", 700);
+
+        assertNotNull(initial);
+        assertEquals(0.0, initial.getxPosition());
+        assertEquals(0.0, initial.getTheta());
+        assertNotNull(moving);
+        assertTrue(moving.getxPosition() > 0.0);
+        assertTrue(moving.getxPosition() < 100.0);
+        assertEquals(0.0, moving.getTheta());
+        assertEquals("A", moving.getLastNodeId());
+        adapter.destroy();
+    }
 
     @Test
     void shouldReplayNodeAndIdleStatusesAfterSendOrder() throws Exception {
@@ -40,6 +72,8 @@ class LoopbackVda5050AdapterTest {
         assertNotNull(first);
         assertEquals("EXECUTING", first.getAgvState());
         assertEquals("order-loop", first.getOrderId());
+        assertEquals(100.0, first.getBatteryState());
+        assertEquals(false, first.getCharging());
 
         boolean sawB = false;
         boolean sawIdle = false;
@@ -56,12 +90,21 @@ class LoopbackVda5050AdapterTest {
             if ("IDLE".equalsIgnoreCase(status.getAgvState())) {
                 sawIdle = true;
                 assertEquals("B", status.getLastNodeId());
+                assertEquals(100.0, status.getBatteryState());
             }
         }
 
         assertTrue(sawB);
         assertTrue(sawIdle);
         adapter.destroy();
+    }
+
+    private static DriverOrder.Node node(String id, double x, double y) {
+        DriverOrder.Node node = new DriverOrder.Node();
+        node.setNodeId(id);
+        node.setX(x);
+        node.setY(y);
+        return node;
     }
 
     private static VehicleStatus waitStatus(LoopbackVda5050Adapter adapter,

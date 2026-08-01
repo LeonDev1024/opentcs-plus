@@ -45,7 +45,8 @@ public class OrderDispatchCommandListener {
         }
 
         String traceId = order.getProperties().get(OrderTraceKeys.TRACE_ID);
-        DriverOrder driverOrder = driverOrderFactory.fromTransportOrder(order);
+        DriverOrder driverOrder = driverOrderFactory.fromTransportOrder(
+                order, event.getVehicleId());
         try {
             driverRegistry.sendOrder(event.getVehicleId(), driverOrder);
             order.getProperties().put(OrderTraceKeys.DISPATCH_STATE, "SENT");

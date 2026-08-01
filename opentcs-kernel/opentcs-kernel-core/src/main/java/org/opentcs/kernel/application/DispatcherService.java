@@ -399,7 +399,7 @@ public class DispatcherService implements Dispatcher {
         String current = vehicle.getPosition().getPointId();
         if (current == null) return false;
         if (current.equals(targetPointId)) return true;
-        return !routePlanner.findRouteDomain(current, targetPointId).isEmpty();
+        return !routePlanner.findRouteDomain(current, targetPointId, vehicle.getVehicleId()).isEmpty();
     }
 
     private void assignOrderToVehicle(TransportOrder order, Vehicle vehicle) {

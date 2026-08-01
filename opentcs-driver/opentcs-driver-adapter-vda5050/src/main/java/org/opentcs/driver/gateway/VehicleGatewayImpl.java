@@ -79,8 +79,10 @@ public class VehicleGatewayImpl implements VehicleGateway {
 
         try {
             String connectionType = config.getConnectionType();
-            if ("LOOPBACK".equalsIgnoreCase(driverType)
-                    || connectionType == null
+            if ("LOOPBACK".equalsIgnoreCase(driverType)) {
+                // Loopback 使用 DriverConfig.properties 读取仿真速度、地图比例等参数。
+                adapter.connect(vehicleId, config);
+            } else if (connectionType == null
                     || connectionType.isBlank()
                     || "NONE".equalsIgnoreCase(connectionType)) {
                 adapter.connect(vehicleId, null);
