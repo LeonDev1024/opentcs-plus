@@ -1,12 +1,10 @@
 #!/usr/bin/env bash
-# ============================================================
-# 本地一键：Docker MySQL + Flyway 迁移 + 开发引导数据
-# 用法: ./script/db/dev-db-up.sh [--rebuild]
-# ============================================================
+# 本地一键：Docker MySQL + Flyway 迁移
+# 用法: ./db/dev-db-up.sh [--rebuild]
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=script/db/common.sh
+# shellcheck source=db/common.sh
 source "$SCRIPT_DIR/common.sh"
 if [[ -f "$SCRIPT_DIR/local.env" ]]; then
   # shellcheck disable=SC1091
@@ -19,7 +17,7 @@ REBUILD="${1:-}"
 
 if ! command -v docker >/dev/null 2>&1; then
   echo "ERROR: docker is required for dev-db-up.sh"
-  echo "Use ./script/db/dev-db.sh migrate if you already have MySQL at ${FLYWAY_HOST}:${FLYWAY_PORT}"
+  echo "Use ./db/dev-db.sh migrate if you already have MySQL at ${FLYWAY_HOST}:${FLYWAY_PORT}"
   exit 1
 fi
 

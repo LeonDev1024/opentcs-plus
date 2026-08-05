@@ -4,7 +4,6 @@ on:
   pull_request:
     paths:
       - 'db/**'
-      - 'script/db/**'
       - 'pom.xml'
       - 'opentcs-admin/pom.xml'
       - 'opentcs-admin/src/main/resources/application*.yml'
@@ -14,7 +13,6 @@ on:
     branches: [main, master, dev-1.0.2, dev-2.0.1]
     paths:
       - 'db/**'
-      - 'script/db/**'
       - 'pom.xml'
       - 'opentcs-admin/pom.xml'
       - '.github/workflows/db-validate.yml'
@@ -70,8 +68,8 @@ jobs:
 
       - name: CI validate (migrate + snapshot)
         run: |
-          chmod +x script/db/*.sh
-          ./script/db/ci-validate.sh
+          chmod +x db/*.sh
+          ./db/ci-validate.sh
 
       - name: Testcontainers Flyway integration test
         run: mvn test -pl opentcs-admin -Dtest=FlywayMigrationIT -Pdev -B

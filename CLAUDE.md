@@ -39,11 +39,11 @@ mvn test -Dtest=ClassName#methodName -Pdev
 # 仅编译不打包
 mvn compile
 
-# 构建 Docker 镜像
-cd opentcs-admin && docker build -t opentcs-admin:latest .
-
-# 部署脚本（构建、启动、停止、重启）
-./script/deploy.sh build|start|stop|restart
+# Docker 一键部署 (前后端 + MySQL + Redis + MinIO)
+cd script/deploy
+./deploy.sh up                              # 本地启动完整栈
+./deploy.sh build 2.0.1                     # 生成离线部署包
+./deploy.sh down|status|logs|health          # 运维命令
 ```
 
 ** Profiles**：使用 `-Pdev` 或 `-Pprod` 切换环境（默认：dev）。测试按 `@Tag("dev")` 或 `@Tag("prod")` 注解执行。

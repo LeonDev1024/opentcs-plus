@@ -1,17 +1,14 @@
 #!/usr/bin/env bash
-# ============================================================
-# 生成全量 Schema 快照（仅结构，不含业务数据）
-# 流程: Flyway migrate → mysqldump --no-data → 写入 db/snapshot/
-# ============================================================
+# 生成全量 Schema 快照
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-SNAPSHOT_DIR="$PROJECT_ROOT/db/snapshot"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+SNAPSHOT_DIR="$SCRIPT_DIR/snapshot"
 SNAPSHOT_FILE="$SNAPSHOT_DIR/schema-snapshot.sql"
 META_FILE="$SNAPSHOT_DIR/.snapshot-meta.json"
 
-# shellcheck source=script/db/common.sh
+# shellcheck source=db/common.sh
 source "$SCRIPT_DIR/common.sh"
 if [[ -f "$SCRIPT_DIR/local.env" ]]; then
   # shellcheck disable=SC1091

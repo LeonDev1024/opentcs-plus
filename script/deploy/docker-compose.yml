@@ -1,13 +1,12 @@
-version: '3.8'
-
-# 目标平台: linux/amd64 (Ubuntu 20.04 x86)
-# 用法: ./scripts/install.sh  或  docker compose up -d
+# OpenTCS Plus 一键部署编排
+# 目标平台: linux/amd64
+# 用法: ./deploy.sh up  或  ./install.sh
 
 x-platform: &platform
   platform: linux/amd64
 
 services:
-  # ==================== 基础中间件 ====================
+  # ==================== 中间件 ====================
 
   mysql:
     <<: *platform
@@ -64,7 +63,7 @@ services:
 
   redis:
     <<: *platform
-    image: redis:7.2
+    image: ${REDIS_IMAGE:-redis:7-alpine}
     container_name: opentcs-redis
     restart: unless-stopped
     ports:
@@ -89,30 +88,31 @@ services:
 
   emqx:
     <<: *platform
-    image: emqx/emqx:5.7
+    image: ${EMQX_IMAGE:-emqx/emqx:5.7.2}
     container_name: opentcs-emqx
+    hostname: opentcs-emqx
     restart: unless-stopped
     ports:
-      - "${MQTT_PORT:-1883}:1883"           # MQTT TCP
-      - "${MQTT_WS_PORT:-8083}:8083"        # MQTT WebSocket
-      - "${EMQX_DASHBOARD_PORT:-18083}:18083" # EMQX Dashboard
+      - "${MQTT_PORT:-1883}:1883"
+      - "${MQTT_WS_PORT:-8083}:8083"
+      - "${EMQX_DASHBOARD_PORT:-18083}:18083"
     environment:
-      EMQX_NODE__NAME: emqx@opentcs-emqx
+      # 使用 127.0.0.1，避免容器内 emqx ctl/ping 因节点名解析失败导致 unhealthy
+      EMQX_NODE__NAME: emqx@127.0.0.1
       EMQX_DASHBOARD__DEFAULT_USERNAME: ${EMQX_DASHBOARD_USER:-admin}
       EMQX_DASHBOARD__DEFAULT_PASSWORD: ${EMQX_DASHBOARD_PASSWORD:-Emqx@2024!Admin}
-      EMQX_MQTT__ALLOW_ANONYMOUS: "false"
+      EMQX_LOG__CONSOLE_HANDLER__LEVEL: warning
     volumes:
-      - emqx-data:/opt/emqx/data
-      - emqx-log:/opt/emqx/log
-      - ./config/emqx/emqx.conf:/opt/emqx/etc/emqx.conf:ro
+      - emqx-data:/var/lib/emqx
+      - emqx-log:/var/log/emqx
     networks:
       - opentcs-net
     healthcheck:
-      test: ["CMD", "/opt/emqx/bin/emqx", "ctl", "status"]
-      interval: 15s
-      timeout: 10s
-      retries: 10
-      start_period: 60s
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:18083/status >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
 
   # ==================== 应用服务 ====================
 
@@ -125,22 +125,22 @@ services:
       - "${BACKEND_PORT:-8088}:8088"
     environment:
       SPRING_PROFILES_ACTIVE: prod
+      # 应用默认 port=8080，部署统一改为 8088（与 nginx/健康检查一致）
+      SERVER_PORT: "8088"
       TZ: Asia/Shanghai
-      # 数据库
       SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-opentcsplus}?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_USERNAME: ${MYSQL_USER:-opentcs}
       SPRING_DATASOURCE_DYNAMIC_DATASOURCE_MASTER_PASSWORD: ${MYSQL_PASSWORD:-Opentcs@2024!DB}
-      # Redis
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
       SPRING_DATA_REDIS_PASSWORD: ${REDIS_PASSWORD:-Redis@2024!Cache}
       SPRING_DATA_REDIS_DATABASE: 0
-      # MQTT / EMQX
       MQTT_ENABLED: ${MQTT_ENABLED:-true}
-      MQTT_BROKER_URL: tcp://emqx:1883
-      MQTT_USERNAME: ${MQTT_USERNAME:-opentcs}
-      MQTT_PASSWORD: ${MQTT_PASSWORD:-Opentcs@2024!MQTT}
-      MQTT_CLIENT_ID: opentcs-server-${HOSTNAME}
+      MQTT_SERVERURLS_0: "tcp://emqx:1883"
+      MQTT_CLIENTID: "${MQTT_CLIENT_ID:-opentcs-server}"
+      MQTT_TOPICS_0: "${MQTT_TOPIC:-/opentcs/#}"
+      MQTT_USERNAME: "${MQTT_USERNAME:-}"
+      MQTT_PASSWORD: "${MQTT_PASSWORD:-}"
     depends_on:
       mysql:
         condition: service_healthy
@@ -167,8 +167,6 @@ services:
       - backend
     networks:
       - opentcs-net
-
-# ==================== 网络 & 数据卷 ====================
 
 networks:
   opentcs-net:

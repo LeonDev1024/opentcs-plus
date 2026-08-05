@@ -1,13 +1,10 @@
 #!/usr/bin/env bash
-# ============================================================
-# 校验 Flyway 迁移文件命名与版本号唯一性（CI / 本地）
-# ============================================================
+# 校验 Flyway 迁移文件命名与版本号唯一性
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-MIGRATION_DIR="$PROJECT_ROOT/db/migration"
-REPEATABLE_DIR="$PROJECT_ROOT/db/repeatable"
+MIGRATION_DIR="$SCRIPT_DIR/migration"
+REPEATABLE_DIR="$SCRIPT_DIR/repeatable"
 
 errors=0
 

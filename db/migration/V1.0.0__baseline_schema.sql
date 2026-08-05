@@ -1,7 +1,6 @@
 -- ============================================================
 -- OpenTCS Plus Flyway Baseline Schema V1.0.0
--- 由 script/db/assemble-baseline.sh 自动生成，请勿手工编辑
--- 源: script/mysql + script/db/patches/V1.0.0_extensions.sql
+-- 基线 schema，后续变更请新增 db/migration/V*__*.sql
 -- ============================================================
 
 SET NAMES utf8mb4;

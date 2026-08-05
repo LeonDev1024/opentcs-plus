@@ -1,18 +1,15 @@
 #!/usr/bin/env bash
-# ============================================================
-# 校验仓库内 schema-snapshot.sql 是否与 Flyway 迁移结果一致
-# ============================================================
+# 校验 schema-snapshot.sql 是否与 Flyway 迁移结果一致
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-SNAPSHOT_DIR="$PROJECT_ROOT/db/snapshot"
+SNAPSHOT_DIR="$SCRIPT_DIR/snapshot"
 COMMITTED="$SNAPSHOT_DIR/schema-snapshot.sql"
 GENERATED="$SNAPSHOT_DIR/.schema-snapshot.generated.sql"
 
 if [[ ! -f "$COMMITTED" ]]; then
   echo "ERROR: Missing committed snapshot: $COMMITTED"
-  echo "Run: ./script/db/generate-snapshot.sh"
+  echo "Run: ./db/generate-snapshot.sh"
   exit 1
 fi
 
@@ -32,7 +29,6 @@ echo "Regenerating snapshot for comparison..."
 cp "$SNAPSHOT_DIR/schema-snapshot.sql" "$GENERATED"
 mv "$SNAPSHOT_DIR/.schema-snapshot.committed.backup.sql" "$COMMITTED"
 
-# 规范化：去掉头部注释与空行后比较
 normalize() {
   sed -e '/^--/d' -e '/^$/d' "$1" | tr -d '\r'
 }
@@ -50,5 +46,5 @@ fi
 
 echo "ERROR: schema-snapshot.sql is out of date."
 echo "Diff saved to: $SNAPSHOT_DIR/.snapshot.diff"
-echo "Run ./script/db/generate-snapshot.sh and commit db/snapshot/"
+echo "Run ./db/generate-snapshot.sh and commit db/snapshot/"
 exit 1

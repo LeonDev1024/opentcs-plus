@@ -3,4 +3,4 @@
 /db/migration/ @backend-leads
 /db/repeatable/ @backend-leads
 /db/snapshot/ @backend-leads
-/script/db/ @backend-leads
+/db/*.sh @backend-leads
