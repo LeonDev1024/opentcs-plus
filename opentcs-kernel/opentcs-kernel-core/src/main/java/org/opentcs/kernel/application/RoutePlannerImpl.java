@@ -3,6 +3,7 @@ package org.opentcs.kernel.application;
 import org.opentcs.kernel.api.RoutePlannerApi;
 import org.opentcs.kernel.api.dto.PathDTO;
 import org.opentcs.kernel.api.dto.RouteDTO;
+import org.opentcs.kernel.domain.port.RouteTopologyPort;
 import org.opentcs.kernel.domain.resource.ResourceType;
 import org.opentcs.kernel.domain.routing.Path;
 import org.opentcs.kernel.domain.routing.Point;
@@ -14,13 +15,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
- * 路径规划器，同时实现 {@link RoutePlannerApi} 端口接口。
+ * 路径规划器，同时实现 {@link RoutePlannerApi} / {@link RouteTopologyPort}。
  * <p>
  * 通过 {@link RoutingAlgorithm} 接口注入具体算法（由 opentcs-algorithm 模块提供），
  * kernel-core 对算法实现完全解耦。
  * </p>
  */
-public class RoutePlannerImpl implements RoutePlannerApi {
+public class RoutePlannerImpl implements RoutePlannerApi, RouteTopologyPort {
 
     private final Map<String, Point> points = new ConcurrentHashMap<>();
     private final Map<String, Path> paths = new ConcurrentHashMap<>();

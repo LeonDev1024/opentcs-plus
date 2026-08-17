@@ -18,6 +18,7 @@
     <modules>
         <module>opentcs-driver-bom</module>
         <module>opentcs-driver-api</module>
+        <module>opentcs-driver-runtime</module>
         <module>opentcs-driver-adapter-vda5050</module>
     </modules>
 
@@ -26,6 +27,11 @@
             <dependency>
                 <groupId>org.opentcs</groupId>
                 <artifactId>opentcs-driver-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-driver-runtime</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>

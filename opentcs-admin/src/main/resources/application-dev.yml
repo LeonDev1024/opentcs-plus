@@ -21,9 +21,7 @@ spring:
     password:
     locations:
       - filesystem:db/migration
-      - filesystem:../db/migration
       - filesystem:db/repeatable
-      - filesystem:../db/repeatable
     table: flyway_schema_history
     encoding: UTF-8
     validate-on-migrate: true

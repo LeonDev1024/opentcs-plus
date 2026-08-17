@@ -263,6 +263,13 @@ websocket:
 
 --- # OpenTCS Plus 算法插件配置
 opentcs:
+  monitor:
+    websocket:
+      enabled: true
+      path: /resource/ws/monitor
+      allowed-origins: '*'
+      push-interval-ms: 500
+      heartbeat-interval-ms: 5000
   algorithm:
     routing:
       # 激活的路径规划算法插件（对应 @AlgorithmMeta#name）

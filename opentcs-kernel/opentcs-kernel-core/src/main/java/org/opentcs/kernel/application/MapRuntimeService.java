@@ -4,6 +4,7 @@ import org.opentcs.kernel.api.dto.NavigationMapDTO;
 import org.opentcs.kernel.api.dto.PathDTO;
 import org.opentcs.kernel.api.dto.PointDTO;
 import org.opentcs.kernel.api.map.MapSceneApi;
+import org.opentcs.kernel.domain.port.MapRuntimePort;
 import org.opentcs.kernel.domain.routing.Path;
 import org.opentcs.kernel.domain.routing.Point;
 import org.slf4j.Logger;
@@ -19,14 +20,14 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * 地图运行时加载服务。
+ * 地图运行时加载服务，实现 {@link MapRuntimePort}。
  * <p>
  * 当前实现维护单张活动运行地图：发布地图后将点位/路径加载到
  * {@link RoutePlannerImpl}，供路径规划与调度使用。多地图并行运行时，
  * 这里应升级为按 mapId/version 分区的运行态图仓库。
  * </p>
  */
-public class MapRuntimeService {
+public class MapRuntimeService implements MapRuntimePort {
 
     private static final Logger log = LoggerFactory.getLogger(MapRuntimeService.class);
 
@@ -48,7 +49,8 @@ public class MapRuntimeService {
      * @param mapId 地图业务标识
      * @return 加载结果摘要
      */
-    public LoadedMap loadPublishedMap(String mapId) {
+    @Override
+    public LoadedMapSummary loadPublishedMap(String mapId) {
         if (mapId == null || mapId.isBlank()) {
             throw new IllegalArgumentException("mapId 不能为空");
         }
@@ -83,9 +85,10 @@ public class MapRuntimeService {
         log.info("运行时地图加载完成: mapId={}, version={}, points={}, paths={}",
                 activeMapId, activeMapVersion, points.size(), paths.size());
 
-        return new LoadedMap(activeMapId, activeMapVersion, points.size(), paths.size());
+        return new LoadedMapSummary(activeMapId, activeMapVersion, points.size(), paths.size());
     }
 
+    @Override
     public String getActiveMapId() {
         return activeMapId;
     }
@@ -278,6 +281,4 @@ public class MapRuntimeService {
                 .replaceAll("^'|'$", "");
     }
 
-    public record LoadedMap(String mapId, String version, int pointCount, int pathCount) {
-    }
 }

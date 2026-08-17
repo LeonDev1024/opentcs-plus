@@ -1,5 +1,6 @@
 package org.opentcs.kernel.application;
 
+import org.opentcs.kernel.domain.port.PointOccupancyPort;
 import org.opentcs.kernel.domain.resource.ResourceLock;
 import org.opentcs.kernel.domain.resource.ResourceType;
 import org.slf4j.Logger;
@@ -13,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 点位占用：进入站点时抢占 POINT 锁，离开时释放。
  */
-public class PointOccupancyService {
+public class PointOccupancyService implements PointOccupancyPort {
 
     private static final Logger log = LoggerFactory.getLogger(PointOccupancyService.class);
     private static final Duration DEFAULT_TTL = Duration.ofMinutes(10);
@@ -34,6 +35,7 @@ public class PointOccupancyService {
      *
      * @return true 表示新位置占用成功（或无需占用）；false 表示被其他车辆占用冲突
      */
+    @Override
     public boolean onVehicleMoved(String vehicleId, String orderId, String resourceName) {
         if (vehicleId == null || vehicleId.isBlank()) {
             return true;

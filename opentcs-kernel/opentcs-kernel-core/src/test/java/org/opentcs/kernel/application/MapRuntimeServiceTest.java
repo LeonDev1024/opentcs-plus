@@ -7,6 +7,7 @@ import org.opentcs.kernel.api.dto.NavigationMapDTO;
 import org.opentcs.kernel.api.dto.PathDTO;
 import org.opentcs.kernel.api.dto.PointDTO;
 import org.opentcs.kernel.api.map.MapSceneApi;
+import org.opentcs.kernel.domain.port.MapRuntimePort;
 import org.opentcs.kernel.domain.routing.Path;
 import org.opentcs.kernel.domain.routing.Point;
 import org.opentcs.kernel.domain.routing.RoutingAlgorithm;
@@ -47,7 +48,7 @@ class MapRuntimeServiceTest {
         ));
         when(mapSceneApi.listPathsByMap(100L)).thenReturn(List.of(path("PATH-1", "P1", "P2")));
 
-        MapRuntimeService.LoadedMap loaded = mapRuntimeService.loadPublishedMap("map-1");
+        MapRuntimePort.LoadedMapSummary loaded = mapRuntimeService.loadPublishedMap("map-1");
 
         assertEquals("map-1", loaded.mapId());
         assertEquals("v1", loaded.version());
@@ -91,7 +92,7 @@ class MapRuntimeServiceTest {
         ));
         when(mapSceneApi.listPathsByMap(100L)).thenReturn(List.of(path("PATH-1", "P1", "P2")));
 
-        MapRuntimeService.LoadedMap loaded = mapRuntimeService.loadPublishedMap("map-1");
+        MapRuntimePort.LoadedMapSummary loaded = mapRuntimeService.loadPublishedMap("map-1");
 
         assertEquals(3, loaded.pointCount());
         assertEquals(1, loaded.pathCount());
@@ -110,7 +111,7 @@ class MapRuntimeServiceTest {
         ));
         when(mapSceneApi.listPathsByMap(100L)).thenReturn(List.of(path));
 
-        MapRuntimeService.LoadedMap loaded = mapRuntimeService.loadPublishedMap("map-1");
+        MapRuntimePort.LoadedMapSummary loaded = mapRuntimeService.loadPublishedMap("map-1");
 
         assertEquals(2, loaded.pointCount());
         assertEquals(1, loaded.pathCount());

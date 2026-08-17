@@ -8,7 +8,7 @@ import org.opentcs.kernel.domain.event.OrderStateChangedEvent;
 import org.opentcs.kernel.domain.event.OrderAssignedEvent;
 import org.opentcs.kernel.domain.event.OrderWithdrawalRequestedEvent;
 import org.opentcs.kernel.domain.event.VehicleStateChangedEvent;
-import org.opentcs.kernel.application.runtime.RuntimeStateStore;
+import org.opentcs.kernel.domain.port.runtime.RuntimeStateStore;
 import org.opentcs.kernel.application.dispatch.DispatchStrategy;
 import org.opentcs.kernel.application.traffic.TopologyConflictDetector;
 import org.opentcs.kernel.domain.vehicle.Vehicle;

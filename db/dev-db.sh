@@ -82,6 +82,7 @@ usage() {
   rebuild    删除并重建数据库，执行 Flyway 全量迁移
   init       创建数据库（若不存在）
   migrate    创建数据库并执行 Flyway 迁移
+  repair     修复 flyway_schema_history 校验和（迁移脚本改过后使用）
   info       查看迁移状态
   snapshot   生成 schema 快照
   validate   校验快照与迁移结果一致
@@ -104,6 +105,11 @@ case "$cmd" in
     fi
     ;;
   info)      flyway_mvn info ;;
+  repair)
+    ensure_database
+    flyway_mvn repair
+    echo "Flyway repair complete (checksums updated)."
+    ;;
   snapshot)  exec "$SCRIPT_DIR/generate-snapshot.sh" ;;
   validate)  exec "$SCRIPT_DIR/validate-snapshot.sh" ;;
   seed)

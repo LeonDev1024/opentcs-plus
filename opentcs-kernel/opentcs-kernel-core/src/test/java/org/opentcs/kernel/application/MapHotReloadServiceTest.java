@@ -9,6 +9,7 @@ import org.opentcs.kernel.api.dto.OrderSpecDTO;
 import org.opentcs.kernel.api.dto.PathDTO;
 import org.opentcs.kernel.api.dto.PointDTO;
 import org.opentcs.kernel.api.map.MapSceneApi;
+import org.opentcs.kernel.domain.port.MapRuntimePort;
 import org.opentcs.kernel.domain.routing.Path;
 import org.opentcs.kernel.domain.routing.Point;
 import org.opentcs.kernel.domain.routing.RoutingAlgorithm;
@@ -63,7 +64,7 @@ class MapHotReloadServiceTest {
 
     @Test
     void hotReloadFreezesThenResumesAndDispatches() {
-        MapRuntimeService.LoadedMap loaded = hotReloadService.hotReload("map-1");
+        MapRuntimePort.LoadedMapSummary loaded = hotReloadService.hotReload("map-1");
 
         assertEquals("map-1", loaded.mapId());
         assertEquals("v1", loaded.version());
