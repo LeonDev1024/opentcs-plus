@@ -8,7 +8,10 @@ import org.opentcs.common.core.factory.YmlPropertySourceFactory;
 import org.opentcs.common.satoken.core.dao.PlusSaTokenDao;
 import org.opentcs.common.satoken.core.service.SaPermissionImpl;
 import org.opentcs.common.satoken.handler.SaTokenExceptionHandler;
+import org.opentcs.common.satoken.api.AuthApi;
+import org.opentcs.common.satoken.service.SaTokenAuthService;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
 
@@ -49,6 +52,15 @@ public class SaTokenConfig {
     @Bean
     public SaTokenExceptionHandler saTokenExceptionHandler() {
         return new SaTokenExceptionHandler();
+    }
+
+    /**
+     * Token 生命周期门面（原 opentcs-security AuthApi）
+     */
+    @Bean
+    @ConditionalOnMissingBean(AuthApi.class)
+    public AuthApi authApi() {
+        return new SaTokenAuthService();
     }
 
 }

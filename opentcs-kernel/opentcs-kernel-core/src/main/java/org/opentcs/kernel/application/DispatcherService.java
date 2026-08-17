@@ -8,7 +8,7 @@ import org.opentcs.kernel.domain.event.OrderStateChangedEvent;
 import org.opentcs.kernel.domain.event.OrderAssignedEvent;
 import org.opentcs.kernel.domain.event.OrderWithdrawalRequestedEvent;
 import org.opentcs.kernel.domain.event.VehicleStateChangedEvent;
-import org.opentcs.kernel.application.runtime.RuntimeStateStore;
+import org.opentcs.kernel.domain.port.runtime.RuntimeStateStore;
 import org.opentcs.kernel.application.dispatch.DispatchStrategy;
 import org.opentcs.kernel.application.traffic.TopologyConflictDetector;
 import org.opentcs.kernel.domain.vehicle.Vehicle;
@@ -399,7 +399,7 @@ public class DispatcherService implements Dispatcher {
         String current = vehicle.getPosition().getPointId();
         if (current == null) return false;
         if (current.equals(targetPointId)) return true;
-        return !routePlanner.findRouteDomain(current, targetPointId).isEmpty();
+        return !routePlanner.findRouteDomain(current, targetPointId, vehicle.getVehicleId()).isEmpty();
     }
 
     private void assignOrderToVehicle(TransportOrder order, Vehicle vehicle) {

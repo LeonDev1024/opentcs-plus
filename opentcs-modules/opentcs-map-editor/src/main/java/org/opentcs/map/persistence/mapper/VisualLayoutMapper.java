@@ -1,0 +1,19 @@
+package org.opentcs.map.persistence.mapper;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import org.opentcs.map.persistence.entity.VisualLayoutEntity;
+
+/**
+ * 视觉布局 Mapper 接口
+ */
+public interface VisualLayoutMapper extends BaseMapper<VisualLayoutEntity> {
+
+    /**
+     * 分页查询视觉布局列表
+     * @param page 分页参数
+     * @param visualLayout 查询条件
+     * @return 分页结果
+     */
+    IPage<VisualLayoutEntity> selectPageVisualLayout(IPage<VisualLayoutEntity> page, VisualLayoutEntity visualLayout);
+}

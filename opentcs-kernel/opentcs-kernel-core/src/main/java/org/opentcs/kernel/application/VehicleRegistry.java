@@ -4,6 +4,7 @@ import org.opentcs.kernel.api.VehicleRegistryApi;
 import org.opentcs.kernel.api.dto.PositionDTO;
 import org.opentcs.kernel.api.dto.VehicleDTO;
 import org.opentcs.kernel.api.dto.VehicleStateDTO;
+import org.opentcs.kernel.domain.port.VehicleRuntimePort;
 import org.opentcs.kernel.domain.vehicle.Vehicle;
 import org.opentcs.kernel.domain.vehicle.VehiclePosition;
 import org.opentcs.kernel.domain.vehicle.VehicleState;
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
  * 数据仅存于内存，服务重启后由驱动层重新上报恢复。
  * </p>
  */
-public class VehicleRegistry implements VehicleRegistryApi {
+public class VehicleRegistry implements VehicleRegistryApi, VehicleRuntimePort {
 
     private final Map<String, Vehicle> vehicles = new ConcurrentHashMap<>();
 

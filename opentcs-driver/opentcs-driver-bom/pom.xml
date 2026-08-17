@@ -24,6 +24,11 @@
             </dependency>
             <dependency>
                 <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-driver-runtime</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.opentcs</groupId>
                 <artifactId>opentcs-driver-adapter-vda5050</artifactId>
                 <version>${revision}</version>
             </dependency>

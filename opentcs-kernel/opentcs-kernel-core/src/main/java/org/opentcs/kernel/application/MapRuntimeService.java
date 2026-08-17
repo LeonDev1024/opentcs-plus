@@ -4,6 +4,7 @@ import org.opentcs.kernel.api.dto.NavigationMapDTO;
 import org.opentcs.kernel.api.dto.PathDTO;
 import org.opentcs.kernel.api.dto.PointDTO;
 import org.opentcs.kernel.api.map.MapSceneApi;
+import org.opentcs.kernel.domain.port.MapRuntimePort;
 import org.opentcs.kernel.domain.routing.Path;
 import org.opentcs.kernel.domain.routing.Point;
 import org.slf4j.Logger;
@@ -19,14 +20,14 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * 地图运行时加载服务。
+ * 地图运行时加载服务，实现 {@link MapRuntimePort}。
  * <p>
  * 当前实现维护单张活动运行地图：发布地图后将点位/路径加载到
  * {@link RoutePlannerImpl}，供路径规划与调度使用。多地图并行运行时，
  * 这里应升级为按 mapId/version 分区的运行态图仓库。
  * </p>
  */
-public class MapRuntimeService {
+public class MapRuntimeService implements MapRuntimePort {
 
     private static final Logger log = LoggerFactory.getLogger(MapRuntimeService.class);
 
@@ -48,7 +49,8 @@ public class MapRuntimeService {
      * @param mapId 地图业务标识
      * @return 加载结果摘要
      */
-    public LoadedMap loadPublishedMap(String mapId) {
+    @Override
+    public LoadedMapSummary loadPublishedMap(String mapId) {
         if (mapId == null || mapId.isBlank()) {
             throw new IllegalArgumentException("mapId 不能为空");
         }
@@ -83,9 +85,10 @@ public class MapRuntimeService {
         log.info("运行时地图加载完成: mapId={}, version={}, points={}, paths={}",
                 activeMapId, activeMapVersion, points.size(), paths.size());
 
-        return new LoadedMap(activeMapId, activeMapVersion, points.size(), paths.size());
+        return new LoadedMapSummary(activeMapId, activeMapVersion, points.size(), paths.size());
     }
 
+    @Override
     public String getActiveMapId() {
         return activeMapId;
     }
@@ -112,9 +115,9 @@ public class MapRuntimeService {
         }
 
         Set<String> pathIds = new HashSet<>();
-        Map<String, Set<String>> graph = new HashMap<>();
+        Map<String, Set<String>> weakGraph = new HashMap<>();
         for (String pointId : pointIds) {
-            graph.put(pointId, new HashSet<>());
+            weakGraph.put(pointId, new HashSet<>());
         }
         for (PathDTO path : paths) {
             if (path.getPathId() == null || path.getPathId().isBlank() || !pathIds.add(path.getPathId())) {
@@ -127,17 +130,20 @@ public class MapRuntimeService {
                 throw new IllegalStateException("路径终点不存在，不能加载到运行时: " + path.getPathId());
             }
             validatePathDirection(path);
-            graph.get(path.getSourcePointId()).add(path.getDestPointId());
-            if (isBidirectional(path)) {
-                graph.get(path.getDestPointId()).add(path.getSourcePointId());
-            }
+            // 连通性按无向图检查；真实路由方向在 registerPath 时保留
+            weakGraph.get(path.getSourcePointId()).add(path.getDestPointId());
+            weakGraph.get(path.getDestPointId()).add(path.getSourcePointId());
         }
-        validateConnected(map, pointIds, graph);
+        warnIfWeaklyDisconnected(map, pointIds, weakGraph);
     }
 
-    private void validateConnected(NavigationMapDTO map,
-                                   Set<String> pointIds,
-                                   Map<String, Set<String>> graph) {
+    /**
+     * 极简策略：允许地图存在多个弱连通分量（如独立停车区）。
+     * 仅打告警，不阻断加载；真正不可达的起终点由路径规划在下单时失败。
+     */
+    private void warnIfWeaklyDisconnected(NavigationMapDTO map,
+                                          Set<String> pointIds,
+                                          Map<String, Set<String>> weakGraph) {
         String start = pointIds.iterator().next();
         Set<String> visited = new HashSet<>();
         ArrayDeque<String> queue = new ArrayDeque<>();
@@ -145,15 +151,15 @@ public class MapRuntimeService {
         visited.add(start);
         while (!queue.isEmpty()) {
             String current = queue.poll();
-            for (String next : graph.getOrDefault(current, Set.of())) {
+            for (String next : weakGraph.getOrDefault(current, Set.of())) {
                 if (visited.add(next)) {
                     queue.add(next);
                 }
             }
         }
         if (visited.size() != pointIds.size()) {
-            throw new IllegalStateException("发布地图存在不可达点位，不能加载到运行时: "
-                    + map.getMapId() + ", reachable=" + visited.size() + "/" + pointIds.size());
+            log.warn("地图存在未连接点位（弱连通），仍加载到运行时: mapId={}, reachable={}/{}",
+                    map.getMapId(), visited.size(), pointIds.size());
         }
     }
 
@@ -275,6 +281,4 @@ public class MapRuntimeService {
                 .replaceAll("^'|'$", "");
     }
 
-    public record LoadedMap(String mapId, String version, int pointCount, int pathCount) {
-    }
 }

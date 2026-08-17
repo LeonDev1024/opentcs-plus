@@ -90,13 +90,6 @@
             <version>${revision}</version>
         </dependency>
 
-        <!-- Security Core：AuthApi / PermissionApi 的 Sa-Token 实现（运行时） -->
-        <dependency>
-            <groupId>org.opentcs</groupId>
-            <artifactId>opentcs-security-core</artifactId>
-            <version>${revision}</version>
-        </dependency>
-
         <dependency>
             <groupId>org.opentcs</groupId>
             <artifactId>opentcs-common-core</artifactId>
@@ -143,10 +136,28 @@
             <artifactId>opentcs-vehicle</artifactId>
             <version>${revision}</version>
         </dependency>
+
+        <!-- 驱动运行时 + 协议适配器（仅 admin 组装） -->
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-driver-runtime</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-driver-adapter-vda5050</artifactId>
+            <version>${revision}</version>
+        </dependency>
         
         <dependency>
             <groupId>org.opentcs</groupId>
             <artifactId>opentcs-order</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opentcs</groupId>
+            <artifactId>opentcs-monitor</artifactId>
             <version>${revision}</version>
         </dependency>
 

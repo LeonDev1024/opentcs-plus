@@ -11,7 +11,7 @@ import org.opentcs.kernel.application.dispatch.DispatchStrategy;
 import org.opentcs.kernel.application.dispatch.RouteCostDispatchStrategy;
 import org.opentcs.kernel.application.runtime.InMemoryRuntimeStateStore;
 import org.opentcs.kernel.application.runtime.RedisRuntimeStateStore;
-import org.opentcs.kernel.application.runtime.RuntimeStateStore;
+import org.opentcs.kernel.domain.port.runtime.RuntimeStateStore;
 import org.opentcs.kernel.domain.routing.RoutingAlgorithm;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.beans.factory.annotation.Value;

@@ -1,0 +1,88 @@
+package org.opentcs.map.persistence.service;
+
+import com.baomidou.mybatisplus.extension.service.IService;
+import org.opentcs.common.mybatis.core.page.PageQuery;
+import org.opentcs.common.mybatis.core.page.TableDataInfo;
+import org.opentcs.kernel.api.dto.NavigationMapDTO;
+import org.opentcs.map.persistence.entity.NavigationMapEntity;
+
+import java.util.List;
+
+/**
+ * 导航地图领域服务接口
+ * 导航地图仓储（MyBatis，归属 map module）
+ */
+public interface NavigationMapRepository extends IService<NavigationMapEntity> {
+
+    /**
+     * 创建导航地图
+     * @param navigationMap 导航地图
+     * @return 是否创建成功
+     */
+    boolean createNavigationMap(NavigationMapEntity navigationMap);
+
+    /**
+     * 分页查询导航地图列表
+     * @param navigationMap 查询条件
+     * @param pageQuery 分页参数
+     * @return 分页结果
+     */
+    TableDataInfo<NavigationMapDTO> selectPageNavigationMap(NavigationMapEntity navigationMap, PageQuery pageQuery);
+
+    /**
+     * 根据工厂模型ID获取所有导航地图
+     * @param factoryModelId 工厂模型ID
+     * @return 导航地图列表
+     */
+    List<NavigationMapDTO> selectByFactoryModelId(Long factoryModelId);
+
+    /**
+     * 根据工厂模型ID和楼层号获取导航地图
+     * @param factoryModelId 工厂模型ID
+     * @param floorNumber 楼层号
+     * @return 导航地图
+     */
+    NavigationMapDTO selectByFactoryModelIdAndFloor(Long factoryModelId, Integer floorNumber);
+
+    /**
+     * 根据地图编号获取导航地图
+     * @param mapId 地图编号（如 map_001）
+     * @return 导航地图
+     */
+    NavigationMapDTO selectByMapId(String mapId);
+
+    /**
+     * 获取导航地图详情（含点、路径）
+     * @param id 导航地图ID
+     * @return 导航地图详情
+     */
+    NavigationMapEntity getNavigationMapDetail(Long id);
+
+    /**
+     * 获取导航地图详情（DTO）
+     * @param id 导航地图ID
+     * @return 导航地图详情
+     */
+    NavigationMapDTO getNavigationMapDetailDTO(Long id);
+
+    /**
+     * 更新导航地图
+     * @param navigationMap 导航地图
+     * @return 是否更新成功
+     */
+    boolean updateNavigationMap(NavigationMapEntity navigationMap);
+
+    /**
+     * 更新导航地图（DTO）
+     * @param navigationMap 导航地图
+     * @return 是否更新成功
+     */
+    boolean updateNavigationMapDTO(NavigationMapDTO navigationMap);
+
+    /**
+     * 删除导航地图
+     * @param id 导航地图ID
+     * @return 是否删除成功
+     */
+    boolean deleteNavigationMap(Long id);
+}

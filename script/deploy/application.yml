@@ -19,7 +19,6 @@ spring:
 server:
   port: 8088
 
-# 安全配置 (必须保留，否则登录接口会被拦截)
 security:
   excludes:
     - /*.html
@@ -33,27 +32,12 @@ security:
     - /auth/**
     - /resource/**
 
-# MQTT 配置 (通过 EMQX 中间件)
-mqtt:
-  enabled: ${MQTT_ENABLED:true}
-  broker-url: ${MQTT_BROKER_URL:tcp://emqx:1883}
-  username: ${MQTT_USERNAME:opentcs}
-  password: ${MQTT_PASSWORD:Opentcs@2024!MQTT}
-  client-id: ${MQTT_CLIENT_ID:opentcs-server}
-  qos: 1
-  keep-alive: 60
-  topics:
-    vehicle-status: opentcs/vehicle/+/status
-    vehicle-command: opentcs/vehicle/+/command
-    order-event: opentcs/order/event
-
-# 定时任务 (按需启用)
-xxl:
-  job:
-    enabled: false
-
-# 文件上传
+# 文件上传 (本地存储兜底；对象存储通过系统管理 -> OSS 配置 MinIO)
 file:
   domain: http://localhost:8088
   path: /app/upload
   prefix: /upload
+
+xxl:
+  job:
+    enabled: false

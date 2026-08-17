@@ -1,5 +1,7 @@
 package org.opentcs.kernel.api.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -21,10 +23,16 @@ public class PointDTO {
 
     private String name;
 
+    @JsonProperty("xPosition")
+    @JsonAlias({"x", "x_position"})
     private BigDecimal xPosition;
 
+    @JsonProperty("yPosition")
+    @JsonAlias({"y", "y_position"})
     private BigDecimal yPosition;
 
+    @JsonProperty("zPosition")
+    @JsonAlias({"z", "z_position"})
     private BigDecimal zPosition;
 
     private BigDecimal vehicleOrientation;
@@ -44,8 +52,7 @@ public class PointDTO {
     private String properties;
 
     /**
-     * 点位布局数据（JSON）。
-     * 用于承载编辑器中的显示布局属性（如颜色、半径、标签等）。
+     * 点位布局数据（JSON）。极简场景可只含 x/y/z。
      */
     private String layout;
 

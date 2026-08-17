@@ -1,0 +1,28 @@
+# Git / IDE
+.git/
+.idea/
+*.iml
+
+# 构建产物（后端在 Docker 内重新编译，无需上传 target）
+**/target/
+
+# 日志与临时文件
+logs/
+**/logs/
+**/*.log
+node_modules/
+
+# 部署产物
+script/deploy/dist/
+script/deploy/frontend/dist/
+script/deploy/.build/
+
+# 环境配置
+.env
+
+# 文档
+*.md
+!README.md
+
+# 前端仓库不在本上下文
+opentcs-plus-web/

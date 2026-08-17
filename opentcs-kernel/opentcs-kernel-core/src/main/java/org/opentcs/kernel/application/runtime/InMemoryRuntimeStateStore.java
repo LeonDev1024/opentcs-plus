@@ -1,5 +1,7 @@
 package org.opentcs.kernel.application.runtime;
 
+import org.opentcs.kernel.domain.port.runtime.RuntimeStateStore;
+import org.opentcs.kernel.domain.port.runtime.VehicleRuntimeSnapshot;
 import org.opentcs.kernel.domain.resource.ResourceLock;
 import org.opentcs.kernel.domain.resource.ResourceType;
 

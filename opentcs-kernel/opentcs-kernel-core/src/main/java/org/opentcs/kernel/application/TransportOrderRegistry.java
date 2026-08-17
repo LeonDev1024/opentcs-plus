@@ -2,6 +2,7 @@ package org.opentcs.kernel.application;
 
 import org.opentcs.kernel.domain.order.TransportOrder;
 import org.opentcs.kernel.domain.order.OrderState;
+import org.opentcs.kernel.domain.port.TransportOrderRuntimePort;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -10,7 +11,7 @@ import java.util.stream.Collectors;
 /**
  * 运输订单注册表（内存实现）
  */
-public class TransportOrderRegistry {
+public class TransportOrderRegistry implements TransportOrderRuntimePort {
 
     private final Map<String, TransportOrder> orders = new ConcurrentHashMap<>();
 

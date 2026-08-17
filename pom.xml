@@ -11,16 +11,12 @@
     <modules>
         <!-- 公共模块 -->
         <module>opentcs-common</module>
-        <!-- 应用层 - 基于 OpenTCS Kernel 重构 -->
-        <module>opentcs-applications</module>
-        <!-- 领域层 - OpenTCS Kernel -->
+        <!-- L1 业务 modules（对齐 RuoYi modules） -->
+        <module>opentcs-modules</module>
+        <!-- RCS 扩展：调度内核 -->
         <module>opentcs-kernel</module>
-        <!-- 基础设施层 - 持久化等 -->
-        <module>opentcs-infrastructure</module>
-        <!-- 基础设施层 - Driver 驱动适配 -->
+        <!-- RCS 扩展：车载 driver -->
         <module>opentcs-driver</module>
-        <!-- 安全模块 -->
-        <module>opentcs-security</module>
         <!-- 算法层（内置策略 + SPI + 加载器 + gRPC桥接） -->
         <module>opentcs-algorithm</module>
         <!-- 接口层 (依赖于上面所有模块) -->
@@ -163,21 +159,6 @@
                 <artifactId>opentcs-kernel-core</artifactId>
                 <version>${revision}</version>
             </dependency>
-            <dependency>
-                <groupId>org.opentcs</groupId>
-                <artifactId>opentcs-map-persistence</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.opentcs</groupId>
-                <artifactId>opentcs-vehicle-persistence</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.opentcs</groupId>
-                <artifactId>opentcs-order-persistence</artifactId>
-                <version>${revision}</version>
-            </dependency>
             <!-- 算法层（内置策略 + 插件化框架） -->
             <dependency>
                 <groupId>org.opentcs</groupId>
@@ -208,19 +189,12 @@
             </dependency>
             <dependency>
                 <groupId>org.opentcs</groupId>
+                <artifactId>opentcs-driver-runtime</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.opentcs</groupId>
                 <artifactId>opentcs-driver-adapter-vda5050</artifactId>
-                <version>${revision}</version>
-            </dependency>
-
-            <!-- security 的依赖配置-->
-            <dependency>
-                <groupId>org.opentcs</groupId>
-                <artifactId>opentcs-security-api</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.opentcs</groupId>
-                <artifactId>opentcs-security-core</artifactId>
                 <version>${revision}</version>
             </dependency>
 

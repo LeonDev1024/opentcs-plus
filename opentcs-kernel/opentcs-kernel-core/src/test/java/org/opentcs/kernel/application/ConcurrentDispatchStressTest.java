@@ -60,12 +60,12 @@ class ConcurrentDispatchStressTest {
                         .filter(v -> v.getState() == VehicleState.IDLE || v.getState() == VehicleState.CHARGING)
                         .toList());
 
-        when(routePlanner.findRouteDomain(anyString(), anyString())).thenAnswer(inv -> {
+        when(routePlanner.findRouteDomain(anyString(), anyString(), anyString())).thenAnswer(inv -> {
             String from = inv.getArgument(0);
             String to = inv.getArgument(1);
             return List.of(new Point(from, from, 0, 0), new Point(to, to, 1, 0));
         });
-        when(routePlanner.findPath(anyString(), anyString())).thenAnswer(inv -> {
+        when(routePlanner.findPath(anyString(), anyString(), anyString())).thenAnswer(inv -> {
             String from = inv.getArgument(0);
             String to = inv.getArgument(1);
             return List.of(new Path(from + "-" + to, from, to, 10));

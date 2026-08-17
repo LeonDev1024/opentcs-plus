@@ -15,10 +15,10 @@
     <description>VDA5050 协议适配器实现</description>
 
     <dependencies>
-        <!-- Driver API -->
+        <!-- Driver Runtime（注册表与网关由 runtime 提供） -->
         <dependency>
             <groupId>org.opentcs</groupId>
-            <artifactId>opentcs-driver-api</artifactId>
+            <artifactId>opentcs-driver-runtime</artifactId>
         </dependency>
 
         <!-- MQTT Client -->

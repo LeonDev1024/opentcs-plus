@@ -144,13 +144,13 @@ class DispatcherServiceTest {
 
         when(vehicleRegistry.getAvailableVehicleDomains())
                 .thenReturn(List.of(farByRoute, nearByRoute));
-        when(routePlanner.findRouteDomain("FAR", "SRC"))
+        when(routePlanner.findRouteDomain("FAR", "SRC", "far-by-route"))
                 .thenReturn(List.of(new Point("FAR", "FAR", 0, 0), new Point("SRC", "SRC", 0, 0)));
-        when(routePlanner.findRouteDomain("NEAR", "SRC"))
+        when(routePlanner.findRouteDomain("NEAR", "SRC", "near-by-route"))
                 .thenReturn(List.of(new Point("NEAR", "NEAR", 0, 0), new Point("SRC", "SRC", 0, 0)));
-        when(routePlanner.findPath("FAR", "SRC"))
+        when(routePlanner.findPath("FAR", "SRC", "far-by-route"))
                 .thenReturn(List.of(new Path("FAR-PATH", "FAR", "SRC", 100)));
-        when(routePlanner.findPath("NEAR", "SRC"))
+        when(routePlanner.findPath("NEAR", "SRC", "near-by-route"))
                 .thenReturn(List.of(new Path("NEAR-PATH", "NEAR", "SRC", 10)));
 
         boolean result = dispatcherService.dispatchOrder(order);
@@ -172,13 +172,13 @@ class DispatcherServiceTest {
 
         when(vehicleRegistry.getAvailableVehicleDomains())
                 .thenReturn(List.of(intendedVehicle, closerVehicle));
-        when(routePlanner.findRouteDomain("FAR", "SRC"))
+        when(routePlanner.findRouteDomain("FAR", "SRC", "intended-vehicle"))
                 .thenReturn(List.of(new Point("FAR", "FAR", 0, 0), new Point("SRC", "SRC", 0, 0)));
-        when(routePlanner.findRouteDomain("NEAR", "SRC"))
+        when(routePlanner.findRouteDomain("NEAR", "SRC", "closer-vehicle"))
                 .thenReturn(List.of(new Point("NEAR", "NEAR", 0, 0), new Point("SRC", "SRC", 0, 0)));
-        when(routePlanner.findPath("FAR", "SRC"))
+        when(routePlanner.findPath("FAR", "SRC", "intended-vehicle"))
                 .thenReturn(List.of(new Path("FAR-PATH", "FAR", "SRC", 100)));
-        when(routePlanner.findPath("NEAR", "SRC"))
+        when(routePlanner.findPath("NEAR", "SRC", "closer-vehicle"))
                 .thenReturn(List.of(new Path("NEAR-PATH", "NEAR", "SRC", 10)));
 
         boolean result = dispatcherService.dispatchOrder(order);
@@ -198,7 +198,7 @@ class DispatcherServiceTest {
         Vehicle otherVehicle = vehicle("other-vehicle", "NEAR");
 
         when(vehicleRegistry.getAvailableVehicleDomains()).thenReturn(List.of(otherVehicle));
-        when(routePlanner.findRouteDomain("NEAR", "SRC"))
+        when(routePlanner.findRouteDomain("NEAR", "SRC", "other-vehicle"))
                 .thenReturn(List.of(new Point("NEAR", "NEAR", 0, 0), new Point("SRC", "SRC", 0, 0)));
 
         boolean result = dispatcherService.dispatchOrder(order);
@@ -243,13 +243,13 @@ class DispatcherServiceTest {
 
         when(vehicleRegistry.getAvailableVehicleDomains())
                 .thenReturn(List.of(lowEnergyVehicle, healthyVehicle));
-        when(routePlanner.findRouteDomain("NEAR", "SRC"))
+        when(routePlanner.findRouteDomain("NEAR", "SRC", "low-energy"))
                 .thenReturn(List.of(new Point("NEAR", "NEAR", 0, 0), new Point("SRC", "SRC", 0, 0)));
-        when(routePlanner.findRouteDomain("FAR", "SRC"))
+        when(routePlanner.findRouteDomain("FAR", "SRC", "healthy-energy"))
                 .thenReturn(List.of(new Point("FAR", "FAR", 0, 0), new Point("SRC", "SRC", 0, 0)));
-        when(routePlanner.findPath("NEAR", "SRC"))
+        when(routePlanner.findPath("NEAR", "SRC", "low-energy"))
                 .thenReturn(List.of(new Path("NEAR-PATH", "NEAR", "SRC", 10)));
-        when(routePlanner.findPath("FAR", "SRC"))
+        when(routePlanner.findPath("FAR", "SRC", "healthy-energy"))
                 .thenReturn(List.of(new Path("FAR-PATH", "FAR", "SRC", 20)));
 
         boolean result = dispatcherService.dispatchOrder(order);
@@ -272,13 +272,13 @@ class DispatcherServiceTest {
         tugger.setTypeId("tugger");
 
         when(vehicleRegistry.getAvailableVehicleDomains()).thenReturn(List.of(tugger, forklift));
-        when(routePlanner.findRouteDomain("NEAR", "SRC"))
+        when(routePlanner.findRouteDomain("NEAR", "SRC", "tugger-1"))
                 .thenReturn(List.of(new Point("NEAR", "NEAR", 0, 0), new Point("SRC", "SRC", 0, 0)));
-        when(routePlanner.findRouteDomain("FAR", "SRC"))
+        when(routePlanner.findRouteDomain("FAR", "SRC", "forklift-1"))
                 .thenReturn(List.of(new Point("FAR", "FAR", 0, 0), new Point("SRC", "SRC", 0, 0)));
-        when(routePlanner.findPath("FAR", "SRC"))
+        when(routePlanner.findPath("FAR", "SRC", "forklift-1"))
                 .thenReturn(List.of(new Path("FAR-PATH", "FAR", "SRC", 100)));
-        when(routePlanner.findPath("NEAR", "SRC"))
+        when(routePlanner.findPath("NEAR", "SRC", "tugger-1"))
                 .thenReturn(List.of(new Path("NEAR-PATH", "NEAR", "SRC", 10)));
 
         boolean result = dispatcherService.dispatchOrder(order);
@@ -302,13 +302,13 @@ class DispatcherServiceTest {
 
         when(vehicleRegistry.getAvailableVehicleDomains())
                 .thenReturn(List.of(incompatibleVehicle, compatibleVehicle));
-        when(routePlanner.findRouteDomain("NEAR", "SRC"))
+        when(routePlanner.findRouteDomain("NEAR", "SRC", "incompatible"))
                 .thenReturn(List.of(new Point("NEAR", "NEAR", 0, 0), new Point("SRC", "SRC", 0, 0)));
-        when(routePlanner.findRouteDomain("FAR", "SRC"))
+        when(routePlanner.findRouteDomain("FAR", "SRC", "compatible"))
                 .thenReturn(List.of(new Point("FAR", "FAR", 0, 0), new Point("SRC", "SRC", 0, 0)));
-        when(routePlanner.findPath("FAR", "SRC"))
+        when(routePlanner.findPath("FAR", "SRC", "compatible"))
                 .thenReturn(List.of(new Path("FAR-PATH", "FAR", "SRC", 100)));
-        when(routePlanner.findPath("NEAR", "SRC"))
+        when(routePlanner.findPath("NEAR", "SRC", "incompatible"))
                 .thenReturn(List.of(new Path("NEAR-PATH", "NEAR", "SRC", 10)));
 
         boolean result = dispatcherService.dispatchOrder(order);

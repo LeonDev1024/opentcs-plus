@@ -25,10 +25,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         "org.opentcs.map",
         "org.opentcs.order",
         "org.opentcs.vehicle",
+        "org.opentcs.monitor",
         "org.opentcs.system",
         "org.opentcs.job",
         "org.opentcs.common",
-        "org.opentcs.security",
         "org.opentcs.algorithm",     // 算法插件 + AutoConfiguration
         "org.opentcs.strategies"    // 内置策略
     },

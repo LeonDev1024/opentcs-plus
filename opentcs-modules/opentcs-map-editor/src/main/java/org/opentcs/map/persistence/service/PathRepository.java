@@ -1,0 +1,101 @@
+package org.opentcs.map.persistence.service;
+
+import com.baomidou.mybatisplus.extension.service.IService;
+import org.opentcs.common.mybatis.core.page.PageQuery;
+import org.opentcs.common.mybatis.core.page.TableDataInfo;
+import org.opentcs.kernel.api.dto.PathDTO;
+import org.opentcs.map.persistence.entity.PathEntity;
+
+import java.util.List;
+
+/**
+ * 路径领域服务接口
+ * 地图路径仓储（MyBatis，归属 map module）
+ */
+public interface PathRepository extends IService<PathEntity> {
+
+    /**
+     * 分页查询路径列表
+     * @param path 查询条件
+     * @param pageQuery 分页参数
+     * @return 分页结果
+     */
+    TableDataInfo<PathEntity> selectPagePath(PathEntity path, PageQuery pageQuery);
+
+    /**
+     * 分页查询路径列表（DTO）
+     * @param path 查询条件
+     * @param pageQuery 分页参数
+     * @return 分页结果
+     */
+    TableDataInfo<PathDTO> selectPageDTO(PathEntity path, PageQuery pageQuery);
+
+    /**
+     * 分页查询路径列表（DTO 查询条件）
+     * @param path 查询条件
+     * @param pageQuery 分页参数
+     * @return 分页结果
+     */
+    TableDataInfo<PathDTO> selectPageDTO(PathDTO path, PageQuery pageQuery);
+
+    /**
+     * 按地图ID列表分页查询路径（DTO）
+     */
+    TableDataInfo<PathDTO> selectPageByMapIdsDTO(List<Long> mapIds, PathDTO path, PageQuery pageQuery);
+
+    /**
+     * 保存路径（DTO）
+     * @param path 路径数据
+     * @return 是否保存成功
+     */
+    boolean saveDTO(PathDTO path);
+
+    /**
+     * 根据导航地图ID查询所有路径
+     * @param navigationMapId 导航地图ID
+     * @return 路径列表
+     */
+    List<PathEntity> listByMap(Long navigationMapId);
+
+    /**
+     * 根据导航地图ID查询所有路径（DTO）
+     * @param navigationMapId 导航地图ID
+     * @return 路径列表
+     */
+    List<PathDTO> listByMapDTO(Long navigationMapId);
+
+    /**
+     * 根据地图ID列表查询路径
+     * @param mapIds 地图ID列表
+     * @return 路径列表
+     */
+    List<PathEntity> listByMapIds(List<Long> mapIds);
+
+    /**
+     * 根据地图ID列表查询路径（DTO）
+     * @param mapIds 地图ID列表
+     * @return 路径列表
+     */
+    List<PathDTO> listByMapIdsDTO(List<Long> mapIds);
+
+    /**
+     * 根据ID查询路径详情（DTO）
+     * @param id 路径ID
+     * @return 路径详情
+     */
+    PathDTO getByIdDTO(Long id);
+
+    /**
+     * 根据ID更新路径（DTO）
+     * @param path 路径数据
+     * @return 是否更新成功
+     */
+    boolean updateByIdDTO(PathDTO path);
+
+    /**
+     * 根据导航地图ID删除所有路径
+     * @param navigationMapId 导航地图ID
+     * @return 删除数量
+     */
+    int removeByMap(Long navigationMapId);
+}

@@ -11,15 +11,19 @@
 OpenTCS Plus 是基于 OpenTCS 核心思想构建的企业级AGV调度系统，在保留 OpenTCS 稳定调度内核的同时，提供了更现代化的架构、更友好的用户界面和更强大的功能扩展。
 
 ## 项目架构
-考虑仓储物流核心私有化部署的场景，实现单机模式调度系统，采用领域驱动模式，将核心领域模型、应用层、接口层、基础设施层进行分离，实现模块化、可扩展、可维护、可测试。
-![opentcsplus架构图v1.2.png](docs/img/opentcsplus%E6%9E%B6%E6%9E%84%E5%9B%BEv1.2.png)
+
+主叙事：**RuoYi 经典多模块 + RCS 扩展**（详见 `../doc/架构决策-多模块与RCS扩展.md`）。
+
+- 怎么跑：起 `opentcs-admin`
+- 业务改哪：`opentcs-modules/<域>`
+- 调度改哪：`opentcs-kernel`
+- 车协议改哪：`opentcs-driver/adapter-*`
 
 ### 架构约束（建议）
-- 依赖方向必须单向：`接口层 -> 应用层 -> 领域层 -> 基础设施层`，禁止反向依赖。
-- 领域层只暴露端口与领域对象，不直接依赖数据库、MQ、Web 框架。
-- `Driver Adapter` 作为外部系统接入通道，不承载业务编排逻辑。
-- 认证授权能力建议统一收敛到 IAM 领域，减少分散鉴权带来的耦合。
-- `调度内核` 聚焦调度策略与规则计算，不直接承载接口协议处理。
+- 业务 modules **禁止**依赖 `driver-adapter-*`（只依赖 `driver-api` + `driver-runtime`）
+- 具体协议 / 算法 jar **只由 admin 引入**
+- `kernel` 只依赖 `common` + 自身
+- 派单到车：`kernel 派单 → 事件 → vehicle 监听 → driver-runtime → adapter-*`
 
 ## 目录结构
 
@@ -35,22 +39,21 @@ opentcsplus/
 ```
 opentcs-plus/
 ├── opentcs-admin/                          # 接口层 - Web 入口（Controller）
-├── opentcs-applications/                   # 应用层 - 业务用例/服务编排
+├── opentcs-modules/                        # L1 业务 modules（对齐 RuoYi）
 │   ├── opentcs-map-editor/                 # 地图编辑器
 │   ├── opentcs-order/                      # 订单任务
-│   ├── opentcs-vehicle/                    # 车辆管理
+│   ├── opentcs-vehicle/                    # 车辆管理（含 persistence）
 │   ├── opentcs-system/                     # 系统管理
-│   └── opentcs-job/                        # 定时任务
-├── opentcs-kernel/                         # 领域层 - Kernel 契约与领域模型
+│   ├── opentcs-job/                        # 定时任务
+│   └── opentcs-monitor/                    # 运维监控 snapshot + WebSocket
+├── opentcs-kernel/                         # RCS 扩展：调度内核
 │   ├── opentcs-kernel-api/                 # 端口与 DTO、算法接口
-│   ├── opentcs-kernel-domain/              # 纯领域模型
+│   ├── opentcs-kernel-domain/              # 纯领域模型 + domain.port
 │   └── opentcs-kernel-core/                # 应用服务与 Spring 装配
-├── opentcs-infrastructure/                 # 基础设施层 - 持久化等
-│   └── opentcs-infrastructure-kernel-persistence/
-├── opentcs-strategies-default/             # 内置策略（仅依赖 kernel-api）
-├── opentcs-driver/                         # 基础设施层 - AGV 驱动适配
+├── opentcs-driver/                         # RCS 扩展：AGV 驱动
 │   ├── opentcs-driver-api/                 # 驱动接口
-│   └── opentcs-driver-adapter-vda5050/     # VDA5050协议适配器
+│   ├── opentcs-driver-runtime/             # Gateway / Registry / LOOPBACK
+│   └── opentcs-driver-adapter-vda5050/     # VDA5050（仅 admin 引入）
 ├── opentcs-common/                         # 通用模块
 │   ├── opentcs-common-core/                # 核心：DTO、枚举、异常
 │   ├── opentcs-common-mybatis/             # MyBatis Plus
@@ -61,7 +64,6 @@ opentcs-plus/
 │   ├── opentcs-common-mqtt/                # MQTT 集成
 │   ├── opentcs-common-oss/                 # 文件存储
 │   └── opentcs-common-sms/                 # 短信
-├── opentcs-security/                       # 安全模块
 └── pom.xml
 ```
 

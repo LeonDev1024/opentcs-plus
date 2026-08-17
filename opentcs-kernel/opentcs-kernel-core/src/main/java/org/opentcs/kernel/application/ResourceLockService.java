@@ -1,7 +1,8 @@
 package org.opentcs.kernel.application;
 
-import org.opentcs.kernel.application.runtime.RuntimeStateStore;
+import org.opentcs.kernel.domain.port.runtime.RuntimeStateStore;
 import org.opentcs.kernel.domain.event.ResourceLockChangedEvent;
+import org.opentcs.kernel.domain.port.ResourceLockPort;
 import org.opentcs.kernel.domain.resource.ResourceLock;
 import org.opentcs.kernel.domain.resource.ResourceLockStatus;
 import org.opentcs.kernel.domain.resource.ResourceType;
@@ -19,7 +20,7 @@ import java.util.UUID;
 /**
  * 调度资源锁应用服务。
  */
-public class ResourceLockService {
+public class ResourceLockService implements ResourceLockPort {
 
     private final RuntimeStateStore runtimeStateStore;
     private final ApplicationEventPublisher eventPublisher;
@@ -130,6 +131,7 @@ public class ResourceLockService {
     /**
      * 启动恢复：将持久化的 HELD 锁写回运行态（不改变过期时间）。
      */
+    @Override
     public boolean restoreHeldLock(ResourceLock lock) {
         if (lock == null || !lock.isHeld()) {
             return false;
